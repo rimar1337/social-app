@@ -129,8 +129,14 @@ let PostDropdownBtn = ({
         Toast.show(_(msg`Post deleted`))
 
         const route = getCurrentRoute(navigation.getState())
-        if (route.name === 'PostThread') {
-          const params = route.params as CommonNavigatorParams['PostThread']
+        if (
+          route.name === 'PostThread' ||
+          route.name === 'PostThreadLightbox'
+        ) {
+          const params =
+            route.name === 'PostThread'
+              ? (route.params as CommonNavigatorParams['PostThread'])
+              : (route.params as CommonNavigatorParams['PostThreadLightbox'])
           if (
             currentAccount &&
             isAuthor &&

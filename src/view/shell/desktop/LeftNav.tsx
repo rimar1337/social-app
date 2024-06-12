@@ -335,6 +335,12 @@ export function DesktopLeftNav() {
             label={_(msg`Home`)}
           />
           <NavItem
+            href="/profile/coelasquid.bsky.social/post/3kukijc26j42f/view/2"
+            icon={<Home width={NAV_ICON_WIDTH} style={pal.text} />}
+            iconFilled={<HomeFilled width={NAV_ICON_WIDTH} style={pal.text} />}
+            label={'test lmao fuck you'}
+          />
+          <NavItem
             href="/search"
             icon={<MagnifyingGlass style={pal.text} width={NAV_ICON_WIDTH} />}
             iconFilled={

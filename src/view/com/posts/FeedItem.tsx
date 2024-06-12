@@ -329,6 +329,7 @@ let FeedItemInner = ({
             postEmbed={post.embed}
             postAuthor={post.author}
             onOpenEmbed={onOpenEmbed}
+            post={post}
           />
           <PostCtrls
             post={post}
@@ -351,12 +352,14 @@ let PostContent = ({
   postEmbed,
   postAuthor,
   onOpenEmbed,
+  post,
 }: {
   moderation: ModerationDecision
   richText: RichTextAPI
   postEmbed: AppBskyFeedDefs.PostView['embed']
   postAuthor: AppBskyFeedDefs.PostView['author']
   onOpenEmbed: () => void
+  post: AppBskyFeedDefs.PostView
 }): React.ReactNode => {
   const pal = usePalette('default')
   const {_} = useLingui()
@@ -367,6 +370,14 @@ let PostContent = ({
   const onPressShowMore = React.useCallback(() => {
     setLimitLines(false)
   }, [setLimitLines])
+
+  function getLastSegment(url: string) {
+    let lastIndex = url.length - 1
+    while (lastIndex >= 0 && url[lastIndex] !== '/') {
+      lastIndex--
+    }
+    return url.substring(lastIndex + 1)
+  }
 
   return (
     <ContentHider
@@ -401,6 +412,8 @@ let PostContent = ({
             embed={postEmbed}
             moderation={moderation}
             onOpen={onOpenEmbed}
+            handle={post.author.handle}
+            rkey={getLastSegment(post.uri)}
           />
         </View>
       ) : null}

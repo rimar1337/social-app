@@ -28,6 +28,11 @@ import {ExternalLinkEmbed} from './ExternalLinkEmbed'
 import {ListEmbed} from './ListEmbed'
 import {MaybeQuoteEmbed} from './QuoteEmbed'
 import hairlineWidth = StyleSheet.hairlineWidth
+// import { isWeb } from '#/platform/detection'
+import {useNavigation} from '@react-navigation/native'
+
+import {NavigationProp} from '#/lib/routes/types'
+// import { useLightbox } from '#/state/shell/web-lightbox'
 
 type Embed =
   | AppBskyEmbedRecord.View
@@ -42,15 +47,22 @@ export function PostEmbeds({
   onOpen,
   style,
   allowNestedQuotes,
+  handle,
+  rkey,
+  imageGridDisabled,
 }: {
   embed?: Embed
   moderation?: ModerationDecision
   onOpen?: () => void
   style?: StyleProp<ViewStyle>
   allowNestedQuotes?: boolean
+  handle?: string
+  rkey?: string
+  imageGridDisabled?: boolean
 }) {
   const pal = usePalette('default')
   const {openLightbox} = useLightboxControls()
+  const navigation = useNavigation<NavigationProp>()
 
   // quote post with media
   // =
@@ -61,6 +73,9 @@ export function PostEmbeds({
           embed={embed.media}
           moderation={moderation}
           onOpen={onOpen}
+          handle={handle}
+          rkey={rkey}
+          imageGridDisabled={imageGridDisabled}
         />
         <MaybeQuoteEmbed embed={embed.record} onOpen={onOpen} />
       </View>
@@ -111,13 +126,22 @@ export function PostEmbeds({
         aspectRatio: img.aspectRatio,
       }))
       const _openLightbox = (index: number) => {
-        openLightbox(new ImagesLightbox(items, index))
+        openLightbox(new ImagesLightbox(items, index, handle, rkey))
+        if (handle && rkey) {
+          navigation.push('PostThreadLightbox', {
+            name: handle,
+            rkey: rkey,
+            page: index + 1 ?? 1,
+          })
+        }
       }
       const onPressIn = (_: number) => {
         InteractionManager.runAfterInteractions(() => {
           Image.prefetch(items.map(i => i.uri))
         })
       }
+
+      if (imageGridDisabled) return <></>
 
       if (images.length === 1) {
         const {alt, thumb, aspectRatio} = images[0]

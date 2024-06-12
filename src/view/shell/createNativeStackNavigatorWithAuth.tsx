@@ -134,6 +134,7 @@ function NativeStackNavigator({
   // Show the bottom bar if we have a session only on mobile web. If we don't have a session, we want to show it
   // on both tablet and mobile web so that we see the sign up CTA.
   const showBottomBar = hasSession ? isMobile : isTabletOrMobile
+  const overlayOn = activeRoute.name === 'PostThreadLightbox'
 
   return (
     <NavigationContent>
@@ -144,7 +145,7 @@ function NativeStackNavigator({
         descriptors={newDescriptors}
       />
       {isWeb && showBottomBar && <BottomBarWeb />}
-      {isWeb && !showBottomBar && (
+      {isWeb && !showBottomBar && !overlayOn && (
         <>
           <DesktopLeftNav />
           <DesktopRightNav routeName={activeRoute.name} />

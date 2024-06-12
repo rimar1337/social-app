@@ -18,6 +18,7 @@ export const router = new Router({
   ProfileKnownFollowers: '/profile/:name/known-followers',
   ProfileList: '/profile/:name/lists/:rkey',
   PostThread: '/profile/:name/post/:rkey',
+  PostThreadLightbox: '/profile/:name/post/:rkey/view/:page',
   PostLikedBy: '/profile/:name/post/:rkey/liked-by',
   PostRepostedBy: '/profile/:name/post/:rkey/reposted-by',
   ProfileFeed: '/profile/:name/feed/:rkey',

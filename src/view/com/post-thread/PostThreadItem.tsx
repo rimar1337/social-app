@@ -62,6 +62,7 @@ export function PostThreadItem({
   overrideBlur,
   onPostReply,
   hideTopBorder,
+  imageGridDisabled,
 }: {
   post: AppBskyFeedDefs.PostView
   record: AppBskyFeedPost.Record
@@ -78,6 +79,7 @@ export function PostThreadItem({
   overrideBlur: boolean
   onPostReply: () => void
   hideTopBorder?: boolean
+  imageGridDisabled?: boolean
 }) {
   const postShadowed = usePostShadow(post)
   const richText = useMemo(
@@ -112,6 +114,7 @@ export function PostThreadItem({
         overrideBlur={overrideBlur}
         onPostReply={onPostReply}
         hideTopBorder={hideTopBorder}
+        imageGridDisabled={imageGridDisabled}
       />
     )
   }
@@ -155,6 +158,7 @@ let PostThreadItemLoaded = ({
   overrideBlur,
   onPostReply,
   hideTopBorder,
+  imageGridDisabled,
 }: {
   post: Shadow<AppBskyFeedDefs.PostView>
   record: AppBskyFeedPost.Record
@@ -172,6 +176,7 @@ let PostThreadItemLoaded = ({
   overrideBlur: boolean
   onPostReply: () => void
   hideTopBorder?: boolean
+  imageGridDisabled?: boolean
 }): React.ReactNode => {
   const pal = usePalette('default')
   const {_} = useLingui()
@@ -233,6 +238,14 @@ let PostThreadItemLoaded = ({
 
   if (!record) {
     return <ErrorMessage message={_(msg`Invalid or unsupported post record`)} />
+  }
+
+  function getLastSegment(url: string) {
+    let lastIndex = url.length - 1
+    while (lastIndex >= 0 && url[lastIndex] !== '/') {
+      lastIndex--
+    }
+    return url.substring(lastIndex + 1)
   }
 
   if (isHighlightedPost) {
@@ -333,7 +346,13 @@ let PostThreadItemLoaded = ({
               ) : undefined}
               {post.embed && (
                 <View style={[a.pb_sm]}>
-                  <PostEmbeds embed={post.embed} moderation={moderation} />
+                  <PostEmbeds
+                    embed={post.embed}
+                    moderation={moderation}
+                    handle={post.author.handle}
+                    rkey={getLastSegment(post.uri)}
+                    imageGridDisabled={imageGridDisabled}
+                  />
                 </View>
               )}
             </ContentHider>
@@ -537,7 +556,12 @@ let PostThreadItemLoaded = ({
                 ) : undefined}
                 {post.embed && (
                   <View style={[a.pb_xs]}>
-                    <PostEmbeds embed={post.embed} moderation={moderation} />
+                    <PostEmbeds
+                      embed={post.embed}
+                      moderation={moderation}
+                      handle={post.author.handle}
+                      rkey={getLastSegment(post.uri)}
+                    />
                   </View>
                 )}
                 <PostCtrls

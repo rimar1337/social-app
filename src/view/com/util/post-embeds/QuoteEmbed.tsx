@@ -119,6 +119,14 @@ function QuoteEmbedModerated({
     embeds: viewRecord.embeds,
   }
 
+  function getLastSegment(url: string) {
+    let lastIndex = url.length - 1
+    while (lastIndex >= 0 && url[lastIndex] !== '/') {
+      lastIndex--
+    }
+    return url.substring(lastIndex + 1)
+  }
+
   return (
     <QuoteEmbed
       quote={quote}
@@ -126,6 +134,8 @@ function QuoteEmbedModerated({
       onOpen={onOpen}
       style={style}
       allowNestedQuotes={allowNestedQuotes}
+      handle={viewRecord.author.handle}
+      rkey={getLastSegment(viewRecord.uri)}
     />
   )
 }
@@ -136,12 +146,16 @@ export function QuoteEmbed({
   onOpen,
   style,
   allowNestedQuotes,
+  handle,
+  rkey,
 }: {
   quote: ComposerOptsQuote
   moderation?: ModerationDecision
   onOpen?: () => void
   style?: StyleProp<ViewStyle>
   allowNestedQuotes?: boolean
+  handle: string
+  rkey: string
 }) {
   const queryClient = useQueryClient()
   const pal = usePalette('default')
@@ -211,7 +225,14 @@ export function QuoteEmbed({
             disableLinks
           />
         ) : null}
-        {embed && <PostEmbeds embed={embed} moderation={moderation} />}
+        {embed && (
+          <PostEmbeds
+            embed={embed}
+            moderation={moderation}
+            handle={handle}
+            rkey={rkey}
+          />
+        )}
       </Link>
     </ContentHider>
   )

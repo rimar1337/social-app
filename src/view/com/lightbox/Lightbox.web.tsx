@@ -2,30 +2,31 @@ import React, {useCallback, useEffect, useState} from 'react'
 import {
   Image,
   ImageStyle,
+  Pressable,
+  StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  StyleSheet,
   View,
-  Pressable,
   ViewStyle,
 } from 'react-native'
 import {
   FontAwesomeIcon,
   FontAwesomeIconStyle,
 } from '@fortawesome/react-native-fontawesome'
-import {colors, s} from 'lib/styles'
-import ImageDefaultHeader from './ImageViewing/components/ImageDefaultHeader'
-import {Text} from '../util/text/Text'
-import {useLingui} from '@lingui/react'
 import {msg} from '@lingui/macro'
-import {
-  useLightbox,
-  useLightboxControls,
-  ImagesLightbox,
-  ProfileImageLightbox,
-} from '#/state/lightbox'
+import {useLingui} from '@lingui/react'
+
 import {useWebBodyScrollLock} from '#/lib/hooks/useWebBodyScrollLock'
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
+import {
+  ImagesLightbox,
+  ProfileImageLightbox,
+  useLightbox,
+  useLightboxControls,
+} from '#/state/lightbox'
+import {colors, s} from 'lib/styles'
+import {Text} from '../util/text/Text'
+import ImageDefaultHeader from './ImageViewing/components/ImageDefaultHeader'
 
 interface Img {
   uri: string
@@ -69,7 +70,7 @@ export function Lightbox() {
   )
 }
 
-function LightboxInner({
+export function LightboxInner({
   imgs,
   initialIndex = 0,
   onClose,
@@ -134,7 +135,7 @@ function LightboxInner({
             accessibilityIgnoresInvertColors
             source={imgs[index]}
             style={styles.image as ImageStyle}
-            accessibilityLabel={imgs[index].alt}
+            accessibilityLabel={imgs[index].alt ?? ''}
             accessibilityHint=""
           />
           {canGoLeft && (
