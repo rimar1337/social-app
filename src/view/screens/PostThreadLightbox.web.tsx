@@ -83,7 +83,11 @@ export function PostThreadLightboxScreen({route}: Props) {
   let earlyReturn: boolean = false
 
   // please get imgs properly by itself, this is a hack
-  if (!images || !images[0].alt || images.length === 0) {
+  if (
+    !images ||
+    //!images[0].alt ||
+    images.length === 0
+  ) {
     navigation.replace('PostThread', {
       name: name,
       rkey: rkey,

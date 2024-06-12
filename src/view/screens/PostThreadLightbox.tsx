@@ -1,5 +1,4 @@
-import React from //  useEffect
-'react'
+import React from 'react' //  useEffect
 import {LayoutAnimation, StyleSheet, View} from 'react-native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import * as MediaLibrary from 'expo-media-library'
@@ -44,7 +43,11 @@ export function PostThreadLightboxScreen({route}: Props) {
   let earlyReturn: boolean = false
 
   // please get imgs properly by itself, this is a hack
-  if (!images || !images[0].alt || images.length === 0) {
+  if (
+    !images ||
+    //!images[0].alt ||
+    images.length === 0
+  ) {
     navigation.replace('PostThread', {
       name: name,
       rkey: rkey,
