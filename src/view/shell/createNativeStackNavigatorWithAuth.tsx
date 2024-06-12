@@ -144,7 +144,7 @@ function NativeStackNavigator({
         navigation={navigation}
         descriptors={newDescriptors}
       />
-      {isWeb && showBottomBar && <BottomBarWeb />}
+      {isWeb && showBottomBar && !overlayOn && <BottomBarWeb />}
       {isWeb && !showBottomBar && !overlayOn && (
         <>
           <DesktopLeftNav />

@@ -1,10 +1,12 @@
-import React from 'react'
+import React from //  useEffect
+'react'
 import {LayoutAnimation, StyleSheet, View} from 'react-native'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import * as MediaLibrary from 'expo-media-library'
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome'
 import {msg, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
-import {useNavigation} from '@react-navigation/native'
+import {useFocusEffect, useNavigation} from '@react-navigation/native'
 
 import {
   CommonNavigatorParams,
@@ -18,6 +20,8 @@ import {
   //useLightbox,
   //useLightboxControls,
 } from '#/state/lightbox'
+import {useSetMinimalShellMode} from '#/state/shell/minimal-mode'
+//import { useShellLayout } from '#/state/shell/shell-layout'
 import {saveImageToMediaLibrary, shareImageModal} from 'lib/media/manip'
 import {colors, s} from 'lib/styles'
 import {isIOS} from 'platform/detection'
@@ -33,14 +37,24 @@ interface Img {
   alt?: string
 }
 export function PostThreadLightboxScreen({route}: Props) {
-  const {page} = route.params
+  const {name, rkey, page} = route.params
   const {images} = useImages()
+  const navigation = useNavigation<NavigationProp>()
   // Convert ImagesLightboxItem[] | null to Img[]
+  let earlyReturn: boolean = false
+
+  // please get imgs properly by itself, this is a hack
+  if (!images || !images[0].alt || images.length === 0) {
+    navigation.replace('PostThread', {
+      name: name,
+      rkey: rkey,
+    })
+    earlyReturn = true
+  }
   const imgs: Img[] = images
     ? images.map(img => ({uri: img.uri, alt: img.alt ?? ''}))
     : []
 
-  const navigation = useNavigation<NavigationProp>()
   const onPressBack = React.useCallback(() => {
     if (navigation.canGoBack()) {
       navigation.goBack()
@@ -48,6 +62,16 @@ export function PostThreadLightboxScreen({route}: Props) {
       navigation.navigate('Home')
     }
   }, [navigation])
+
+  const setMinimalShellMode = useSetMinimalShellMode()
+  const {top: topInset} = useSafeAreaInsets()
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setMinimalShellMode(true)
+    }, [setMinimalShellMode]),
+  )
+
   //const {activeLightbox} = useLightbox()
   // const {closeLightbox} = useLightboxControls()
   // const onClose = React.useCallback(() => {
@@ -81,8 +105,16 @@ export function PostThreadLightboxScreen({route}: Props) {
   // } else {
   //   return null
   // }
+  if (earlyReturn) {
+    return null
+  }
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        // todo find where the extra top inset is coming from
+        {marginTop: topInset * -1},
+      ]}>
       <ImageView
         images={imgs.map(img => ({...img}))}
         initialImageIndex={page ? page - 1 : 0}

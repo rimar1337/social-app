@@ -121,15 +121,6 @@ export function BottomBar({navigation}: BottomTabBarProps) {
     playHaptic()
     accountSwitchControl.open()
   }, [accountSwitchControl, playHaptic])
-
-  const [bottomOff, setBottomOff] = React.useState(false)
-
-  const sadState = navigation.getState()
-  const currentRouteName = sadState.routes[sadState.index].name
-  const check = currentRouteName === 'PostThreadLightbox'
-  React.useEffect(() => {
-    setBottomOff(check)
-  }, [check, hasSession, sadState])
   return (
     <>
       <SwitchAccountDialog control={accountSwitchControl} />
@@ -145,208 +136,196 @@ export function BottomBar({navigation}: BottomTabBarProps) {
         onLayout={e => {
           footerHeight.value = e.nativeEvent.layout.height
         }}>
-        {!bottomOff ? (
+        {hasSession ? (
           <>
-            {hasSession ? (
-              <>
-                <Btn
-                  testID="bottomBarHomeBtn"
-                  icon={
-                    isAtHome ? (
-                      <HomeFilled
-                        width={iconWidth + 1}
-                        style={[styles.ctrlIcon, pal.text, styles.homeIcon]}
+            <Btn
+              testID="bottomBarHomeBtn"
+              icon={
+                isAtHome ? (
+                  <HomeFilled
+                    width={iconWidth + 1}
+                    style={[styles.ctrlIcon, pal.text, styles.homeIcon]}
+                  />
+                ) : (
+                  <Home
+                    width={iconWidth + 1}
+                    style={[styles.ctrlIcon, pal.text, styles.homeIcon]}
+                  />
+                )
+              }
+              onPress={onPressHome}
+              accessibilityRole="tab"
+              accessibilityLabel={_(msg`Home`)}
+              accessibilityHint=""
+            />
+            <Btn
+              testID="bottomBarSearchBtn"
+              icon={
+                isAtSearch ? (
+                  <MagnifyingGlassFilled
+                    width={iconWidth + 2}
+                    style={[styles.ctrlIcon, pal.text, styles.searchIcon]}
+                  />
+                ) : (
+                  <MagnifyingGlass
+                    width={iconWidth + 2}
+                    style={[styles.ctrlIcon, pal.text, styles.searchIcon]}
+                  />
+                )
+              }
+              onPress={onPressSearch}
+              accessibilityRole="search"
+              accessibilityLabel={_(msg`Search`)}
+              accessibilityHint=""
+            />
+            <Btn
+              testID="bottomBarMessagesBtn"
+              icon={
+                isAtMessages ? (
+                  <MessageFilled
+                    width={iconWidth - 1}
+                    style={[styles.ctrlIcon, pal.text, styles.feedsIcon]}
+                  />
+                ) : (
+                  <Message
+                    width={iconWidth - 1}
+                    style={[styles.ctrlIcon, pal.text, styles.feedsIcon]}
+                  />
+                )
+              }
+              onPress={onPressMessages}
+              notificationCount={numUnreadMessages.numUnread}
+              accessible={true}
+              accessibilityRole="tab"
+              accessibilityLabel={_(msg`Chat`)}
+              accessibilityHint={
+                numUnreadMessages.count > 0
+                  ? `${numUnreadMessages.numUnread} unread`
+                  : ''
+              }
+            />
+            <Btn
+              testID="bottomBarNotificationsBtn"
+              icon={
+                isAtNotifications ? (
+                  <BellFilled
+                    width={iconWidth}
+                    style={[styles.ctrlIcon, pal.text, styles.bellIcon]}
+                  />
+                ) : (
+                  <Bell
+                    width={iconWidth}
+                    style={[styles.ctrlIcon, pal.text, styles.bellIcon]}
+                  />
+                )
+              }
+              onPress={onPressNotifications}
+              notificationCount={numUnreadNotifications}
+              accessible={true}
+              accessibilityRole="tab"
+              accessibilityLabel={_(msg`Notifications`)}
+              accessibilityHint={
+                numUnreadNotifications === ''
+                  ? ''
+                  : `${numUnreadNotifications} unread`
+              }
+            />
+            <Btn
+              testID="bottomBarProfileBtn"
+              icon={
+                <View style={styles.ctrlIconSizingWrapper}>
+                  {isAtMyProfile ? (
+                    <View
+                      style={[
+                        styles.ctrlIcon,
+                        pal.text,
+                        styles.profileIcon,
+                        styles.onProfile,
+                        {borderColor: pal.text.color},
+                      ]}>
+                      <UserAvatar
+                        avatar={profile?.avatar}
+                        size={iconWidth - 3}
+                        // See https://github.com/bluesky-social/social-app/pull/1801:
+                        usePlainRNImage={true}
+                        type={profile?.associated?.labeler ? 'labeler' : 'user'}
                       />
-                    ) : (
-                      <Home
-                        width={iconWidth + 1}
-                        style={[styles.ctrlIcon, pal.text, styles.homeIcon]}
-                      />
-                    )
-                  }
-                  onPress={onPressHome}
-                  accessibilityRole="tab"
-                  accessibilityLabel={_(msg`Home`)}
-                  accessibilityHint=""
-                />
-                <Btn
-                  testID="bottomBarSearchBtn"
-                  icon={
-                    isAtSearch ? (
-                      <MagnifyingGlassFilled
-                        width={iconWidth + 2}
-                        style={[styles.ctrlIcon, pal.text, styles.searchIcon]}
-                      />
-                    ) : (
-                      <MagnifyingGlass
-                        width={iconWidth + 2}
-                        style={[styles.ctrlIcon, pal.text, styles.searchIcon]}
-                      />
-                    )
-                  }
-                  onPress={onPressSearch}
-                  accessibilityRole="search"
-                  accessibilityLabel={_(msg`Search`)}
-                  accessibilityHint=""
-                />
-                <Btn
-                  testID="bottomBarMessagesBtn"
-                  icon={
-                    isAtMessages ? (
-                      <MessageFilled
-                        width={iconWidth - 1}
-                        style={[styles.ctrlIcon, pal.text, styles.feedsIcon]}
-                      />
-                    ) : (
-                      <Message
-                        width={iconWidth - 1}
-                        style={[styles.ctrlIcon, pal.text, styles.feedsIcon]}
-                      />
-                    )
-                  }
-                  onPress={onPressMessages}
-                  notificationCount={numUnreadMessages.numUnread}
-                  accessible={true}
-                  accessibilityRole="tab"
-                  accessibilityLabel={_(msg`Chat`)}
-                  accessibilityHint={
-                    numUnreadMessages.count > 0
-                      ? `${numUnreadMessages.numUnread} unread`
-                      : ''
-                  }
-                />
-                <Btn
-                  testID="bottomBarNotificationsBtn"
-                  icon={
-                    isAtNotifications ? (
-                      <BellFilled
-                        width={iconWidth}
-                        style={[styles.ctrlIcon, pal.text, styles.bellIcon]}
-                      />
-                    ) : (
-                      <Bell
-                        width={iconWidth}
-                        style={[styles.ctrlIcon, pal.text, styles.bellIcon]}
-                      />
-                    )
-                  }
-                  onPress={onPressNotifications}
-                  notificationCount={numUnreadNotifications}
-                  accessible={true}
-                  accessibilityRole="tab"
-                  accessibilityLabel={_(msg`Notifications`)}
-                  accessibilityHint={
-                    numUnreadNotifications === ''
-                      ? ''
-                      : `${numUnreadNotifications} unread`
-                  }
-                />
-                <Btn
-                  testID="bottomBarProfileBtn"
-                  icon={
-                    <View style={styles.ctrlIconSizingWrapper}>
-                      {isAtMyProfile ? (
-                        <View
-                          style={[
-                            styles.ctrlIcon,
-                            pal.text,
-                            styles.profileIcon,
-                            styles.onProfile,
-                            {borderColor: pal.text.color},
-                          ]}>
-                          <UserAvatar
-                            avatar={profile?.avatar}
-                            size={iconWidth - 3}
-                            // See https://github.com/bluesky-social/social-app/pull/1801:
-                            usePlainRNImage={true}
-                            type={
-                              profile?.associated?.labeler ? 'labeler' : 'user'
-                            }
-                          />
-                        </View>
-                      ) : (
-                        <View
-                          style={[
-                            styles.ctrlIcon,
-                            pal.text,
-                            styles.profileIcon,
-                          ]}>
-                          <UserAvatar
-                            avatar={profile?.avatar}
-                            size={iconWidth - 3}
-                            // See https://github.com/bluesky-social/social-app/pull/1801:
-                            usePlainRNImage={true}
-                            type={
-                              profile?.associated?.labeler ? 'labeler' : 'user'
-                            }
-                          />
-                        </View>
-                      )}
                     </View>
-                  }
-                  onPress={onPressProfile}
-                  onLongPress={onLongPressProfile}
-                  accessibilityRole="tab"
-                  accessibilityLabel={_(msg`Profile`)}
-                  accessibilityHint=""
-                />
-              </>
-            ) : (
-              <>
-                <View
-                  style={{
-                    width: '100%',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingTop: 14,
-                    paddingBottom: 2,
-                    paddingLeft: 14,
-                    paddingRight: 6,
-                    gap: 8,
-                  }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 8,
-                    }}>
-                    <Logo width={28} />
-                    <View style={{paddingTop: 4}}>
-                      <Logotype width={80} fill={pal.text.color} />
+                  ) : (
+                    <View
+                      style={[styles.ctrlIcon, pal.text, styles.profileIcon]}>
+                      <UserAvatar
+                        avatar={profile?.avatar}
+                        size={iconWidth - 3}
+                        // See https://github.com/bluesky-social/social-app/pull/1801:
+                        usePlainRNImage={true}
+                        type={profile?.associated?.labeler ? 'labeler' : 'user'}
+                      />
                     </View>
-                  </View>
-
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}>
-                    <Button
-                      onPress={showCreateAccount}
-                      accessibilityHint={_(msg`Sign up`)}
-                      accessibilityLabel={_(msg`Sign up`)}>
-                      <Text type="md" style={[{color: 'white'}, s.bold]}>
-                        <Trans>Sign up</Trans>
-                      </Text>
-                    </Button>
-
-                    <Button
-                      type="default"
-                      onPress={showSignIn}
-                      accessibilityHint={_(msg`Sign in`)}
-                      accessibilityLabel={_(msg`Sign in`)}>
-                      <Text type="md" style={[pal.text, s.bold]}>
-                        <Trans>Sign in</Trans>
-                      </Text>
-                    </Button>
-                  </View>
+                  )}
                 </View>
-              </>
-            )}
+              }
+              onPress={onPressProfile}
+              onLongPress={onLongPressProfile}
+              accessibilityRole="tab"
+              accessibilityLabel={_(msg`Profile`)}
+              accessibilityHint=""
+            />
           </>
-        ) : null}
+        ) : (
+          <>
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingTop: 14,
+                paddingBottom: 2,
+                paddingLeft: 14,
+                paddingRight: 6,
+                gap: 8,
+              }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                }}>
+                <Logo width={28} />
+                <View style={{paddingTop: 4}}>
+                  <Logotype width={80} fill={pal.text.color} />
+                </View>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                }}>
+                <Button
+                  onPress={showCreateAccount}
+                  accessibilityHint={_(msg`Sign up`)}
+                  accessibilityLabel={_(msg`Sign up`)}>
+                  <Text type="md" style={[{color: 'white'}, s.bold]}>
+                    <Trans>Sign up</Trans>
+                  </Text>
+                </Button>
+
+                <Button
+                  type="default"
+                  onPress={showSignIn}
+                  accessibilityHint={_(msg`Sign in`)}
+                  accessibilityLabel={_(msg`Sign in`)}>
+                  <Text type="md" style={[pal.text, s.bold]}>
+                    <Trans>Sign in</Trans>
+                  </Text>
+                </Button>
+              </View>
+            </View>
+          </>
+        )}
       </Animated.View>
     </>
   )

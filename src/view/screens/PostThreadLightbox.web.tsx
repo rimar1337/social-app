@@ -75,10 +75,21 @@ export function PostThreadLightboxScreen({route}: Props) {
   const {openComposer} = useComposerControls()
   //const safeAreaInsets = useSafeAreaInsets()
   const {name, rkey, page} = route.params
+  const navigation = useNavigation<NavigationProp>()
   //const {isMobile} = useWebMediaQueries()
   const uri = makeRecordUri(name, 'app.bsky.feed.post', rkey)
   const {images} = useImages()
   // Convert ImagesLightboxItem[] | null to Img[]
+  let earlyReturn: boolean = false
+
+  // please get imgs properly by itself, this is a hack
+  if (!images || !images[0].alt || images.length === 0) {
+    navigation.replace('PostThread', {
+      name: name,
+      rkey: rkey,
+    })
+    earlyReturn = true
+  }
   const imgs: Img[] = images
     ? images.map(img => ({uri: img.uri, alt: img.alt ?? ''}))
     : []
@@ -114,7 +125,7 @@ export function PostThreadLightboxScreen({route}: Props) {
     })
   }, [openComposer, queryClient, uri])
 
-  const navigation = useNavigation<NavigationProp>()
+  const {isTabletOrMobile} = useWebMediaQueries()
   const onPressBack = React.useCallback(() => {
     if (navigation.canGoBack()) {
       navigation.goBack()
@@ -122,7 +133,9 @@ export function PostThreadLightboxScreen({route}: Props) {
       navigation.navigate('Home')
     }
   }, [navigation])
-
+  if (earlyReturn) {
+    return null
+  }
   return (
     <View style={styles.container}>
       <View style={styles.lightboxInternal}>
@@ -135,14 +148,18 @@ export function PostThreadLightboxScreen({route}: Props) {
           <BottomCtrls uri={uri} onPressReply={onPressReply} />
         </View>
       </View>
-      <View style={styles.postThreadInternal}>
-        <PostThread
-          uri={uri}
-          onPressReply={onPressReply}
-          onCanReply={() => false}
-          imageGridDisabled={true}
-        />
-      </View>
+      {!isTabletOrMobile ? (
+        <View style={styles.postThreadInternal}>
+          <PostThread
+            uri={uri}
+            onPressReply={onPressReply}
+            onCanReply={() => false}
+            imageGridDisabled={true}
+          />
+        </View>
+      ) : (
+        <></>
+      )}
     </View>
   )
 }
