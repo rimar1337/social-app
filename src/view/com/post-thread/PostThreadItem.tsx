@@ -3,6 +3,7 @@ import {StyleSheet, View} from 'react-native'
 import {
   AppBskyFeedDefs,
   AppBskyFeedPost,
+  AppBskyFeedThreadgate,
   AtUri,
   ModerationDecision,
   RichText as RichTextAPI,
@@ -16,6 +17,7 @@ import {useLanguagePrefs} from '#/state/preferences'
 import {useOpenLink} from '#/state/preferences/in-app-browser'
 import {ThreadPost} from '#/state/queries/post-thread'
 import {useComposerControls} from '#/state/shell/composer'
+import {useMergedThreadgateHiddenReplies} from '#/state/threadgate-hidden-replies'
 import {MAX_POST_LINES} from 'lib/constants'
 import {usePalette} from 'lib/hooks/usePalette'
 import {useWebMediaQueries} from 'lib/hooks/useWebMediaQueries'
@@ -29,13 +31,14 @@ import {isWeb} from 'platform/detection'
 import {useSession} from 'state/session'
 import {PostThreadFollowBtn} from 'view/com/post-thread/PostThreadFollowBtn'
 import {atoms as a} from '#/alf'
+import {AppModerationCause} from '#/components/Pills'
 import {RichText} from '#/components/RichText'
 import {ContentHider} from '../../../components/moderation/ContentHider'
 import {LabelsOnMyPost} from '../../../components/moderation/LabelsOnMe'
 import {PostAlerts} from '../../../components/moderation/PostAlerts'
 import {PostHider} from '../../../components/moderation/PostHider'
+import {WhoCanReply} from '../../../components/WhoCanReply'
 import {getTranslatorLink, isPostInLanguage} from '../../../locale/helpers'
-import {WhoCanReply} from '../threadgate/WhoCanReply'
 import {ErrorMessage} from '../util/error/ErrorMessage'
 import {Link, TextLink} from '../util/Link'
 import {formatCount} from '../util/numeric/format'
@@ -44,7 +47,6 @@ import {PostEmbeds} from '../util/post-embeds'
 import {PostMeta} from '../util/PostMeta'
 import {Text} from '../util/text/Text'
 import {PreviewableUserAvatar} from '../util/UserAvatar'
-import hairlineWidth = StyleSheet.hairlineWidth
 
 export function PostThreadItem({
   post,
@@ -63,6 +65,7 @@ export function PostThreadItem({
   onPostReply,
   hideTopBorder,
   imageGridDisabled,
+  threadgateRecord,
 }: {
   post: AppBskyFeedDefs.PostView
   record: AppBskyFeedPost.Record
@@ -77,9 +80,10 @@ export function PostThreadItem({
   showParentReplyLine?: boolean
   hasPrecedingItem: boolean
   overrideBlur: boolean
-  onPostReply: () => void
+  onPostReply: (postUri: string | undefined) => void
   hideTopBorder?: boolean
   imageGridDisabled?: boolean
+  threadgateRecord?: AppBskyFeedThreadgate.Record
 }) {
   const postShadowed = usePostShadow(post)
   const richText = useMemo(
@@ -115,6 +119,7 @@ export function PostThreadItem({
         onPostReply={onPostReply}
         hideTopBorder={hideTopBorder}
         imageGridDisabled={imageGridDisabled}
+        threadgateRecord={threadgateRecord}
       />
     )
   }
@@ -159,6 +164,7 @@ let PostThreadItemLoaded = ({
   onPostReply,
   hideTopBorder,
   imageGridDisabled,
+  threadgateRecord,
 }: {
   post: Shadow<AppBskyFeedDefs.PostView>
   record: AppBskyFeedPost.Record
@@ -174,12 +180,13 @@ let PostThreadItemLoaded = ({
   showParentReplyLine?: boolean
   hasPrecedingItem: boolean
   overrideBlur: boolean
-  onPostReply: () => void
+  onPostReply: (postUri: string | undefined) => void
   hideTopBorder?: boolean
   imageGridDisabled?: boolean
+  threadgateRecord?: AppBskyFeedThreadgate.Record
 }): React.ReactNode => {
   const pal = usePalette('default')
-  const {_} = useLingui()
+  const {_, i18n} = useLingui()
   const langPrefs = useLanguagePrefs()
   const {openComposer} = useComposerControls()
   const [limitLines, setLimitLines] = React.useState(
@@ -195,6 +202,7 @@ let PostThreadItemLoaded = ({
   const itemTitle = _(msg`Post by ${post.author.handle}`)
   const authorHref = makeProfileLink(post.author)
   const authorTitle = post.author.handle
+  const isThreadAuthor = getThreadAuthor(post, record) === currentAccount?.did
   const likesHref = React.useMemo(() => {
     const urip = new AtUri(post.uri)
     return makeProfileLink(post.author, 'post', urip.rkey, 'liked-by')
@@ -205,6 +213,27 @@ let PostThreadItemLoaded = ({
     return makeProfileLink(post.author, 'post', urip.rkey, 'reposted-by')
   }, [post.uri, post.author])
   const repostsTitle = _(msg`Reposts of this post`)
+  const threadgateHiddenReplies = useMergedThreadgateHiddenReplies({
+    threadgateRecord,
+  })
+  const additionalPostAlerts: AppModerationCause[] = React.useMemo(() => {
+    const isPostHiddenByThreadgate = threadgateHiddenReplies.has(post.uri)
+    const isControlledByViewer = new AtUri(rootUri).host === currentAccount?.did
+    return isControlledByViewer && isPostHiddenByThreadgate
+      ? [
+          {
+            type: 'reply-hidden',
+            source: {type: 'user', did: currentAccount?.did},
+            priority: 6,
+          },
+        ]
+      : []
+  }, [post, currentAccount?.did, threadgateHiddenReplies, rootUri])
+  const quotesHref = React.useMemo(() => {
+    const urip = new AtUri(post.uri)
+    return makeProfileLink(post.author, 'post', urip.rkey, 'quotes')
+  }, [post.uri, post.author])
+  const quotesTitle = _(msg`Quotes of this post`)
 
   const translatorUrl = getTranslatorLink(
     record?.text || '',
@@ -286,7 +315,7 @@ let PostThreadItemLoaded = ({
                 <Link style={s.flex1} href={authorHref} title={authorTitle}>
                   <Text
                     type="xl-bold"
-                    style={[pal.text]}
+                    style={[pal.text, a.self_start]}
                     numberOfLines={1}
                     lineHeight={1.2}>
                     {sanitizeDisplayName(
@@ -318,9 +347,10 @@ let PostThreadItemLoaded = ({
               childContainerStyle={styles.contentHiderChild}>
               <PostAlerts
                 modui={moderation.ui('contentView')}
-                size="large"
+                size="lg"
                 includeMute
                 style={[a.pt_2xs, a.pb_sm]}
+                additionalCauses={additionalPostAlerts}
               />
               {richText?.text ? (
                 <View
@@ -351,10 +381,13 @@ let PostThreadItemLoaded = ({
             </ContentHider>
             <ExpandedPostDetails
               post={post}
+              isThreadAuthor={isThreadAuthor}
               translatorUrl={translatorUrl}
               needsTranslation={needsTranslation}
             />
-            {post.repostCount !== 0 || post.likeCount !== 0 ? (
+            {post.repostCount !== 0 ||
+            post.likeCount !== 0 ||
+            post.quoteCount !== 0 ? (
               // Show this section unless we're *sure* it has no engagement.
               <View style={[styles.expandedInfo, pal.border]}>
                 {post.repostCount != null && post.repostCount !== 0 ? (
@@ -367,12 +400,34 @@ let PostThreadItemLoaded = ({
                       type="lg"
                       style={pal.textLight}>
                       <Text type="xl-bold" style={pal.text}>
-                        {formatCount(post.repostCount)}
+                        {formatCount(i18n, post.repostCount)}
                       </Text>{' '}
                       <Plural
                         value={post.repostCount}
                         one="repost"
                         other="reposts"
+                      />
+                    </Text>
+                  </Link>
+                ) : null}
+                {post.quoteCount != null &&
+                post.quoteCount !== 0 &&
+                !post.viewer?.embeddingDisabled ? (
+                  <Link
+                    style={styles.expandedInfoItem}
+                    href={quotesHref}
+                    title={quotesTitle}>
+                    <Text
+                      testID="quoteCount-expanded"
+                      type="lg"
+                      style={pal.textLight}>
+                      <Text type="xl-bold" style={pal.text}>
+                        {formatCount(i18n, post.quoteCount)}
+                      </Text>{' '}
+                      <Plural
+                        value={post.quoteCount}
+                        one="quote"
+                        other="quotes"
                       />
                     </Text>
                   </Link>
@@ -387,7 +442,7 @@ let PostThreadItemLoaded = ({
                       type="lg"
                       style={pal.textLight}>
                       <Text type="xl-bold" style={pal.text}>
-                        {formatCount(post.likeCount)}
+                        {formatCount(i18n, post.likeCount)}
                       </Text>{' '}
                       <Plural value={post.likeCount} one="like" other="likes" />
                     </Text>
@@ -402,12 +457,13 @@ let PostThreadItemLoaded = ({
                 record={record}
                 richText={richText}
                 onPressReply={onPressReply}
+                onPostReply={onPostReply}
                 logContext="PostThreadItem"
+                threadgateRecord={threadgateRecord}
               />
             </View>
           </View>
         </View>
-        <WhoCanReply post={post} />
       </>
     )
   } else {
@@ -417,187 +473,174 @@ let PostThreadItemLoaded = ({
     const isThreadedChildAdjacentBot =
       isThreadedChild && nextPost?.ctx.depth === depth
     return (
-      <>
-        <PostOuterWrapper
-          post={post}
-          depth={depth}
-          showParentReplyLine={!!showParentReplyLine}
-          treeView={treeView}
-          hasPrecedingItem={hasPrecedingItem}
-          hideTopBorder={hideTopBorder}>
-          <PostHider
-            testID={`postThreadItem-by-${post.author.handle}`}
-            href={postHref}
-            disabled={overrideBlur}
-            style={[pal.view]}
-            modui={moderation.ui('contentList')}
-            iconSize={isThreadedChild ? 26 : 38}
-            iconStyles={
-              isThreadedChild
-                ? {marginRight: 4}
-                : {marginLeft: 2, marginRight: 2}
-            }
-            profile={post.author}
-            interpretFilterAsBlur>
-            <View
-              style={{
-                flexDirection: 'row',
-                gap: 10,
-                paddingLeft: 8,
-                height: isThreadedChildAdjacentTop ? 8 : 16,
-              }}>
-              <View style={{width: 38}}>
-                {!isThreadedChild && showParentReplyLine && (
+      <PostOuterWrapper
+        post={post}
+        depth={depth}
+        showParentReplyLine={!!showParentReplyLine}
+        treeView={treeView}
+        hasPrecedingItem={hasPrecedingItem}
+        hideTopBorder={hideTopBorder}>
+        <PostHider
+          testID={`postThreadItem-by-${post.author.handle}`}
+          href={postHref}
+          disabled={overrideBlur}
+          style={[pal.view]}
+          modui={moderation.ui('contentList')}
+          iconSize={isThreadedChild ? 26 : 38}
+          iconStyles={
+            isThreadedChild ? {marginRight: 4} : {marginLeft: 2, marginRight: 2}
+          }
+          profile={post.author}
+          interpretFilterAsBlur>
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: 10,
+              paddingLeft: 8,
+              height: isThreadedChildAdjacentTop ? 8 : 16,
+            }}>
+            <View style={{width: 38}}>
+              {!isThreadedChild && showParentReplyLine && (
+                <View
+                  style={[
+                    styles.replyLine,
+                    {
+                      flexGrow: 1,
+                      backgroundColor: pal.colors.replyLine,
+                      marginBottom: 4,
+                    },
+                  ]}
+                />
+              )}
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.layout,
+              {
+                paddingBottom:
+                  showChildReplyLine && !isThreadedChild
+                    ? 0
+                    : isThreadedChildAdjacentBot
+                    ? 4
+                    : 8,
+              },
+            ]}>
+            {/* If we are in threaded mode, the avatar is rendered in PostMeta */}
+            {!isThreadedChild && (
+              <View style={styles.layoutAvi}>
+                <PreviewableUserAvatar
+                  size={38}
+                  profile={post.author}
+                  moderation={moderation.ui('avatar')}
+                  type={post.author.associated?.labeler ? 'labeler' : 'user'}
+                />
+
+                {showChildReplyLine && (
                   <View
                     style={[
                       styles.replyLine,
                       {
                         flexGrow: 1,
                         backgroundColor: pal.colors.replyLine,
-                        marginBottom: 4,
+                        marginTop: 4,
                       },
                     ]}
                   />
                 )}
               </View>
-            </View>
+            )}
 
             <View
-              style={[
-                styles.layout,
-                {
-                  paddingBottom:
-                    showChildReplyLine && !isThreadedChild
-                      ? 0
-                      : isThreadedChildAdjacentBot
-                      ? 4
-                      : 8,
-                },
-              ]}>
-              {/* If we are in threaded mode, the avatar is rendered in PostMeta */}
-              {!isThreadedChild && (
-                <View style={styles.layoutAvi}>
-                  <PreviewableUserAvatar
-                    size={38}
-                    profile={post.author}
-                    moderation={moderation.ui('avatar')}
-                    type={post.author.associated?.labeler ? 'labeler' : 'user'}
+              style={
+                isThreadedChild
+                  ? styles.layoutContentThreaded
+                  : styles.layoutContent
+              }>
+              <PostMeta
+                author={post.author}
+                moderation={moderation}
+                authorHasWarning={!!post.author.labels?.length}
+                timestamp={post.indexedAt}
+                postHref={postHref}
+                showAvatar={isThreadedChild}
+                avatarModeration={moderation.ui('avatar')}
+                avatarSize={28}
+                displayNameType="md-bold"
+                displayNameStyle={isThreadedChild && s.ml2}
+                style={
+                  isThreadedChild && {
+                    alignItems: 'center',
+                    paddingBottom: isWeb ? 5 : 2,
+                  }
+                }
+              />
+              <LabelsOnMyPost post={post} />
+              <PostAlerts
+                modui={moderation.ui('contentList')}
+                style={[a.pt_2xs, a.pb_2xs]}
+                additionalCauses={additionalPostAlerts}
+              />
+              {richText?.text ? (
+                <View style={styles.postTextContainer}>
+                  <RichText
+                    enableTags
+                    value={richText}
+                    style={[a.flex_1, a.text_md]}
+                    numberOfLines={limitLines ? MAX_POST_LINES : undefined}
+                    authorHandle={post.author.handle}
                   />
-
-                  {showChildReplyLine && (
-                    <View
-                      style={[
-                        styles.replyLine,
-                        {
-                          flexGrow: 1,
-                          backgroundColor: pal.colors.replyLine,
-                          marginTop: 4,
-                        },
-                      ]}
-                    />
-                  )}
+                </View>
+              ) : undefined}
+              {limitLines ? (
+                <TextLink
+                  text={_(msg`Show More`)}
+                  style={pal.link}
+                  onPress={onPressShowMore}
+                  href="#"
+                />
+              ) : undefined}
+              {post.embed && (
+                <View style={[a.pb_xs]}>
+                  <PostEmbeds embed={post.embed} moderation={moderation} />
                 </View>
               )}
-
-              <View
-                style={
-                  isThreadedChild
-                    ? styles.layoutContentThreaded
-                    : styles.layoutContent
-                }>
-                <PostMeta
-                  author={post.author}
-                  moderation={moderation}
-                  authorHasWarning={!!post.author.labels?.length}
-                  timestamp={post.indexedAt}
-                  postHref={postHref}
-                  showAvatar={isThreadedChild}
-                  avatarModeration={moderation.ui('avatar')}
-                  avatarSize={28}
-                  displayNameType="md-bold"
-                  displayNameStyle={isThreadedChild && s.ml2}
-                  style={
-                    isThreadedChild && {
-                      alignItems: 'center',
-                      paddingBottom: isWeb ? 5 : 2,
-                    }
-                  }
-                />
-                <LabelsOnMyPost post={post} />
-                <PostAlerts
-                  modui={moderation.ui('contentList')}
-                  style={[a.pt_2xs, a.pb_2xs]}
-                />
-                {richText?.text ? (
-                  <View style={styles.postTextContainer}>
-                    <RichText
-                      enableTags
-                      value={richText}
-                      style={[a.flex_1, a.text_md]}
-                      numberOfLines={limitLines ? MAX_POST_LINES : undefined}
-                      authorHandle={post.author.handle}
-                    />
-                  </View>
-                ) : undefined}
-                {limitLines ? (
-                  <TextLink
-                    text={_(msg`Show More`)}
-                    style={pal.link}
-                    onPress={onPressShowMore}
-                    href="#"
-                  />
-                ) : undefined}
-                {post.embed && (
-                  <View style={[a.pb_xs]}>
-                    <PostEmbeds
-                      embed={post.embed}
-                      moderation={moderation}
-                      handle={post.author.handle}
-                      rkey={rkey}
-                    />
-                  </View>
-                )}
-                <PostCtrls
-                  post={post}
-                  record={record}
-                  richText={richText}
-                  onPressReply={onPressReply}
-                  logContext="PostThreadItem"
-                />
-              </View>
+              <PostCtrls
+                post={post}
+                record={record}
+                richText={richText}
+                onPressReply={onPressReply}
+                logContext="PostThreadItem"
+                threadgateRecord={threadgateRecord}
+              />
             </View>
-            {hasMore ? (
-              <Link
-                style={[
-                  styles.loadMore,
-                  {
-                    paddingLeft: treeView ? 8 : 70,
-                    paddingTop: 0,
-                    paddingBottom: treeView ? 4 : 12,
-                  },
-                ]}
-                href={postHref}
-                title={itemTitle}
-                noFeedback>
-                <Text type="sm-medium" style={pal.textLight}>
-                  <Trans>More</Trans>
-                </Text>
-                <FontAwesomeIcon
-                  icon="angle-right"
-                  color={pal.colors.textLight}
-                  size={14}
-                />
-              </Link>
-            ) : undefined}
-          </PostHider>
-        </PostOuterWrapper>
-        <WhoCanReply
-          post={post}
-          style={{
-            marginTop: 4,
-          }}
-        />
-      </>
+          </View>
+          {hasMore ? (
+            <Link
+              style={[
+                styles.loadMore,
+                {
+                  paddingLeft: treeView ? 8 : 70,
+                  paddingTop: 0,
+                  paddingBottom: treeView ? 4 : 12,
+                },
+              ]}
+              href={postHref}
+              title={itemTitle}
+              noFeedback>
+              <Text type="sm-medium" style={pal.textLight}>
+                <Trans>More</Trans>
+              </Text>
+              <FontAwesomeIcon
+                icon="angle-right"
+                color={pal.colors.textLight}
+                size={14}
+              />
+            </Link>
+          ) : undefined}
+        </PostHider>
+      </PostOuterWrapper>
     )
   }
 }
@@ -630,7 +673,7 @@ function PostOuterWrapper({
           {
             flexDirection: 'row',
             paddingHorizontal: isMobile ? 10 : 6,
-            borderTopWidth: depth === 1 ? hairlineWidth : 0,
+            borderTopWidth: depth === 1 ? StyleSheet.hairlineWidth : 0,
           },
         ]}>
         {Array.from(Array(depth - 1)).map((_, n: number) => (
@@ -664,30 +707,46 @@ function PostOuterWrapper({
 
 function ExpandedPostDetails({
   post,
+  isThreadAuthor,
   needsTranslation,
   translatorUrl,
 }: {
   post: AppBskyFeedDefs.PostView
+  isThreadAuthor: boolean
   needsTranslation: boolean
   translatorUrl: string
 }) {
   const pal = usePalette('default')
-  const {_} = useLingui()
+  const {_, i18n} = useLingui()
   const openLink = useOpenLink()
+  const isRootPost = !('reply' in post.record)
 
   const onTranslatePress = React.useCallback(() => {
     openLink(translatorUrl)
   }, [openLink, translatorUrl])
 
   return (
-    <View style={[s.flexRow, s.mt2, s.mb10]}>
-      <Text style={pal.textLight}>{niceDate(post.indexedAt)}</Text>
+    <View
+      style={[
+        a.flex_row,
+        a.align_center,
+        a.flex_wrap,
+        a.gap_xs,
+        s.mt2,
+        s.mb10,
+      ]}>
+      <Text style={[a.text_sm, pal.textLight]}>
+        {niceDate(i18n, post.indexedAt)}
+      </Text>
+      {isRootPost && (
+        <WhoCanReply post={post} isThreadAuthor={isThreadAuthor} />
+      )}
       {needsTranslation && (
         <>
-          <Text style={pal.textLight}> &middot; </Text>
+          <Text style={[a.text_sm, pal.textLight]}>&middot;</Text>
 
           <Text
-            style={pal.link}
+            style={[a.text_sm, pal.link]}
             title={_(msg`Translate`)}
             onPress={onTranslatePress}>
             <Trans>Translate</Trans>
@@ -698,9 +757,23 @@ function ExpandedPostDetails({
   )
 }
 
+function getThreadAuthor(
+  post: AppBskyFeedDefs.PostView,
+  record: AppBskyFeedPost.Record,
+): string {
+  if (!record.reply) {
+    return post.author.did
+  }
+  try {
+    return new AtUri(record.reply.root.uri).host
+  } catch {
+    return ''
+  }
+}
+
 const styles = StyleSheet.create({
   outer: {
-    borderTopWidth: hairlineWidth,
+    borderTopWidth: StyleSheet.hairlineWidth,
     paddingLeft: 8,
   },
   outerHighlighted: {
@@ -710,7 +783,7 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   outerHighlightedRoot: {
-    borderTopWidth: hairlineWidth,
+    borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 16,
   },
   noTopBorder: {
@@ -744,6 +817,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingBottom: 4,
     paddingRight: 10,
+    overflow: 'hidden',
   },
   postTextLargeContainer: {
     paddingHorizontal: 0,
@@ -762,8 +836,8 @@ const styles = StyleSheet.create({
   expandedInfo: {
     flexDirection: 'row',
     padding: 10,
-    borderTopWidth: hairlineWidth,
-    borderBottomWidth: hairlineWidth,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     marginTop: 5,
     marginBottom: 10,
   },

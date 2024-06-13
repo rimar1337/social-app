@@ -12,16 +12,17 @@ import {msg, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {MAX_POST_LINES} from '#/lib/constants'
+import {usePalette} from '#/lib/hooks/usePalette'
 import {moderatePost_wrapped as moderatePost} from '#/lib/moderatePost_wrapped'
+import {makeProfileLink} from '#/lib/routes/links'
+import {countLines} from '#/lib/strings/helpers'
+import {colors, s} from '#/lib/styles'
 import {POST_TOMBSTONE, Shadow, usePostShadow} from '#/state/cache/post-shadow'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
+import {precacheProfile} from '#/state/queries/profile'
+import {useSession} from '#/state/session'
 import {useComposerControls} from '#/state/shell/composer'
-import {MAX_POST_LINES} from 'lib/constants'
-import {usePalette} from 'lib/hooks/usePalette'
-import {makeProfileLink} from 'lib/routes/links'
-import {countLines} from 'lib/strings/helpers'
-import {colors, s} from 'lib/styles'
-import {precacheProfile} from 'state/queries/profile'
 import {AviFollowButton} from '#/view/com/posts/AviFollowButton'
 import {atoms as a} from '#/alf'
 import {ProfileHoverCard} from '#/components/ProfileHoverCard'
@@ -36,7 +37,6 @@ import {PostMeta} from '../util/PostMeta'
 import {Text} from '../util/text/Text'
 import {PreviewableUserAvatar} from '../util/UserAvatar'
 import {UserInfoText} from '../util/UserInfoText'
-import hairlineWidth = StyleSheet.hairlineWidth
 
 export function Post({
   post,
@@ -145,13 +145,16 @@ function PostInner({
     precacheProfile(queryClient, post.author)
   }, [queryClient, post.author])
 
+  const {currentAccount} = useSession()
+  const isMe = replyAuthorDid === currentAccount?.did
+
   return (
     <Link
       href={itemHref}
       style={[
         styles.outer,
         pal.border,
-        !hideTopBorder && {borderTopWidth: hairlineWidth},
+        !hideTopBorder && {borderTopWidth: StyleSheet.hairlineWidth},
         style,
       ]}
       onBeforePress={onBeforePress}>
@@ -187,17 +190,21 @@ function PostInner({
                 style={[pal.textLight, s.mr2]}
                 lineHeight={1.2}
                 numberOfLines={1}>
-                <Trans context="description">
-                  Reply to{' '}
-                  <ProfileHoverCard inline did={replyAuthorDid}>
-                    <UserInfoText
-                      type="sm"
-                      did={replyAuthorDid}
-                      attr="displayName"
-                      style={[pal.textLight]}
-                    />
-                  </ProfileHoverCard>
-                </Trans>
+                {isMe ? (
+                  <Trans context="description">Reply to you</Trans>
+                ) : (
+                  <Trans context="description">
+                    Reply to{' '}
+                    <ProfileHoverCard inline did={replyAuthorDid}>
+                      <UserInfoText
+                        type="sm"
+                        did={replyAuthorDid}
+                        attr="displayName"
+                        style={[pal.textLight]}
+                      />
+                    </ProfileHoverCard>
+                  </Trans>
+                )}
               </Text>
             </View>
           )}
@@ -278,6 +285,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
+    overflow: 'hidden',
   },
   replyLine: {
     position: 'absolute',

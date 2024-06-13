@@ -1,17 +1,18 @@
 import React from 'react'
 import {View} from 'react-native'
 import {AppBskyActorDefs, moderateProfile, ModerationOpts} from '@atproto/api'
-import {msg, plural, Trans} from '@lingui/macro'
+import {msg, Plural, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
 import {makeProfileLink} from '#/lib/routes/links'
 import {sanitizeDisplayName} from 'lib/strings/display-names'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
 import {atoms as a, useTheme} from '#/alf'
-import {Link} from '#/components/Link'
+import {Link, LinkProps} from '#/components/Link'
 import {Text} from '#/components/Typography'
 
 const AVI_SIZE = 30
+const AVI_SIZE_SMALL = 20
 const AVI_BORDER = 1
 
 /**
@@ -29,9 +30,13 @@ export function shouldShowKnownFollowers(
 export function KnownFollowers({
   profile,
   moderationOpts,
+  onLinkPress,
+  minimal,
 }: {
   profile: AppBskyActorDefs.ProfileViewDetailed
   moderationOpts: ModerationOpts
+  onLinkPress?: LinkProps['onPress']
+  minimal?: boolean
 }) {
   const cache = React.useRef<Map<string, AppBskyActorDefs.KnownFollowers>>(
     new Map(),
@@ -56,6 +61,8 @@ export function KnownFollowers({
         profile={profile}
         cachedKnownFollowers={cachedKnownFollowers}
         moderationOpts={moderationOpts}
+        onLinkPress={onLinkPress}
+        minimal={minimal}
       />
     )
   }
@@ -67,10 +74,14 @@ function KnownFollowersInner({
   profile,
   moderationOpts,
   cachedKnownFollowers,
+  onLinkPress,
+  minimal,
 }: {
   profile: AppBskyActorDefs.ProfileViewDetailed
   moderationOpts: ModerationOpts
   cachedKnownFollowers: AppBskyActorDefs.KnownFollowers
+  onLinkPress?: LinkProps['onPress']
+  minimal?: boolean
 }) {
   const t = useTheme()
   const {_} = useLingui()
@@ -81,15 +92,6 @@ function KnownFollowersInner({
     a.leading_snug,
     t.atoms.text_contrast_medium,
   ]
-
-  // list of users, minus blocks
-  const returnedCount = cachedKnownFollowers.followers.length
-  // db count, includes blocks
-  const fullCount = cachedKnownFollowers.count
-  // knownFollowers can return up to 5 users, but will exclude blocks
-  // therefore, if we have less 5 users, use whichever count is lower
-  const count =
-    returnedCount < 5 ? Math.min(fullCount, returnedCount) : fullCount
 
   const slice = cachedKnownFollowers.followers.slice(0, 3).map(f => {
     const moderation = moderateProfile(f, moderationOpts)
@@ -105,16 +107,28 @@ function KnownFollowersInner({
     }
   })
 
+  // Does not have blocks applied. Always >= slices.length
+  const serverCount = cachedKnownFollowers.count
+
+  /*
+   * We check above too, but here for clarity and a reminder to _check for
+   * valid indices_
+   */
+  if (slice.length === 0) return null
+
+  const SIZE = minimal ? AVI_SIZE_SMALL : AVI_SIZE
+
   return (
     <Link
       label={_(
         msg`Press to view followers of this account that you also follow`,
       )}
+      onPress={onLinkPress}
       to={makeProfileLink(profile, 'known-followers')}
       style={[
         a.flex_1,
         a.flex_row,
-        a.gap_md,
+        minimal ? a.gap_sm : a.gap_md,
         a.align_center,
         {marginLeft: -AVI_BORDER},
       ]}>
@@ -123,8 +137,8 @@ function KnownFollowersInner({
           <View
             style={[
               {
-                height: AVI_SIZE,
-                width: AVI_SIZE + (slice.length - 1) * a.gap_md.gap,
+                height: SIZE,
+                width: SIZE + (slice.length - 1) * a.gap_md.gap,
               },
               pressed && {
                 opacity: 0.5,
@@ -139,14 +153,14 @@ function KnownFollowersInner({
                   {
                     borderWidth: AVI_BORDER,
                     borderColor: t.atoms.bg.backgroundColor,
-                    width: AVI_SIZE + AVI_BORDER * 2,
-                    height: AVI_SIZE + AVI_BORDER * 2,
+                    width: SIZE + AVI_BORDER * 2,
+                    height: SIZE + AVI_BORDER * 2,
                     left: i * a.gap_md.gap,
                     zIndex: AVI_BORDER - i,
                   },
                 ]}>
                 <UserAvatar
-                  size={AVI_SIZE}
+                  size={SIZE}
                   avatar={prof.avatar}
                   moderation={moderation.ui('avatar')}
                 />
@@ -166,31 +180,60 @@ function KnownFollowersInner({
               },
             ]}
             numberOfLines={2}>
-            <Trans>Followed by</Trans>{' '}
-            {count > 2 ? (
-              <>
-                {slice.slice(0, 2).map(({profile: prof}, i) => (
-                  <Text key={prof.did} style={textStyle}>
-                    {prof.displayName}
-                    {i === 0 && ', '}
+            {slice.length >= 2 ? (
+              // 2-n followers, including blocks
+              serverCount > 2 ? (
+                <Trans>
+                  Followed by{' '}
+                  <Text key={slice[0].profile.did} style={textStyle}>
+                    {slice[0].profile.displayName}
                   </Text>
-                ))}
-                {', '}
-                {plural(count - 2, {
-                  one: 'and # other',
-                  other: 'and # others',
-                })}
-              </>
-            ) : count === 2 ? (
-              slice.map(({profile: prof}, i) => (
-                <Text key={prof.did} style={textStyle}>
-                  {prof.displayName} {i === 0 ? _(msg`and`) + ' ' : ''}
-                </Text>
-              ))
+                  ,{' '}
+                  <Text key={slice[1].profile.did} style={textStyle}>
+                    {slice[1].profile.displayName}
+                  </Text>
+                  , and{' '}
+                  <Plural
+                    value={serverCount - 2}
+                    one="# other"
+                    other="# others"
+                  />
+                </Trans>
+              ) : (
+                // only 2
+                <Trans>
+                  Followed by{' '}
+                  <Text key={slice[0].profile.did} style={textStyle}>
+                    {slice[0].profile.displayName}
+                  </Text>{' '}
+                  and{' '}
+                  <Text key={slice[1].profile.did} style={textStyle}>
+                    {slice[1].profile.displayName}
+                  </Text>
+                </Trans>
+              )
+            ) : serverCount > 1 ? (
+              // 1-n followers, including blocks
+              <Trans>
+                Followed by{' '}
+                <Text key={slice[0].profile.did} style={textStyle}>
+                  {slice[0].profile.displayName}
+                </Text>{' '}
+                and{' '}
+                <Plural
+                  value={serverCount - 1}
+                  one="# other"
+                  other="# others"
+                />
+              </Trans>
             ) : (
-              <Text key={slice[0].profile.did} style={textStyle}>
-                {slice[0].profile.displayName}
-              </Text>
+              // only 1
+              <Trans>
+                Followed by{' '}
+                <Text key={slice[0].profile.did} style={textStyle}>
+                  {slice[0].profile.displayName}
+                </Text>
+              </Trans>
             )}
           </Text>
         </>

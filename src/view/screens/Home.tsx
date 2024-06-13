@@ -7,6 +7,7 @@ import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {useSetTitle} from '#/lib/hooks/useSetTitle'
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {logEvent, LogEvents} from '#/lib/statsig/statsig'
+import {useGate} from '#/lib/statsig/statsig'
 import {emitSoftReset} from '#/state/events'
 import {SavedFeedSourceInfo, usePinnedFeedsInfos} from '#/state/queries/feed'
 import {FeedParams} from '#/state/queries/post-feed'
@@ -30,11 +31,28 @@ import {FollowingEndOfFeed} from 'view/com/posts/FollowingEndOfFeed'
 import {NoFeedsPinned} from '#/screens/Home/NoFeedsPinned'
 import {HomeHeader} from '../com/home/HomeHeader'
 
-type Props = NativeStackScreenProps<HomeTabNavigatorParams, 'Home'>
+type Props = NativeStackScreenProps<HomeTabNavigatorParams, 'Home' | 'Start'>
 export function HomeScreen(props: Props) {
   const {data: preferences} = usePreferencesQuery()
+  const {currentAccount} = useSession()
   const {data: pinnedFeedInfos, isLoading: isPinnedFeedsLoading} =
     usePinnedFeedsInfos()
+
+  React.useEffect(() => {
+    const params = props.route.params
+    if (
+      currentAccount &&
+      props.route.name === 'Start' &&
+      params?.name &&
+      params?.rkey
+    ) {
+      props.navigation.navigate('StarterPack', {
+        rkey: params.rkey,
+        name: params.name,
+      })
+    }
+  }, [currentAccount, props.navigation, props.route.name, props.route.params])
+
   if (preferences && pinnedFeedInfos && !isPinnedFeedsLoading) {
     return (
       <HomeScreenReady
@@ -69,6 +87,7 @@ function HomeScreenReady({
   const selectedIndex = Math.max(0, maybeFoundIndex)
   const selectedFeed = allFeeds[selectedIndex]
   const requestNotificationsPermission = useRequestNotificationsPermission()
+  const gate = useGate()
 
   useSetTitle(pinnedFeedInfos[selectedIndex]?.displayName)
   useOTAUpdates()
@@ -115,13 +134,17 @@ function HomeScreenReady({
     }),
   )
 
-  const mode = useMinimalShellMode()
+  const {footerMode} = useMinimalShellMode()
   const {isMobile} = useWebMediaQueries()
   useFocusEffect(
     React.useCallback(() => {
+      if (gate('fixed_bottom_bar')) {
+        // Unnecessary because it's always there.
+        return
+      }
       const listener = AppState.addEventListener('change', nextAppState => {
         if (nextAppState === 'active') {
-          if (isMobile && mode.value === 1) {
+          if (isMobile && footerMode.value === 1) {
             // Reveal the bottom bar so you don't miss notifications or messages.
             // TODO: Experiment with only doing it when unread > 0.
             setMinimalShellMode(false)
@@ -131,7 +154,7 @@ function HomeScreenReady({
       return () => {
         listener.remove()
       }
-    }, [setMinimalShellMode, mode, isMobile]),
+    }, [setMinimalShellMode, footerMode, isMobile, gate]),
   )
 
   const onPageSelected = React.useCallback(

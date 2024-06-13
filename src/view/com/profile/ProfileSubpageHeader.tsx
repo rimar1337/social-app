@@ -15,13 +15,13 @@ import {makeProfileLink} from 'lib/routes/links'
 import {NavigationProp} from 'lib/routes/types'
 import {sanitizeHandle} from 'lib/strings/handles'
 import {isNative} from 'platform/detection'
+import {Menu_Stroke2_Corner0_Rounded as Menu} from '#/components/icons/Menu'
+import {StarterPack} from '#/components/icons/StarterPack'
 import {TextLink} from '../util/Link'
 import {LoadingPlaceholder} from '../util/LoadingPlaceholder'
 import {Text} from '../util/text/Text'
 import {UserAvatar, UserAvatarType} from '../util/UserAvatar'
 import {CenteredView} from '../util/Views'
-import hairlineWidth = StyleSheet.hairlineWidth
-import {Menu_Stroke2_Corner0_Rounded as Menu} from '#/components/icons/Menu'
 
 export function ProfileSubpageHeader({
   isLoading,
@@ -44,7 +44,7 @@ export function ProfileSubpageHeader({
         handle: string
       }
     | undefined
-  avatarType: UserAvatarType
+  avatarType: UserAvatarType | 'starter-pack'
 }>) {
   const setDrawerOpen = useSetDrawerOpen()
   const navigation = useNavigation<NavigationProp>()
@@ -82,7 +82,7 @@ export function ProfileSubpageHeader({
             {
               flexDirection: 'row',
               alignItems: 'center',
-              borderBottomWidth: hairlineWidth,
+              borderBottomWidth: StyleSheet.hairlineWidth,
               paddingTop: isNative ? 0 : 8,
               paddingBottom: 8,
               paddingHorizontal: isMobile ? 12 : 14,
@@ -127,7 +127,11 @@ export function ProfileSubpageHeader({
           accessibilityLabel={_(msg`View the avatar`)}
           accessibilityHint=""
           style={{width: 58}}>
-          <UserAvatar type={avatarType} size={58} avatar={avatar} />
+          {avatarType === 'starter-pack' ? (
+            <StarterPack width={58} gradient="sky" />
+          ) : (
+            <UserAvatar type={avatarType} size={58} avatar={avatar} />
+          )}
         </Pressable>
         <View style={{flex: 1}}>
           {isLoading ? (

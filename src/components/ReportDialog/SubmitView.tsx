@@ -60,15 +60,19 @@ export function SubmitView({
       reason: details,
     }
     const results = await Promise.all(
-      selectedServices.map(did =>
-        agent
-          .withProxy('atproto_labeler', did)
-          .createModerationReport(report)
+      selectedServices.map(did => {
+        return agent
+          .createModerationReport(report, {
+            encoding: 'application/json',
+            headers: {
+              'atproto-proxy': `${did}#atproto_labeler`,
+            },
+          })
           .then(
             _ => true,
             _ => false,
-          ),
-      ),
+          )
+      }),
     )
 
     setSubmitting(false)

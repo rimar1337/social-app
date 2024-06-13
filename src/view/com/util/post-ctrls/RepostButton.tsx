@@ -3,7 +3,7 @@ import {View} from 'react-native'
 import {msg, plural} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
-import {HITSLOP_10, HITSLOP_20} from '#/lib/constants'
+import {POST_CTRL_HITSLOP} from '#/lib/constants'
 import {useHaptics} from '#/lib/haptics'
 import {useRequireAuth} from '#/state/session'
 import {atoms as a, useTheme} from '#/alf'
@@ -12,6 +12,7 @@ import * as Dialog from '#/components/Dialog'
 import {CloseQuote_Stroke2_Corner1_Rounded as Quote} from '#/components/icons/Quote'
 import {Repost_Stroke2_Corner2_Rounded as Repost} from '#/components/icons/Repost'
 import {Text} from '#/components/Typography'
+import {formatCount} from '../numeric/format'
 
 interface Props {
   isReposted: boolean
@@ -20,6 +21,7 @@ interface Props {
   onQuote: () => void
   big?: boolean
   white?: boolean
+  embeddingDisabled: boolean
 }
 
 let RepostButton = ({
@@ -29,9 +31,10 @@ let RepostButton = ({
   onQuote,
   big,
   white,
+  embeddingDisabled,
 }: Props): React.ReactNode => {
   const t = useTheme()
-  const {_} = useLingui()
+  const {_, i18n} = useLingui()
   const requireAuth = useRequireAuth()
   const dialogControl = Dialog.useDialogControl()
   const playHaptic = useHaptics()
@@ -76,7 +79,7 @@ let RepostButton = ({
         shape="round"
         variant="ghost"
         color="secondary"
-        hitSlop={big ? HITSLOP_20 : HITSLOP_10}>
+        hitSlop={POST_CTRL_HITSLOP}>
         <Repost style={color} width={big ? 22 : 18} />
         {typeof repostCount !== 'undefined' && repostCount > 0 ? (
           <Text
@@ -86,7 +89,7 @@ let RepostButton = ({
               big ? a.text_md : {fontSize: 15},
               isReposted && a.font_bold,
             ]}>
-            {repostCount}
+            {formatCount(i18n, repostCount)}
           </Text>
         ) : undefined}
       </Button>
@@ -120,9 +123,14 @@ let RepostButton = ({
                 </Text>
               </Button>
               <Button
+                disabled={embeddingDisabled}
                 testID="quoteBtn"
                 style={[a.justify_start, a.px_md]}
-                label={_(msg`Quote post`)}
+                label={
+                  embeddingDisabled
+                    ? _(msg`Quote posts disabled`)
+                    : _(msg`Quote post`)
+                }
                 onPress={() => {
                   playHaptic()
                   dialogControl.close(() => {
@@ -132,9 +140,23 @@ let RepostButton = ({
                 size="large"
                 variant="ghost"
                 color="primary">
-                <Quote size="lg" fill={t.palette.primary_500} />
-                <Text style={[a.font_bold, a.text_xl]}>
-                  {_(msg`Quote post`)}
+                <Quote
+                  size="lg"
+                  fill={
+                    embeddingDisabled
+                      ? t.atoms.text_contrast_low.color
+                      : t.palette.primary_500
+                  }
+                />
+                <Text
+                  style={[
+                    a.font_bold,
+                    a.text_xl,
+                    embeddingDisabled && t.atoms.text_contrast_low,
+                  ]}>
+                  {embeddingDisabled
+                    ? _(msg`Quote posts disabled`)
+                    : _(msg`Quote post`)}
                 </Text>
               </Button>
             </View>
