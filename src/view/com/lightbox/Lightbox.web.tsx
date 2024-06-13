@@ -74,10 +74,12 @@ export function LightboxInner({
   imgs,
   initialIndex = 0,
   onClose,
+  PostThread,
 }: {
   imgs: Img[]
   initialIndex: number
   onClose: () => void
+  PostThread?: boolean
 }) {
   const {_} = useLingui()
   const [index, setIndex] = useState<number>(initialIndex)
@@ -123,7 +125,7 @@ export function LightboxInner({
   }, [isTabletOrDesktop])
 
   return (
-    <View style={styles.mask}>
+    <View style={[PostThread ? styles.maskPostThread : styles.mask]}>
       <TouchableWithoutFeedback
         onPress={onClose}
         accessibilityRole="button"
@@ -135,7 +137,7 @@ export function LightboxInner({
             accessibilityIgnoresInvertColors
             source={imgs[index]}
             style={styles.image as ImageStyle}
-            accessibilityLabel={imgs[index].alt ?? ''}
+            accessibilityLabel={'alt' in imgs ? imgs[index].alt : ''}
             accessibilityHint=""
           />
           {canGoLeft && (
@@ -197,7 +199,7 @@ export function LightboxInner({
           </Pressable>
         </View>
       ) : null}
-      <View style={styles.closeBtn}>
+      <View style={[PostThread ? styles.closeBtnPostThread : styles.closeBtn]}>
         <ImageDefaultHeader onRequestClose={onClose} />
       </View>
     </View>
@@ -212,6 +214,12 @@ const styles = StyleSheet.create({
     left: 0,
     width: '100%',
     height: '100%',
+    backgroundColor: '#000c',
+  },
+  maskPostThread: {
+    top: 0,
+    left: 0,
+    flex: 1,
     backgroundColor: '#000c',
   },
   imageCenterer: {
@@ -231,6 +239,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
+  },
+  closeBtnPostThread: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
   },
   btn: {
     position: 'absolute',

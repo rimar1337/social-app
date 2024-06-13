@@ -95,6 +95,10 @@ export function useTheme() {
   return React.useContext(Context).theme
 }
 
+export function useThemeExplicit(themeName: themes.ThemeName): themes.Theme {
+  return themes[themeName]
+}
+
 export function useBreakpoints() {
   return React.useContext(Context).breakpoints
 }

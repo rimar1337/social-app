@@ -72,6 +72,7 @@ let PostDropdownBtn = ({
   hitSlop,
   size,
   timestamp,
+  white,
 }: {
   testID: string
   postAuthor: AppBskyActorDefs.ProfileViewBasic
@@ -84,13 +85,14 @@ let PostDropdownBtn = ({
   hitSlop?: PressableProps['hitSlop']
   size?: 'lg' | 'md' | 'sm'
   timestamp: string
+  white?: boolean
 }): React.ReactNode => {
   const {hasSession, currentAccount} = useSession()
   const theme = useTheme()
   const alf = useAlf()
   const {gtMobile} = useBreakpoints()
   const {_} = useLingui()
-  const defaultCtrlColor = theme.palette.default.postCtrl
+  const defaultCtrlColor = white ? '#FFF' : theme.palette.default.postCtrl
   const langPrefs = useLanguagePrefs()
   const mutedThreads = useMutedThreads()
   const toggleThreadMute = useToggleThreadMute()

@@ -5,7 +5,7 @@ import {useLingui} from '@lingui/react'
 
 import {useRequireAuth} from '#/state/session'
 import {useSession} from '#/state/session'
-import {atoms as a, useTheme} from '#/alf'
+import {atoms as a, useTheme, useThemeExplicit} from '#/alf'
 import {Button} from '#/components/Button'
 import {CloseQuote_Stroke2_Corner1_Rounded as Quote} from '#/components/icons/Quote'
 import {Repost_Stroke2_Corner2_Rounded as Repost} from '#/components/icons/Repost'
@@ -19,6 +19,7 @@ interface Props {
   onRepost: () => void
   onQuote: () => void
   big?: boolean
+  white?: boolean
 }
 
 export const RepostButton = ({
@@ -27,17 +28,23 @@ export const RepostButton = ({
   onRepost,
   onQuote,
   big,
+  white,
 }: Props) => {
   const t = useTheme()
+  const tWhite = useThemeExplicit('dark')
   const {_} = useLingui()
   const {hasSession} = useSession()
   const requireAuth = useRequireAuth()
 
   const color = React.useMemo(
     () => ({
-      color: isReposted ? t.palette.positive_600 : t.palette.contrast_500,
+      color: isReposted
+        ? t.palette.positive_600
+        : white
+        ? tWhite.palette.contrast_975
+        : t.palette.contrast_500,
     }),
-    [t, isReposted],
+    [isReposted, t, tWhite, white],
   )
 
   return hasSession ? (

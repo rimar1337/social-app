@@ -29,7 +29,7 @@ import {
 } from '#/state/queries/post'
 import {useRequireAuth} from '#/state/session'
 import {useComposerControls} from '#/state/shell/composer'
-import {atoms as a, useTheme} from '#/alf'
+import {atoms as a, useTheme, useThemeExplicit} from '#/alf'
 import {useDialogControl} from '#/components/Dialog'
 import {ArrowOutOfBox_Stroke2_Corner0_Rounded as ArrowOutOfBox} from '#/components/icons/ArrowOutOfBox'
 import {Bubble_Stroke2_Corner2_Rounded as Bubble} from '#/components/icons/Bubble'
@@ -44,6 +44,7 @@ import {RepostButton} from './RepostButton'
 
 let PostCtrls = ({
   big,
+  white,
   post,
   record,
   richText,
@@ -53,6 +54,7 @@ let PostCtrls = ({
   logContext,
 }: {
   big?: boolean
+  white?: boolean
   post: Shadow<AppBskyFeedDefs.PostView>
   record: AppBskyFeedPost.Record
   richText: RichTextAPI
@@ -62,6 +64,7 @@ let PostCtrls = ({
   logContext: 'FeedItem' | 'PostThreadItem' | 'Post'
 }): React.ReactNode => {
   const t = useTheme()
+  const tWhite = useThemeExplicit('dark')
   const {_} = useLingui()
   const {openComposer} = useComposerControls()
   const [queueLike, queueUnlike] = usePostLikeMutationQueue(post, logContext)
@@ -82,9 +85,9 @@ let PostCtrls = ({
 
   const defaultCtrlColor = React.useMemo(
     () => ({
-      color: t.palette.contrast_500,
+      color: white ? tWhite.palette.contrast_975 : t.palette.contrast_500,
     }),
-    [t],
+    [t, tWhite, white],
   ) as StyleProp<ViewStyle>
 
   const onPressToggleLike = React.useCallback(async () => {
@@ -231,6 +234,7 @@ let PostCtrls = ({
       </View>
       <View style={big ? a.align_center : [a.flex_1, a.align_start]}>
         <RepostButton
+          white={white}
           isReposted={!!post.viewer?.repost}
           repostCount={post.repostCount}
           onRepost={onRepost}
@@ -316,6 +320,7 @@ let PostCtrls = ({
       )}
       <View style={big ? a.align_center : [a.flex_1, a.align_start]}>
         <PostDropdownBtn
+          white={white}
           testID="postDropdownBtn"
           postAuthor={post.author}
           postCid={post.cid}

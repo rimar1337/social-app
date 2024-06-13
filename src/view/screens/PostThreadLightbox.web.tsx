@@ -1,66 +1,34 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
+import {StyleSheet, View} from 'react-native'
 import {
-  Image,
-  ImageStyle,
-  Pressable,
-  StyleSheet,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-  ViewStyle,
-} from 'react-native'
-import {RichText as RichTextAPI} from '@atproto/api'
-import {
-  FontAwesomeIcon,
-  FontAwesomeIconStyle,
-} from '@fortawesome/react-native-fontawesome'
-import {msg} from '@lingui/macro'
-import {useLingui} from '@lingui/react'
-//import Animated from 'react-native-reanimated'
-//import {useSafeAreaInsets} from 'react-native-safe-area-context'
+  AppBskyFeedDefs,
+  AppBskyFeedPost,
+  RichText as RichTextAPI,
+} from '@atproto/api'
 import {useFocusEffect, useNavigation} from '@react-navigation/native'
 import {useQueryClient} from '@tanstack/react-query'
 
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
-import {usePostShadow} from '#/state/cache/post-shadow'
-//import {clamp} from 'lodash'
+import {POST_TOMBSTONE, usePostShadow} from '#/state/cache/post-shadow'
 import {useImages} from '#/state/lightbox'
 import {
-  //fillThreadModerationCache,
   RQKEY as POST_THREAD_RQKEY,
-  //sortThread,
-  //ThreadBlocked,
-  //ThreadModerationCache,
   ThreadNode,
-  //ThreadNotFound,
-  //ThreadPost,
   usePostThreadQuery,
 } from '#/state/queries/post-thread'
-//import {useSession} from '#/state/session'
 import {useSetMinimalShellMode} from '#/state/shell'
 import {useComposerControls} from '#/state/shell/composer'
-//import {useMinimalShellFabTransform} from 'lib/hooks/useMinimalShellTransform'
-//import {useWebMediaQueries} from 'lib/hooks/useWebMediaQueries'
 import {
   CommonNavigatorParams,
   NativeStackScreenProps,
   NavigationProp,
 } from 'lib/routes/types'
 import {makeRecordUri} from 'lib/strings/url-helpers'
-import {colors, s} from 'lib/styles'
-//import {LightboxInner} from '../com/lightbox/Lightbox.web'
 import ImageDefaultHeader from '../com/lightbox/ImageViewing/components/ImageDefaultHeader'
-//import {s} from 'lib/styles'
-//import {ComposePrompt} from 'view/com/composer/Prompt'
+import {LightboxInner} from '../com/lightbox/Lightbox.web'
 import {PostThread} from '../com/post-thread/PostThread'
 import {PostCtrls} from '../com/util/post-ctrls/PostCtrls'
-import {Text} from '../com/util/text/Text'
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'PostThreadLightbox'>
-
-// interface ImagesLightboxItem {
-//   uri: string
-//   alt?: string
-// }
 
 interface Img {
   uri: string
@@ -69,25 +37,16 @@ interface Img {
 
 export function PostThreadLightboxScreen({route}: Props) {
   const queryClient = useQueryClient()
-  //const {hasSession} = useSession()
-  //const fabMinimalShellTransform = useMinimalShellFabTransform()
   const setMinimalShellMode = useSetMinimalShellMode()
   const {openComposer} = useComposerControls()
-  //const safeAreaInsets = useSafeAreaInsets()
   const {name, rkey, page} = route.params
   const navigation = useNavigation<NavigationProp>()
-  //const {isMobile} = useWebMediaQueries()
   const uri = makeRecordUri(name, 'app.bsky.feed.post', rkey)
   const {images} = useImages()
-  // Convert ImagesLightboxItem[] | null to Img[]
   let earlyReturn: boolean = false
+  const [toggle, setToggle] = useState(true)
 
-  // please get imgs properly by itself, this is a hack
-  if (
-    !images ||
-    //!images[0].alt ||
-    images.length === 0
-  ) {
+  if (!images || images.length === 0) {
     navigation.replace('PostThread', {
       name: name,
       rkey: rkey,
@@ -97,7 +56,6 @@ export function PostThreadLightboxScreen({route}: Props) {
   const imgs: Img[] = images
     ? images.map(img => ({uri: img.uri, alt: img.alt ?? ''}))
     : []
-
   //const [canReply, setCanReply] = React.useState(false)
 
   useFocusEffect(
@@ -137,68 +95,108 @@ export function PostThreadLightboxScreen({route}: Props) {
       navigation.navigate('Home')
     }
   }, [navigation])
+
   if (earlyReturn) {
     return null
   }
   return (
     <View style={styles.container}>
       <View style={styles.lightboxInternal}>
-        <LightboxInternal
+        <LightboxInner
           imgs={imgs}
-          initialIndex={page || 1}
+          initialIndex={page ? page - 1 : 0}
           onClose={onPressBack}
+          PostThread
         />
+        <View style={[styles.toggleBtn]}>
+          <ImageDefaultHeader
+            onRequestClose={() => setToggle(!toggle)}
+            toggle={toggle}
+          />
+        </View>
         <View style={styles.bottomCtrls}>
-          <BottomCtrls uri={uri} onPressReply={onPressReply} />
+          <BottomCtrlsWrapper uri={uri} onPressReply={onPressReply} />
         </View>
       </View>
-      {!isTabletOrMobile ? (
+      {!isTabletOrMobile && toggle ? (
         <View style={styles.postThreadInternal}>
           <PostThread
             uri={uri}
             onPressReply={onPressReply}
-            onCanReply={() => false}
+            onCanReply={() => true}
             imageGridDisabled={true}
           />
         </View>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </View>
   )
 }
-function BottomCtrls({
-  uri,
-  onPressReply,
-}: {
+interface BottomCtrlsProps {
   uri?: string
   onPressReply: () => void
-}) {
-  const {
-    // isFetching,
-    // isError: isThreadError,
-    // error: threadError,
-    // refetch,
-    data: thread,
-  } = usePostThreadQuery(uri)
+}
+interface BottomCtrlsWrapperProps {
+  uri?: string
+  onPressReply: () => void
+}
 
-  const rootPost = thread?.type === 'post' ? thread.post : undefined
-  const rootPostRecord = thread?.type === 'post' ? thread.record : undefined
-
-  const richText = useMemo(
-    () =>
-      new RichTextAPI({
-        text: rootPostRecord.text,
-        facets: rootPostRecord.facets,
-      }),
-    [rootPostRecord],
+const BottomCtrlsWrapper: React.FC<BottomCtrlsWrapperProps> = ({
+  uri,
+  onPressReply,
+}) => {
+  const {data: thread} = usePostThreadQuery(uri)
+  const [rootPost, setRootPost] = useState<AppBskyFeedDefs.PostView | null>(
+    null,
   )
+  const [rootPostRecord, setRootPostRecord] =
+    useState<AppBskyFeedPost.Record | null>(null)
+
+  useEffect(() => {
+    if (thread?.type === 'post') {
+      setRootPost(thread.post)
+      setRootPostRecord(thread.record)
+    }
+  }, [thread])
+
+  if (!rootPost || !rootPostRecord) {
+    return null
+  }
+  return (
+    <BottomCtrls
+      rootPost={rootPost}
+      rootPostRecord={rootPostRecord}
+      onPressReply={onPressReply}
+    />
+  )
+}
+
+interface BottomCtrlsProps {
+  rootPost: AppBskyFeedDefs.PostView
+  rootPostRecord: AppBskyFeedPost.Record
+  onPressReply: () => void
+}
+
+const BottomCtrls: React.FC<BottomCtrlsProps> = ({
+  rootPost,
+  rootPostRecord,
+  onPressReply,
+}) => {
+  const richText = useMemo(() => {
+    return new RichTextAPI({
+      text: rootPostRecord.text || '',
+      facets: rootPostRecord.facets || [],
+    })
+  }, [rootPostRecord])
 
   const postShadowed = usePostShadow(rootPost)
 
+  if (!postShadowed || postShadowed === POST_TOMBSTONE) {
+    return null
+  }
   return (
     <PostCtrls
       big
+      white={true}
       post={postShadowed}
       record={rootPostRecord}
       richText={richText}
@@ -208,179 +206,12 @@ function BottomCtrls({
   )
 }
 
-function LightboxInternal({
-  imgs,
-  initialIndex = 0,
-  onClose,
-}: {
-  imgs: Img[]
-  initialIndex: number
-  onClose: () => void
-}) {
-  const {_} = useLingui()
-  const [index, setIndex] = useState<number>(initialIndex - 1)
-  const [isAltExpanded, setAltExpanded] = useState(false)
-
-  const canGoLeft = index >= 1
-  const canGoRight = index < imgs.length - 1
-  const onPressLeft = useCallback(() => {
-    if (canGoLeft) {
-      setIndex(index - 1)
-    }
-  }, [index, canGoLeft])
-  const onPressRight = useCallback(() => {
-    if (canGoRight) {
-      setIndex(index + 1)
-    }
-  }, [index, canGoRight])
-
-  const onKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-      } else if (e.key === 'ArrowLeft') {
-        onPressLeft()
-      } else if (e.key === 'ArrowRight') {
-        onPressRight()
-      }
-    },
-    [onClose, onPressLeft, onPressRight],
-  )
-
-  useEffect(() => {
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [onKeyDown])
-
-  const {isTabletOrDesktop} = useWebMediaQueries()
-  const btnStyle = React.useMemo(() => {
-    return isTabletOrDesktop ? styles.btnTablet : styles.btnMobile
-  }, [isTabletOrDesktop])
-  const iconSize = React.useMemo(() => {
-    return isTabletOrDesktop ? 32 : 24
-  }, [isTabletOrDesktop])
-
-  return (
-    <View style={styles.mask}>
-      <TouchableWithoutFeedback
-        onPress={onClose}
-        accessibilityRole="button"
-        accessibilityLabel={_(msg`Close image viewer`)}
-        accessibilityHint={_(msg`Exits image view`)}
-        onAccessibilityEscape={onClose}>
-        <View style={styles.imageCenterer}>
-          <Image
-            accessibilityIgnoresInvertColors
-            source={imgs[index]}
-            style={styles.image as ImageStyle}
-            accessibilityLabel={imgs[index].alt ?? ''}
-            accessibilityHint=""
-          />
-          {canGoLeft && (
-            <TouchableOpacity
-              onPress={onPressLeft}
-              style={[
-                styles.btn,
-                btnStyle,
-                styles.leftBtn,
-                styles.blurredBackground,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={_(msg`Previous image`)}
-              accessibilityHint="">
-              <FontAwesomeIcon
-                icon="angle-left"
-                style={styles.icon as FontAwesomeIconStyle}
-                size={iconSize}
-              />
-            </TouchableOpacity>
-          )}
-          {canGoRight && (
-            <TouchableOpacity
-              onPress={onPressRight}
-              style={[
-                styles.btn,
-                btnStyle,
-                styles.rightBtn,
-                styles.blurredBackground,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={_(msg`Next image`)}
-              accessibilityHint="">
-              <FontAwesomeIcon
-                icon="angle-right"
-                style={styles.icon as FontAwesomeIconStyle}
-                size={iconSize}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-      </TouchableWithoutFeedback>
-      {imgs[index].alt ? (
-        <View style={styles.footer}>
-          <Pressable
-            accessibilityLabel={_(msg`Expand alt text`)}
-            accessibilityHint={_(
-              msg`If alt text is long, toggles alt text expanded state`,
-            )}
-            onPress={() => {
-              setAltExpanded(!isAltExpanded)
-            }}>
-            <Text
-              style={s.white}
-              numberOfLines={isAltExpanded ? 0 : 3}
-              ellipsizeMode="tail">
-              {imgs[index].alt}
-            </Text>
-          </Pressable>
-        </View>
-      ) : null}
-      <View style={styles.closeBtn}>
-        <ImageDefaultHeader onRequestClose={onClose} />
-      </View>
-    </View>
-  )
-}
-
-// <View style={s.hContentRegion}>
-//   <View style={s.flex1}>
-//     <PostThreadLightbox
-//       uri={uri}
-//       onPressReply={onPressReply}
-//       onCanReply={setCanReply}
-//     />
-//   </View>
-//   {isMobile && canReply && hasSession && (
-//     <Animated.View
-//       style={[
-//         styles.prompt,
-//         fabMinimalShellTransform,
-//         {
-//           bottom: clamp(safeAreaInsets.bottom, 15, 30),
-//         },
-//       ]}>
-//       <ComposePrompt onPressCompose={onPressReply} />
-//     </Animated.View>
-//   )}
-// </View>
-//  )
-//}
-
-// const styles = StyleSheet.create({
-//   prompt: {
-//     // @ts-ignore web-only
-//     position: isWeb ? 'fixed' : 'absolute',
-//     left: 0,
-//     right: 0,
-//   },
-// })
-
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
   },
   postThreadInternal: {
-    width: 370,
+    width: 350,
     height: '100%',
   },
   lightboxInternal: {
@@ -399,70 +230,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 'auto',
   },
-  mask: {
-    // @ts-ignore
-    //position: 'fixed',
-    top: 0,
-    left: 0,
-    //width: '100%',
-    // @ts-ignore web only
-    //height: '100%',
-    flex: 1,
-    backgroundColor: '#000c',
-  },
-  imageCenterer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
-  },
-  icon: {
-    color: colors.white,
-  },
-  closeBtn: {
+  toggleBtn: {
     position: 'absolute',
     top: 10,
-    left: 10,
+    right: 10,
   },
-  btn: {
-    position: 'absolute',
-    backgroundColor: '#00000077',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  btnTablet: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    left: 30,
-    right: 30,
-  },
-  btnMobile: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    left: 20,
-    right: 20,
-  },
-  leftBtn: {
-    right: 'auto',
-    top: '50%',
-  },
-  rightBtn: {
-    left: 'auto',
-    top: '50%',
-  },
-  footer: {
-    paddingHorizontal: 32,
-    paddingVertical: 24,
-    backgroundColor: colors.black,
-  },
-  blurredBackground: {
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-  } as ViewStyle,
 })
