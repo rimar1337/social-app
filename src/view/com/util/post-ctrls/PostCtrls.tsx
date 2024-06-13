@@ -29,7 +29,7 @@ import {
 } from '#/state/queries/post'
 import {useRequireAuth} from '#/state/session'
 import {useComposerControls} from '#/state/shell/composer'
-import {atoms as a, useTheme, useThemeExplicit} from '#/alf'
+import {atoms as a, useTheme} from '#/alf'
 import {useDialogControl} from '#/components/Dialog'
 import {ArrowOutOfBox_Stroke2_Corner0_Rounded as ArrowOutOfBox} from '#/components/icons/ArrowOutOfBox'
 import {Bubble_Stroke2_Corner2_Rounded as Bubble} from '#/components/icons/Bubble'
@@ -64,7 +64,6 @@ let PostCtrls = ({
   logContext: 'FeedItem' | 'PostThreadItem' | 'Post'
 }): React.ReactNode => {
   const t = useTheme()
-  const tWhite = useThemeExplicit('dark')
   const {_} = useLingui()
   const {openComposer} = useComposerControls()
   const [queueLike, queueUnlike] = usePostLikeMutationQueue(post, logContext)
@@ -85,9 +84,9 @@ let PostCtrls = ({
 
   const defaultCtrlColor = React.useMemo(
     () => ({
-      color: white ? tWhite.palette.contrast_975 : t.palette.contrast_500,
+      color: white ? '#FFF' : t.palette.contrast_500,
     }),
-    [t, tWhite, white],
+    [t, white],
   ) as StyleProp<ViewStyle>
 
   const onPressToggleLike = React.useCallback(async () => {

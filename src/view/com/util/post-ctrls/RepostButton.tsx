@@ -6,7 +6,7 @@ import {useLingui} from '@lingui/react'
 import {HITSLOP_10, HITSLOP_20} from '#/lib/constants'
 import {useHaptics} from '#/lib/haptics'
 import {useRequireAuth} from '#/state/session'
-import {atoms as a, useTheme, useThemeExplicit} from '#/alf'
+import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import * as Dialog from '#/components/Dialog'
 import {CloseQuote_Stroke2_Corner1_Rounded as Quote} from '#/components/icons/Quote'
@@ -31,7 +31,6 @@ let RepostButton = ({
   white,
 }: Props): React.ReactNode => {
   const t = useTheme()
-  const tWhite = useThemeExplicit('dark')
   const {_} = useLingui()
   const requireAuth = useRequireAuth()
   const dialogControl = Dialog.useDialogControl()
@@ -42,10 +41,10 @@ let RepostButton = ({
       color: isReposted
         ? t.palette.positive_600
         : white
-        ? tWhite.palette.contrast_975
+        ? '#FFF'
         : t.palette.contrast_500,
     }),
-    [isReposted, t, tWhite, white],
+    [t, isReposted, white],
   )
 
   const close = useCallback(() => dialogControl.close(), [dialogControl])

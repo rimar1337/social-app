@@ -32,7 +32,6 @@ import {useNavigation} from '@react-navigation/native'
 
 import {NavigationProp} from '#/lib/routes/types'
 import {isWeb} from '#/platform/detection'
-// import { useLightbox } from '#/state/shell/web-lightbox'
 
 type Embed =
   | AppBskyEmbedRecord.View
@@ -128,10 +127,7 @@ export function PostEmbeds({
       const _openLightbox = (index: number) => {
         if (!isWeb) {
           openLightbox(new ImagesLightbox(items, index))
-          return
-        }
-        openLightbox(new ImagesLightbox(items, index, handle, rkey))
-        if (handle && rkey) {
+        } else if (handle && rkey) {
           navigation.push('PostThreadLightbox', {
             name: handle,
             rkey: rkey,

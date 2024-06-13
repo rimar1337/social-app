@@ -121,6 +121,7 @@ export function BottomBar({navigation}: BottomTabBarProps) {
     playHaptic()
     accountSwitchControl.open()
   }, [accountSwitchControl, playHaptic])
+
   return (
     <>
       <SwitchAccountDialog control={accountSwitchControl} />

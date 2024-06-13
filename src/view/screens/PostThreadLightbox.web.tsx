@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react'
+import React, {useCallback, useEffect, useMemo, useState} from 'react'
 import {StyleSheet, View} from 'react-native'
 import {
   AppBskyFeedDefs,
@@ -10,7 +10,6 @@ import {useQueryClient} from '@tanstack/react-query'
 
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {POST_TOMBSTONE, usePostShadow} from '#/state/cache/post-shadow'
-import {useImages} from '#/state/lightbox'
 import {
   RQKEY as POST_THREAD_RQKEY,
   ThreadNode,
@@ -40,23 +39,11 @@ export function PostThreadLightboxScreen({route}: Props) {
   const setMinimalShellMode = useSetMinimalShellMode()
   const {openComposer} = useComposerControls()
   const {name, rkey, page} = route.params
-  const navigation = useNavigation<NavigationProp>()
+  //const navigation = useNavigation<NavigationProp>()
   const uri = makeRecordUri(name, 'app.bsky.feed.post', rkey)
-  const {images} = useImages()
+  //const {images} = useImages()
   let earlyReturn: boolean = false
   const [toggle, setToggle] = useState(true)
-
-  if (!images || images.length === 0) {
-    navigation.replace('PostThread', {
-      name: name,
-      rkey: rkey,
-    })
-    earlyReturn = true
-  }
-  const imgs: Img[] = images
-    ? images.map(img => ({uri: img.uri, alt: img.alt ?? ''}))
-    : []
-  //const [canReply, setCanReply] = React.useState(false)
 
   useFocusEffect(
     React.useCallback(() => {
@@ -88,13 +75,13 @@ export function PostThreadLightboxScreen({route}: Props) {
   }, [openComposer, queryClient, uri])
 
   const {isTabletOrMobile} = useWebMediaQueries()
-  const onPressBack = React.useCallback(() => {
-    if (navigation.canGoBack()) {
-      navigation.goBack()
-    } else {
-      navigation.navigate('Home')
-    }
-  }, [navigation])
+  // const onPressBack = React.useCallback(() => {
+  //   if (navigation.canGoBack()) {
+  //     navigation.goBack()
+  //   } else {
+  //     navigation.navigate('Home')
+  //   }
+  // }, [navigation])
 
   if (earlyReturn) {
     return null
@@ -102,12 +89,9 @@ export function PostThreadLightboxScreen({route}: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.lightboxInternal}>
-        <LightboxInner
-          imgs={imgs}
-          initialIndex={page ? page - 1 : 0}
-          onClose={onPressBack}
-          PostThread
-        />
+        <View style={{flex: 1}}>
+          <PostThreadFetcher uri={uri} page={page ? page - 1 : 0} />
+        </View>
         <View style={[styles.toggleBtn]}>
           <ImageDefaultHeader
             onRequestClose={() => setToggle(!toggle)}
@@ -131,6 +115,77 @@ export function PostThreadLightboxScreen({route}: Props) {
     </View>
   )
 }
+
+function PostThreadFetcher({uri, page}: {uri?: string; page: number}) {
+  const {data: thread} = usePostThreadQuery(uri)
+  const [rootPost, setRootPost] = useState<AppBskyFeedDefs.PostView | null>(
+    null,
+  )
+
+  useEffect(() => {
+    if (thread?.type === 'post') {
+      setRootPost(thread.post)
+    }
+  }, [thread])
+
+  if (!rootPost) {
+    return null
+  }
+  return <ImageGalleryRenderer rootPost={rootPost} page={page} />
+}
+
+function ImageGalleryRenderer({
+  rootPost,
+  page,
+}: {
+  rootPost: AppBskyFeedDefs.PostView
+  page: number
+}) {
+  const navigation = useNavigation<NavigationProp>()
+
+  const [imgs, setImgs] = useState<Img[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const onPressBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack()
+    } else {
+      navigation.navigate('Home')
+    }
+  }, [navigation])
+
+  useEffect(() => {
+    if (rootPost.embed?.images && Array.isArray(rootPost.embed.images)) {
+      const images = rootPost.embed.images.map(img => ({
+        uri: img.fullsize,
+        alt: img.alt,
+        aspectRatio: img.aspectRatio,
+      }))
+
+      setImgs(images)
+    }
+
+    setIsLoading(false)
+  }, [rootPost])
+
+  if (isLoading) {
+    return null
+  }
+
+  if (imgs.length === 0) {
+    return null
+  }
+
+  return (
+    <LightboxInner
+      imgs={imgs}
+      initialIndex={page}
+      onClose={onPressBack}
+      PostThread
+    />
+  )
+}
+
 interface BottomCtrlsProps {
   uri?: string
   onPressReply: () => void
