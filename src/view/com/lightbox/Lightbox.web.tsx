@@ -74,12 +74,12 @@ export function LightboxInner({
   imgs,
   initialIndex = 0,
   onClose,
-  PostThread,
+  postThread,
 }: {
   imgs: Img[]
   initialIndex: number
   onClose: () => void
-  PostThread?: boolean
+  postThread?: boolean
 }) {
   const {_} = useLingui()
   const [index, setIndex] = useState<number>(initialIndex)
@@ -125,7 +125,7 @@ export function LightboxInner({
   }, [isTabletOrDesktop])
 
   return (
-    <View style={[PostThread ? styles.maskPostThread : styles.mask]}>
+    <View style={[postThread ? styles.maskPostThread : styles.mask]}>
       <TouchableWithoutFeedback
         onPress={onClose}
         accessibilityRole="button"
@@ -199,7 +199,7 @@ export function LightboxInner({
           </Pressable>
         </View>
       ) : null}
-      <View style={[PostThread ? styles.closeBtnPostThread : styles.closeBtn]}>
+      <View style={[postThread ? styles.closeBtnPostThread : styles.closeBtn]}>
         <ImageDefaultHeader onRequestClose={onClose} />
       </View>
     </View>

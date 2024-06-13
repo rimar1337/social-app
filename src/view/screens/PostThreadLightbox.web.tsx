@@ -39,10 +39,9 @@ export function PostThreadLightboxScreen({route}: Props) {
   const setMinimalShellMode = useSetMinimalShellMode()
   const {openComposer} = useComposerControls()
   const {name, rkey, page} = route.params
-  //const navigation = useNavigation<NavigationProp>()
   const uri = makeRecordUri(name, 'app.bsky.feed.post', rkey)
-  //const {images} = useImages()
   let earlyReturn: boolean = false
+  const {isTabletOrMobile} = useWebMediaQueries()
   const [toggle, setToggle] = useState(true)
 
   useFocusEffect(
@@ -74,15 +73,6 @@ export function PostThreadLightboxScreen({route}: Props) {
     })
   }, [openComposer, queryClient, uri])
 
-  const {isTabletOrMobile} = useWebMediaQueries()
-  // const onPressBack = React.useCallback(() => {
-  //   if (navigation.canGoBack()) {
-  //     navigation.goBack()
-  //   } else {
-  //     navigation.navigate('Home')
-  //   }
-  // }, [navigation])
-
   if (earlyReturn) {
     return null
   }
@@ -92,17 +82,21 @@ export function PostThreadLightboxScreen({route}: Props) {
         <View style={{flex: 1}}>
           <PostThreadFetcher uri={uri} page={page ? page - 1 : 0} />
         </View>
-        <View style={[styles.toggleBtn]}>
-          <ImageDefaultHeader
-            onRequestClose={() => setToggle(!toggle)}
-            toggle={toggle}
-          />
-        </View>
-        <View style={styles.bottomCtrls}>
-          <BottomCtrlsWrapper uri={uri} onPressReply={onPressReply} />
-        </View>
+        {!isTabletOrMobile && (
+          <>
+            <View style={[styles.toggleBtn]}>
+              <ImageDefaultHeader
+                onRequestClose={() => setToggle(!toggle)}
+                toggle={toggle}
+              />
+            </View>
+            <View style={styles.bottomCtrls}>
+              <BottomCtrlsWrapper uri={uri} onPressReply={onPressReply} />
+            </View>
+          </>
+        )}
       </View>
-      {!isTabletOrMobile && toggle ? (
+      {!isTabletOrMobile && toggle && (
         <View style={styles.postThreadInternal}>
           <PostThread
             uri={uri}
@@ -111,7 +105,7 @@ export function PostThreadLightboxScreen({route}: Props) {
             imageGridDisabled={true}
           />
         </View>
-      ) : null}
+      )}
     </View>
   )
 }
@@ -141,8 +135,8 @@ function ImageGalleryRenderer({
   rootPost: AppBskyFeedDefs.PostView
   page: number
 }) {
+  const {isTabletOrMobile} = useWebMediaQueries()
   const navigation = useNavigation<NavigationProp>()
-
   const [imgs, setImgs] = useState<Img[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -168,11 +162,7 @@ function ImageGalleryRenderer({
     setIsLoading(false)
   }, [rootPost])
 
-  if (isLoading) {
-    return null
-  }
-
-  if (imgs.length === 0) {
+  if (isLoading || imgs.length === 0) {
     return null
   }
 
@@ -181,7 +171,7 @@ function ImageGalleryRenderer({
       imgs={imgs}
       initialIndex={page}
       onClose={onPressBack}
-      PostThread
+      postThread={!isTabletOrMobile}
     />
   )
 }
