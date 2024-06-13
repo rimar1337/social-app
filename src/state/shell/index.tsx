@@ -20,7 +20,6 @@ export {
 export {useMinimalShellMode, useSetMinimalShellMode} from './minimal-mode'
 export {useOnboardingDispatch, useOnboardingState} from './onboarding'
 export {useTickEveryMinute} from './tick-every-minute'
-
 export function Provider({children}: React.PropsWithChildren<{}>) {
   return (
     <ShellLayoutProvder>

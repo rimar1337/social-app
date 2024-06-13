@@ -103,6 +103,7 @@ function QuoteEmbedModerated({
   allowNestedQuotes?: boolean
 }) {
   const moderationOpts = useModerationOpts()
+  const rkey = new AtUri(viewRecord.uri).rkey
   const moderation = React.useMemo(() => {
     return moderationOpts
       ? moderatePost(viewRecordToPostView(viewRecord), moderationOpts)
@@ -119,14 +120,6 @@ function QuoteEmbedModerated({
     embeds: viewRecord.embeds,
   }
 
-  function getLastSegment(url: string) {
-    let lastIndex = url.length - 1
-    while (lastIndex >= 0 && url[lastIndex] !== '/') {
-      lastIndex--
-    }
-    return url.substring(lastIndex + 1)
-  }
-
   return (
     <QuoteEmbed
       quote={quote}
@@ -135,7 +128,7 @@ function QuoteEmbedModerated({
       style={style}
       allowNestedQuotes={allowNestedQuotes}
       handle={viewRecord.author.handle}
-      rkey={getLastSegment(viewRecord.uri)}
+      rkey={rkey}
     />
   )
 }

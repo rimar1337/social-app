@@ -288,11 +288,7 @@ export function BottomBar({navigation}: BottomTabBarProps) {
                 gap: 8,
               }}>
               <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 8,
-                }}>
+                style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
                 <Logo width={28} />
                 <View style={{paddingTop: 4}}>
                   <Logotype width={80} fill={pal.text.color} />
@@ -300,11 +296,7 @@ export function BottomBar({navigation}: BottomTabBarProps) {
               </View>
 
               <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 4,
-                }}>
+                style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
                 <Button
                   onPress={showCreateAccount}
                   accessibilityHint={_(msg`Sign up`)}

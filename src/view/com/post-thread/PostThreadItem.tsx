@@ -187,6 +187,7 @@ let PostThreadItemLoaded = ({
   )
   const {currentAccount} = useSession()
   const rootUri = record.reply?.root?.uri || post.uri
+  const rkey = new AtUri(post.uri).rkey
   const postHref = React.useMemo(() => {
     const urip = new AtUri(post.uri)
     return makeProfileLink(post.author, 'post', urip.rkey)
@@ -238,14 +239,6 @@ let PostThreadItemLoaded = ({
 
   if (!record) {
     return <ErrorMessage message={_(msg`Invalid or unsupported post record`)} />
-  }
-
-  function getLastSegment(url: string) {
-    let lastIndex = url.length - 1
-    while (lastIndex >= 0 && url[lastIndex] !== '/') {
-      lastIndex--
-    }
-    return url.substring(lastIndex + 1)
   }
 
   if (isHighlightedPost) {
@@ -350,7 +343,7 @@ let PostThreadItemLoaded = ({
                     embed={post.embed}
                     moderation={moderation}
                     handle={post.author.handle}
-                    rkey={getLastSegment(post.uri)}
+                    rkey={rkey}
                     imageGridDisabled={imageGridDisabled}
                   />
                 </View>
@@ -560,7 +553,7 @@ let PostThreadItemLoaded = ({
                       embed={post.embed}
                       moderation={moderation}
                       handle={post.author.handle}
-                      rkey={getLastSegment(post.uri)}
+                      rkey={rkey}
                     />
                   </View>
                 )}

@@ -363,6 +363,7 @@ let PostContent = ({
 }): React.ReactNode => {
   const pal = usePalette('default')
   const {_} = useLingui()
+  const rkey = new AtUri(post.uri).rkey
   const [limitLines, setLimitLines] = useState(
     () => countLines(richText.text) >= MAX_POST_LINES,
   )
@@ -370,14 +371,6 @@ let PostContent = ({
   const onPressShowMore = React.useCallback(() => {
     setLimitLines(false)
   }, [setLimitLines])
-
-  function getLastSegment(url: string) {
-    let lastIndex = url.length - 1
-    while (lastIndex >= 0 && url[lastIndex] !== '/') {
-      lastIndex--
-    }
-    return url.substring(lastIndex + 1)
-  }
 
   return (
     <ContentHider
@@ -413,7 +406,7 @@ let PostContent = ({
             moderation={moderation}
             onOpen={onOpenEmbed}
             handle={post.author.handle}
-            rkey={getLastSegment(post.uri)}
+            rkey={rkey}
           />
         </View>
       ) : null}
