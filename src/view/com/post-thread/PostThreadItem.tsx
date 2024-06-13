@@ -62,6 +62,7 @@ export function PostThreadItem({
   overrideBlur,
   onPostReply,
   hideTopBorder,
+  imageGridDisabled,
 }: {
   post: AppBskyFeedDefs.PostView
   record: AppBskyFeedPost.Record
@@ -78,6 +79,7 @@ export function PostThreadItem({
   overrideBlur: boolean
   onPostReply: () => void
   hideTopBorder?: boolean
+  imageGridDisabled?: boolean
 }) {
   const postShadowed = usePostShadow(post)
   const richText = useMemo(
@@ -112,6 +114,7 @@ export function PostThreadItem({
         overrideBlur={overrideBlur}
         onPostReply={onPostReply}
         hideTopBorder={hideTopBorder}
+        imageGridDisabled={imageGridDisabled}
       />
     )
   }
@@ -155,6 +158,7 @@ let PostThreadItemLoaded = ({
   overrideBlur,
   onPostReply,
   hideTopBorder,
+  imageGridDisabled,
 }: {
   post: Shadow<AppBskyFeedDefs.PostView>
   record: AppBskyFeedPost.Record
@@ -172,6 +176,7 @@ let PostThreadItemLoaded = ({
   overrideBlur: boolean
   onPostReply: () => void
   hideTopBorder?: boolean
+  imageGridDisabled?: boolean
 }): React.ReactNode => {
   const pal = usePalette('default')
   const {_} = useLingui()
@@ -182,6 +187,7 @@ let PostThreadItemLoaded = ({
   )
   const {currentAccount} = useSession()
   const rootUri = record.reply?.root?.uri || post.uri
+  const rkey = new AtUri(post.uri).rkey
   const postHref = React.useMemo(() => {
     const urip = new AtUri(post.uri)
     return makeProfileLink(post.author, 'post', urip.rkey)
@@ -333,7 +339,13 @@ let PostThreadItemLoaded = ({
               ) : undefined}
               {post.embed && (
                 <View style={[a.pb_sm]}>
-                  <PostEmbeds embed={post.embed} moderation={moderation} />
+                  <PostEmbeds
+                    embed={post.embed}
+                    moderation={moderation}
+                    handle={post.author.handle}
+                    rkey={rkey}
+                    imageGridDisabled={imageGridDisabled}
+                  />
                 </View>
               )}
             </ContentHider>
@@ -537,7 +549,12 @@ let PostThreadItemLoaded = ({
                 ) : undefined}
                 {post.embed && (
                   <View style={[a.pb_xs]}>
-                    <PostEmbeds embed={post.embed} moderation={moderation} />
+                    <PostEmbeds
+                      embed={post.embed}
+                      moderation={moderation}
+                      handle={post.author.handle}
+                      rkey={rkey}
+                    />
                   </View>
                 )}
                 <PostCtrls

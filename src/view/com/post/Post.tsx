@@ -145,6 +145,14 @@ function PostInner({
     precacheProfile(queryClient, post.author)
   }, [queryClient, post.author])
 
+  function getLastSegment(url: string) {
+    let lastIndex = url.length - 1
+    while (lastIndex >= 0 && url[lastIndex] !== '/') {
+      lastIndex--
+    }
+    return url.substring(lastIndex + 1)
+  }
+
   return (
     <Link
       href={itemHref}
@@ -231,7 +239,12 @@ function PostInner({
               />
             ) : undefined}
             {post.embed ? (
-              <PostEmbeds embed={post.embed} moderation={moderation} />
+              <PostEmbeds
+                embed={post.embed}
+                moderation={moderation}
+                handle={post.author.handle}
+                rkey={getLastSegment(post.uri)}
+              />
             ) : null}
           </ContentHider>
           <PostCtrls

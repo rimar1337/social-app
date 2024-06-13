@@ -329,6 +329,7 @@ let FeedItemInner = ({
             postEmbed={post.embed}
             postAuthor={post.author}
             onOpenEmbed={onOpenEmbed}
+            post={post}
           />
           <PostCtrls
             post={post}
@@ -351,15 +352,18 @@ let PostContent = ({
   postEmbed,
   postAuthor,
   onOpenEmbed,
+  post,
 }: {
   moderation: ModerationDecision
   richText: RichTextAPI
   postEmbed: AppBskyFeedDefs.PostView['embed']
   postAuthor: AppBskyFeedDefs.PostView['author']
   onOpenEmbed: () => void
+  post: AppBskyFeedDefs.PostView
 }): React.ReactNode => {
   const pal = usePalette('default')
   const {_} = useLingui()
+  const rkey = new AtUri(post.uri).rkey
   const [limitLines, setLimitLines] = useState(
     () => countLines(richText.text) >= MAX_POST_LINES,
   )
@@ -401,6 +405,8 @@ let PostContent = ({
             embed={postEmbed}
             moderation={moderation}
             onOpen={onOpenEmbed}
+            handle={post.author.handle}
+            rkey={rkey}
           />
         </View>
       ) : null}

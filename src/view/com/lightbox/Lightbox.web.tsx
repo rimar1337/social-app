@@ -69,14 +69,16 @@ export function Lightbox() {
   )
 }
 
-function LightboxInner({
+export function LightboxInner({
   imgs,
   initialIndex = 0,
   onClose,
+  postThread,
 }: {
   imgs: Img[]
   initialIndex: number
   onClose: () => void
+  postThread?: boolean
 }) {
   const {_} = useLingui()
   const [index, setIndex] = useState<number>(initialIndex)
@@ -122,7 +124,7 @@ function LightboxInner({
   }, [isTabletOrDesktop])
 
   return (
-    <View style={styles.mask}>
+    <View style={[postThread ? styles.maskPostThread : styles.mask]}>
       <TouchableWithoutFeedback
         onPress={onClose}
         accessibilityRole="button"
@@ -134,7 +136,7 @@ function LightboxInner({
             accessibilityIgnoresInvertColors
             source={imgs[index]}
             style={styles.image as ImageStyle}
-            accessibilityLabel={imgs[index].alt}
+            accessibilityLabel={'alt' in imgs ? imgs[index].alt : ''}
             accessibilityHint=""
           />
           {canGoLeft && (
@@ -178,7 +180,11 @@ function LightboxInner({
         </View>
       </TouchableWithoutFeedback>
       {imgs[index].alt ? (
-        <View style={styles.footer}>
+        <View
+          style={[
+            styles.footer,
+            (postThread && {paddingTop: 12}) || {paddingVertical: 24},
+          ]}>
           <Pressable
             accessibilityLabel={_(msg`Expand alt text`)}
             accessibilityHint={_(
@@ -196,7 +202,7 @@ function LightboxInner({
           </Pressable>
         </View>
       ) : null}
-      <View style={styles.closeBtn}>
+      <View style={[postThread ? styles.closeBtnPostThread : styles.closeBtn]}>
         <ImageDefaultHeader onRequestClose={onClose} />
       </View>
     </View>
@@ -211,6 +217,12 @@ const styles = StyleSheet.create({
     left: 0,
     width: '100%',
     height: '100%',
+    backgroundColor: '#000c',
+  },
+  maskPostThread: {
+    top: 0,
+    left: 0,
+    flex: 1,
     backgroundColor: '#000c',
   },
   imageCenterer: {
@@ -230,6 +242,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
+  },
+  closeBtnPostThread: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
   },
   btn: {
     position: 'absolute',
@@ -261,7 +278,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 32,
-    paddingVertical: 24,
     backgroundColor: colors.black,
   },
   blurredBackground: {

@@ -19,6 +19,7 @@ interface Props {
   onRepost: () => void
   onQuote: () => void
   big?: boolean
+  white?: boolean
 }
 
 export const RepostButton = ({
@@ -27,6 +28,7 @@ export const RepostButton = ({
   onRepost,
   onQuote,
   big,
+  white,
 }: Props) => {
   const t = useTheme()
   const {_} = useLingui()
@@ -35,9 +37,13 @@ export const RepostButton = ({
 
   const color = React.useMemo(
     () => ({
-      color: isReposted ? t.palette.positive_600 : t.palette.contrast_500,
+      color: isReposted
+        ? t.palette.positive_600
+        : white
+        ? '#EEE'
+        : t.palette.contrast_500,
     }),
-    [t, isReposted],
+    [t, isReposted, white],
   )
 
   return hasSession ? (
@@ -51,7 +57,9 @@ export const RepostButton = ({
                 style={[
                   a.rounded_full,
                   (state.hovered || state.pressed) && {
-                    backgroundColor: t.palette.contrast_25,
+                    backgroundColor: white
+                      ? 'rgba(255, 255, 255, 0.15)'
+                      : t.palette.contrast_25,
                   },
                 ]}>
                 <RepostInner
@@ -90,8 +98,12 @@ export const RepostButton = ({
         requireAuth(() => {})
       }}
       label={_(msg`Repost or quote post`)}
-      style={{padding: 0}}
-      hoverStyle={t.atoms.bg_contrast_25}
+      style={{padding: 0, backgroundColor: 'transparent'}}
+      hoverStyle={
+        white
+          ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+          : t.atoms.bg_contrast_25
+      }
       shape="round"
       variant="ghost"
       color="secondary">

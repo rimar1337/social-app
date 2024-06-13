@@ -44,6 +44,7 @@ import {RepostButton} from './RepostButton'
 
 let PostCtrls = ({
   big,
+  white,
   post,
   record,
   richText,
@@ -53,6 +54,7 @@ let PostCtrls = ({
   logContext,
 }: {
   big?: boolean
+  white?: boolean
   post: Shadow<AppBskyFeedDefs.PostView>
   record: AppBskyFeedPost.Record
   richText: RichTextAPI
@@ -82,9 +84,9 @@ let PostCtrls = ({
 
   const defaultCtrlColor = React.useMemo(
     () => ({
-      color: t.palette.contrast_500,
+      color: white ? '#EEE' : t.palette.contrast_500,
     }),
-    [t],
+    [t, white],
   ) as StyleProp<ViewStyle>
 
   const onPressToggleLike = React.useCallback(async () => {
@@ -187,9 +189,12 @@ let PostCtrls = ({
       a.align_center,
       a.justify_center,
       {padding: 5},
-      (pressed || hovered) && t.atoms.bg_contrast_25,
+      (pressed || hovered) &&
+        (white
+          ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+          : t.atoms.bg_contrast_25),
     ],
-    [t.atoms.bg_contrast_25],
+    [t.atoms.bg_contrast_25, white],
   )
 
   return (
@@ -231,6 +236,7 @@ let PostCtrls = ({
       </View>
       <View style={big ? a.align_center : [a.flex_1, a.align_start]}>
         <RepostButton
+          white={white}
           isReposted={!!post.viewer?.repost}
           repostCount={post.repostCount}
           onRepost={onRepost}
@@ -316,6 +322,7 @@ let PostCtrls = ({
       )}
       <View style={big ? a.align_center : [a.flex_1, a.align_start]}>
         <PostDropdownBtn
+          white={white}
           testID="postDropdownBtn"
           postAuthor={post.author}
           postCid={post.cid}

@@ -72,6 +72,7 @@ let PostDropdownBtn = ({
   hitSlop,
   size,
   timestamp,
+  white,
 }: {
   testID: string
   postAuthor: AppBskyActorDefs.ProfileViewBasic
@@ -84,13 +85,14 @@ let PostDropdownBtn = ({
   hitSlop?: PressableProps['hitSlop']
   size?: 'lg' | 'md' | 'sm'
   timestamp: string
+  white?: boolean
 }): React.ReactNode => {
   const {hasSession, currentAccount} = useSession()
   const theme = useTheme()
   const alf = useAlf()
   const {gtMobile} = useBreakpoints()
   const {_} = useLingui()
-  const defaultCtrlColor = theme.palette.default.postCtrl
+  const defaultCtrlColor = white ? '#EEE' : theme.palette.default.postCtrl
   const langPrefs = useLanguagePrefs()
   const mutedThreads = useMutedThreads()
   const toggleThreadMute = useToggleThreadMute()
@@ -129,8 +131,14 @@ let PostDropdownBtn = ({
         Toast.show(_(msg`Post deleted`))
 
         const route = getCurrentRoute(navigation.getState())
-        if (route.name === 'PostThread') {
-          const params = route.params as CommonNavigatorParams['PostThread']
+        if (
+          route.name === 'PostThread' ||
+          route.name === 'PostThreadLightbox'
+        ) {
+          const params =
+            route.name === 'PostThread'
+              ? (route.params as CommonNavigatorParams['PostThread'])
+              : (route.params as CommonNavigatorParams['PostThreadLightbox'])
           if (
             currentAccount &&
             isAuthor &&
@@ -245,7 +253,9 @@ let PostDropdownBtn = ({
                   style,
                   a.rounded_full,
                   (state.hovered || state.pressed) && [
-                    alf.atoms.bg_contrast_25,
+                    white
+                      ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+                      : alf.atoms.bg_contrast_25,
                   ],
                 ]}>
                 <DotsHorizontal

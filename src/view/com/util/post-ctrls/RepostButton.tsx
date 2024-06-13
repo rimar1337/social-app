@@ -19,6 +19,7 @@ interface Props {
   onRepost: () => void
   onQuote: () => void
   big?: boolean
+  white?: boolean
 }
 
 let RepostButton = ({
@@ -27,6 +28,7 @@ let RepostButton = ({
   onRepost,
   onQuote,
   big,
+  white,
 }: Props): React.ReactNode => {
   const t = useTheme()
   const {_} = useLingui()
@@ -36,9 +38,13 @@ let RepostButton = ({
 
   const color = React.useMemo(
     () => ({
-      color: isReposted ? t.palette.positive_600 : t.palette.contrast_500,
+      color: isReposted
+        ? t.palette.positive_600
+        : white
+        ? '#EEE'
+        : t.palette.contrast_500,
     }),
-    [t, isReposted],
+    [t, isReposted, white],
   )
 
   const close = useCallback(() => dialogControl.close(), [dialogControl])
@@ -57,7 +63,11 @@ let RepostButton = ({
           a.bg_transparent,
           {padding: 5},
         ]}
-        hoverStyle={t.atoms.bg_contrast_25}
+        hoverStyle={
+          white
+            ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+            : t.atoms.bg_contrast_25
+        }
         label={`${
           isReposted
             ? _(msg`Undo repost`)

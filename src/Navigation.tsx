@@ -72,6 +72,7 @@ import {NotificationsScreen} from './view/screens/Notifications'
 import {PostLikedByScreen} from './view/screens/PostLikedBy'
 import {PostRepostedByScreen} from './view/screens/PostRepostedBy'
 import {PostThreadScreen} from './view/screens/PostThread'
+import {PostThreadLightboxScreen} from './view/screens/PostThreadLightbox'
 import {PrivacyPolicyScreen} from './view/screens/PrivacyPolicy'
 import {ProfileScreen} from './view/screens/Profile'
 import {ProfileFeedScreen} from './view/screens/ProfileFeed'
@@ -185,6 +186,13 @@ function commonScreens(Stack: typeof HomeTab, unreadCountLabel?: string) {
       <Stack.Screen
         name="PostThread"
         getComponent={() => PostThreadScreen}
+        options={({route}) => ({
+          title: title(msg`Post by @${route.params.name}`),
+        })}
+      />
+      <Stack.Screen
+        name="PostThreadLightbox"
+        getComponent={() => PostThreadLightboxScreen}
         options={({route}) => ({
           title: title(msg`Post by @${route.params.name}`),
         })}

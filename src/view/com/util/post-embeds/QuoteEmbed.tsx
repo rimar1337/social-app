@@ -103,6 +103,7 @@ function QuoteEmbedModerated({
   allowNestedQuotes?: boolean
 }) {
   const moderationOpts = useModerationOpts()
+  const rkey = new AtUri(viewRecord.uri).rkey
   const moderation = React.useMemo(() => {
     return moderationOpts
       ? moderatePost(viewRecordToPostView(viewRecord), moderationOpts)
@@ -126,6 +127,8 @@ function QuoteEmbedModerated({
       onOpen={onOpen}
       style={style}
       allowNestedQuotes={allowNestedQuotes}
+      handle={viewRecord.author.handle}
+      rkey={rkey}
     />
   )
 }
@@ -136,12 +139,16 @@ export function QuoteEmbed({
   onOpen,
   style,
   allowNestedQuotes,
+  handle,
+  rkey,
 }: {
   quote: ComposerOptsQuote
   moderation?: ModerationDecision
   onOpen?: () => void
   style?: StyleProp<ViewStyle>
   allowNestedQuotes?: boolean
+  handle: string
+  rkey: string
 }) {
   const queryClient = useQueryClient()
   const pal = usePalette('default')
@@ -211,7 +218,14 @@ export function QuoteEmbed({
             disableLinks
           />
         ) : null}
-        {embed && <PostEmbeds embed={embed} moderation={moderation} />}
+        {embed && (
+          <PostEmbeds
+            embed={embed}
+            moderation={moderation}
+            handle={handle}
+            rkey={rkey}
+          />
+        )}
       </Link>
     </ContentHider>
   )

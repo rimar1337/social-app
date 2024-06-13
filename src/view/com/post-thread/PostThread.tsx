@@ -84,10 +84,12 @@ export function PostThread({
   uri,
   onCanReply,
   onPressReply,
+  imageGridDisabled,
 }: {
   uri: string | undefined
   onCanReply: (canReply: boolean) => void
   onPressReply: () => unknown
+  imageGridDisabled?: boolean
 }) {
   const {hasSession} = useSession()
   const {_} = useLingui()
@@ -403,6 +405,7 @@ export function PostThread({
             }
             onPostReply={refetch}
             hideTopBorder={index === 0 && !item.ctx.isParentLoading}
+            imageGridDisabled={imageGridDisabled}
           />
         </View>
       )
