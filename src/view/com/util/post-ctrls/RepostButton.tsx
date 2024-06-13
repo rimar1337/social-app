@@ -41,7 +41,7 @@ let RepostButton = ({
       color: isReposted
         ? t.palette.positive_600
         : white
-        ? '#FFF'
+        ? '#EEE'
         : t.palette.contrast_500,
     }),
     [t, isReposted, white],
@@ -63,7 +63,11 @@ let RepostButton = ({
           a.bg_transparent,
           {padding: 5},
         ]}
-        hoverStyle={t.atoms.bg_contrast_25}
+        hoverStyle={
+          white
+            ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+            : t.atoms.bg_contrast_25
+        }
         label={`${
           isReposted
             ? _(msg`Undo repost`)

@@ -92,7 +92,7 @@ let PostDropdownBtn = ({
   const alf = useAlf()
   const {gtMobile} = useBreakpoints()
   const {_} = useLingui()
-  const defaultCtrlColor = white ? '#FFF' : theme.palette.default.postCtrl
+  const defaultCtrlColor = white ? '#EEE' : theme.palette.default.postCtrl
   const langPrefs = useLanguagePrefs()
   const mutedThreads = useMutedThreads()
   const toggleThreadMute = useToggleThreadMute()
@@ -253,7 +253,9 @@ let PostDropdownBtn = ({
                   style,
                   a.rounded_full,
                   (state.hovered || state.pressed) && [
-                    alf.atoms.bg_contrast_25,
+                    white
+                      ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+                      : alf.atoms.bg_contrast_25,
                   ],
                 ]}>
                 <DotsHorizontal

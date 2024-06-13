@@ -84,7 +84,7 @@ let PostCtrls = ({
 
   const defaultCtrlColor = React.useMemo(
     () => ({
-      color: white ? '#FFF' : t.palette.contrast_500,
+      color: white ? '#EEE' : t.palette.contrast_500,
     }),
     [t, white],
   ) as StyleProp<ViewStyle>
@@ -189,9 +189,12 @@ let PostCtrls = ({
       a.align_center,
       a.justify_center,
       {padding: 5},
-      (pressed || hovered) && t.atoms.bg_contrast_25,
+      (pressed || hovered) &&
+        (white
+          ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+          : t.atoms.bg_contrast_25),
     ],
-    [t.atoms.bg_contrast_25],
+    [t.atoms.bg_contrast_25, white],
   )
 
   return (

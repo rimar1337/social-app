@@ -21,12 +21,12 @@ import {createHitslop} from '#/lib/constants'
 
 type Props = {
   onRequestClose: () => void
-  toggle?: boolean // Optional boolean prop named toggle
+  sidebarToggle?: boolean
 }
 
 const HIT_SLOP = createHitslop(16)
 
-const ImageDefaultHeader = ({onRequestClose, toggle}: Props) => {
+const ImageDefaultHeader = ({onRequestClose, sidebarToggle}: Props) => {
   const {_} = useLingui()
   return (
     <SafeAreaView style={styles.root}>
@@ -38,9 +38,9 @@ const ImageDefaultHeader = ({onRequestClose, toggle}: Props) => {
         accessibilityLabel={_(msg`Close image`)}
         accessibilityHint={_(msg`Closes viewer for header image`)}
         onAccessibilityEscape={onRequestClose}>
-        {toggle !== undefined ? (
+        {sidebarToggle !== undefined ? (
           <>
-            {toggle ? (
+            {sidebarToggle ? (
               <FontAwesomeIcon icon={faAnglesRight} color={'#fff'} size={22} />
             ) : (
               <FontAwesomeIcon icon={faAnglesLeft} color={'#fff'} size={22} />

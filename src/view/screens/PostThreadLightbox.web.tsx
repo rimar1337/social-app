@@ -17,6 +17,7 @@ import {
 } from '#/state/queries/post-thread'
 import {useSetMinimalShellMode} from '#/state/shell'
 import {useComposerControls} from '#/state/shell/composer'
+import {useIsSidebarOpen, useSetSidebarOpen} from '#/state/shell/sidebar-open'
 import {
   CommonNavigatorParams,
   NativeStackScreenProps,
@@ -42,7 +43,8 @@ export function PostThreadLightboxScreen({route}: Props) {
   const uri = makeRecordUri(name, 'app.bsky.feed.post', rkey)
   let earlyReturn: boolean = false
   const {isTabletOrMobile} = useWebMediaQueries()
-  const [toggle, setToggle] = useState(true)
+  const isSidebarOpen = useIsSidebarOpen()
+  const setSidebarOpen = useSetSidebarOpen()
 
   useFocusEffect(
     React.useCallback(() => {
@@ -86,8 +88,8 @@ export function PostThreadLightboxScreen({route}: Props) {
           <>
             <View style={[styles.toggleBtn]}>
               <ImageDefaultHeader
-                onRequestClose={() => setToggle(!toggle)}
-                toggle={toggle}
+                onRequestClose={() => setSidebarOpen(!isSidebarOpen)}
+                sidebarToggle={isSidebarOpen}
               />
             </View>
             <View style={styles.bottomCtrls}>
@@ -96,7 +98,7 @@ export function PostThreadLightboxScreen({route}: Props) {
           </>
         )}
       </View>
-      {!isTabletOrMobile && toggle && (
+      {!isTabletOrMobile && isSidebarOpen && (
         <View style={styles.postThreadInternal}>
           <PostThread
             uri={uri}

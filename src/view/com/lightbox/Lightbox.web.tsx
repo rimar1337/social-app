@@ -181,7 +181,11 @@ export function LightboxInner({
         </View>
       </TouchableWithoutFeedback>
       {imgs[index].alt ? (
-        <View style={styles.footer}>
+        <View
+          style={[
+            styles.footer,
+            (postThread && {paddingTop: 12}) || {paddingVertical: 24},
+          ]}>
           <Pressable
             accessibilityLabel={_(msg`Expand alt text`)}
             accessibilityHint={_(
@@ -275,7 +279,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 32,
-    paddingVertical: 24,
     backgroundColor: colors.black,
   },
   blurredBackground: {
