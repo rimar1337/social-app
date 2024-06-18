@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react'
 import {StyleSheet, View} from 'react-native'
 import {
+  AppBskyEmbedRecordWithMedia,
   AppBskyFeedDefs,
   AppBskyFeedPost,
   RichText as RichTextAPI,
@@ -151,16 +152,24 @@ function ImageGalleryRenderer({
   }, [navigation])
 
   useEffect(() => {
-    if (rootPost.embed?.images && Array.isArray(rootPost.embed.images)) {
-      const images = rootPost.embed.images.map(img => ({
-        uri: img.fullsize,
-        alt: img.alt,
-        aspectRatio: img.aspectRatio,
-      }))
+    let images = []
 
-      setImgs(images)
+    if (
+      AppBskyEmbedRecordWithMedia.isView(rootPost.embed) &&
+      Array.isArray(rootPost.embed.media.images)
+    ) {
+      images = rootPost.embed.media.images
+    } else if (rootPost.embed?.images && Array.isArray(rootPost.embed.images)) {
+      images = rootPost.embed.images
     }
 
+    const formattedImages = images.map(img => ({
+      uri: img.fullsize,
+      alt: img.alt,
+      aspectRatio: img.aspectRatio,
+    }))
+
+    setImgs(formattedImages)
     setIsLoading(false)
   }, [rootPost])
 
