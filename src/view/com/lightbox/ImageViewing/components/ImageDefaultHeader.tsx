@@ -8,8 +8,8 @@
 import React from 'react'
 import {
   SafeAreaView,
-  StyleSheet,
   TouchableOpacity,
+  StyleSheet,
   ViewStyle,
 } from 'react-native'
 import {faAnglesLeft, faAnglesRight} from '@fortawesome/free-solid-svg-icons'
