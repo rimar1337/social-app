@@ -379,6 +379,53 @@ export function PostThread({
         (item.ctx.depth < 0 && !!item.parent) || item.ctx.depth > 1
       const hasUnrevealedParents =
         index === 0 && skeleton?.parents && maxParents < skeleton.parents.length
+
+      if (prev && item.ctx.isLastItem) {
+        if (
+          prev.ctx.depth === item.ctx.depth ||
+          prev.ctx.depth > item.ctx.depth
+        ) {
+          item.ctx.disableLineArray = prev.ctx.disableLineArray
+            ? [...prev.ctx.disableLineArray, item.ctx.depth - 1]
+            : [item.ctx.depth - 1]
+        }
+      } else if (prev) {
+        item.ctx.disableLineArray = prev.ctx.disableLineArray
+      }
+      if (
+        prev &&
+        prev.ctx.depth > item.ctx.depth &&
+        item.ctx.disableLineArray &&
+        prev.ctx.disableLineArray
+      ) {
+        item.ctx.disableLineArray = item.ctx.disableLineArray.filter(
+          num => num < item.ctx.depth,
+        )
+      }
+
+      if (item.ctx.isLastItem && item.ctx.depth > 1) {
+        if (prev && prev.ctx.indentDecrease) {
+          item.ctx.indentDecrease = prev.ctx.indentDecrease + 1
+        } else {
+          item.ctx.indentDecrease = 1
+        }
+      } else if (prev) {
+        item.ctx.indentDecrease = prev.ctx.indentDecrease
+      }
+      if (
+        prev &&
+        prev.ctx.depth > item.ctx.depth &&
+        item.ctx.disableLineArray &&
+        prev.ctx.disableLineArray &&
+        item.ctx.indentDecrease
+      ) {
+        item.ctx.indentDecrease =
+          item.ctx.indentDecrease - (prev.ctx.depth - item.ctx.depth)
+      }
+      const visualDepth = item.ctx.indentDecrease
+        ? item.ctx.depth - item.ctx.indentDecrease
+        : item.ctx.depth
+
       return (
         <View
           ref={item.ctx.isHighlightedPost ? highlightedPostRef : undefined}
@@ -388,7 +435,8 @@ export function PostThread({
             record={item.record}
             moderation={threadModerationCache.get(item)}
             treeView={treeView}
-            depth={item.ctx.depth}
+            depth={visualDepth}
+            currPost={item}
             prevPost={prev}
             nextPost={next}
             isHighlightedPost={item.ctx.isHighlightedPost}

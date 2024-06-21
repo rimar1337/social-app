@@ -45,6 +45,7 @@ import {PostMeta} from '../util/PostMeta'
 import {Text} from '../util/text/Text'
 import {PreviewableUserAvatar} from '../util/UserAvatar'
 import hairlineWidth = StyleSheet.hairlineWidth
+//import {PostThreadLoadMore} from './PostThreadLoadMore'
 
 export function PostThreadItem({
   post,
@@ -52,6 +53,7 @@ export function PostThreadItem({
   moderation,
   treeView,
   depth,
+  currPost,
   prevPost,
   nextPost,
   isHighlightedPost,
@@ -68,6 +70,7 @@ export function PostThreadItem({
   moderation: ModerationDecision | undefined
   treeView: boolean
   depth: number
+  currPost: ThreadPost
   prevPost: ThreadPost | undefined
   nextPost: ThreadPost | undefined
   isHighlightedPost?: boolean
@@ -97,6 +100,7 @@ export function PostThreadItem({
         // Safeguard from clobbering per-post state below:
         key={postShadowed.uri}
         post={postShadowed}
+        currPost={currPost}
         prevPost={prevPost}
         nextPost={nextPost}
         record={record}
@@ -145,6 +149,7 @@ let PostThreadItemLoaded = ({
   moderation,
   treeView,
   depth,
+  currPost,
   prevPost,
   nextPost,
   isHighlightedPost,
@@ -162,6 +167,7 @@ let PostThreadItemLoaded = ({
   moderation: ModerationDecision
   treeView: boolean
   depth: number
+  currPost: ThreadPost
   prevPost: ThreadPost | undefined
   nextPost: ThreadPost | undefined
   isHighlightedPost?: boolean
@@ -399,20 +405,48 @@ let PostThreadItemLoaded = ({
       </>
     )
   } else {
+    const isThreadedParent = treeView && depth === 1
     const isThreadedChild = treeView && depth > 0
     const isThreadedChildAdjacentTop =
       isThreadedChild && prevPost?.ctx.depth === depth && depth !== 1
     const isThreadedChildAdjacentBot =
       isThreadedChild && nextPost?.ctx.depth === depth
+    const replyCurve =
+      !(
+        prevPost &&
+        prevPost.ctx.isLastItem &&
+        prevPost.ctx.indentDecrease === currPost.ctx.indentDecrease &&
+        prevPost.ctx.depth > currPost.ctx.depth
+      ) &&
+      ((prevPost &&
+        (prevPost.ctx.indentDecrease || 0) >
+          (currPost.ctx.indentDecrease || 0) &&
+        prevPost.ctx.depth -
+          (prevPost.ctx.depth + (prevPost.ctx.indentDecrease || 0)) ===
+          currPost.ctx.depth - depth) ||
+        (prevPost &&
+          (prevPost.ctx.indentDecrease || 0) ===
+            (currPost.ctx.indentDecrease || 0) &&
+          prevPost.ctx.depth -
+            (prevPost.ctx.depth - (prevPost.ctx.indentDecrease || 0)) ===
+            currPost.ctx.depth - depth) ||
+        (prevPost &&
+          (prevPost.ctx.indentDecrease || 0) >
+            (currPost.ctx.indentDecrease || 0) &&
+          prevPost.ctx.depth - (prevPost.ctx.indentDecrease || 0) === depth))
+
     return (
       <>
         <PostOuterWrapper
           post={post}
+          currPost={currPost}
           depth={depth}
           showParentReplyLine={!!showParentReplyLine}
           treeView={treeView}
           hasPrecedingItem={hasPrecedingItem}
-          hideTopBorder={hideTopBorder}>
+          hasNextItem={!isThreadedChildAdjacentBot}
+          hideTopBorder={hideTopBorder}
+          replyCurve={replyCurve}>
           <PostHider
             testID={`postThreadItem-by-${post.author.handle}`}
             href={postHref}
@@ -431,18 +465,29 @@ let PostThreadItemLoaded = ({
               style={{
                 flexDirection: 'row',
                 gap: 10,
-                paddingLeft: 8,
-                height: isThreadedChildAdjacentTop ? 8 : 16,
+                paddingLeft: treeView && depth > 1 ? 0 : 8,
+                height:
+                  !isThreadedChildAdjacentTop &&
+                  depth === 1 &&
+                  !((currPost.ctx.indentDecrease || 0) > 0)
+                    ? 16
+                    : 8,
               }}>
-              <View style={{width: 38}}>
-                {!isThreadedChild && showParentReplyLine && (
+              <View
+                style={{
+                  width: treeView && depth > 1 ? 26 : 38,
+                }}>
+                {((!isThreadedChild &&
+                  showParentReplyLine &&
+                  !prevPost?.ctx.isHighlightedPost) ||
+                  (treeView && !replyCurve && prevPost)) && (
                   <View
                     style={[
                       styles.replyLine,
                       {
                         flexGrow: 1,
                         backgroundColor: pal.colors.replyLine,
-                        marginBottom: 4,
+                        marginBottom: treeView && depth > 1 ? 0 : 4,
                       },
                     ]}
                   />
@@ -452,54 +497,64 @@ let PostThreadItemLoaded = ({
 
             <View
               style={[
-                styles.layout,
+                depth > 1 && depth !== 1 && treeView
+                  ? {
+                      flexDirection: 'row',
+                      paddingRight: 8,
+                      paddingLeft: 0,
+                    }
+                  : styles.layout,
                 {
                   paddingBottom:
-                    showChildReplyLine && !isThreadedChild
+                    (showChildReplyLine && !isThreadedChild) || isThreadedParent
                       ? 0
                       : isThreadedChildAdjacentBot
                       ? 4
+                      : treeView
+                      ? 0
                       : 8,
                 },
               ]}>
-              {/* If we are in threaded mode, the avatar is rendered in PostMeta */}
-              {!isThreadedChild && (
-                <View style={styles.layoutAvi}>
-                  <PreviewableUserAvatar
-                    size={38}
-                    profile={post.author}
-                    moderation={moderation.ui('avatar')}
-                    type={post.author.associated?.labeler ? 'labeler' : 'user'}
-                  />
+              <View
+                style={[
+                  styles.layoutAvi,
+                  isThreadedParent && {paddingRight: 8},
+                ]}>
+                <PreviewableUserAvatar
+                  size={!isThreadedParent && isThreadedChild ? 26 : 38}
+                  profile={post.author}
+                  moderation={moderation.ui('avatar')}
+                  type={post.author.associated?.labeler ? 'labeler' : 'user'}
+                />
 
-                  {showChildReplyLine && (
-                    <View
-                      style={[
-                        styles.replyLine,
-                        {
-                          flexGrow: 1,
-                          backgroundColor: pal.colors.replyLine,
-                          marginTop: 4,
-                        },
-                      ]}
-                    />
-                  )}
-                </View>
-              )}
+                {showChildReplyLine && (
+                  <View
+                    style={[
+                      styles.replyLine,
+                      {
+                        flexGrow: 1,
+                        backgroundColor: pal.colors.replyLine,
+                        marginTop: treeView ? 0 : 4,
+                      },
+                    ]}
+                  />
+                )}
+              </View>
 
               <View
-                style={
+                style={[
                   isThreadedChild
                     ? styles.layoutContentThreaded
-                    : styles.layoutContent
-                }>
+                    : styles.layoutContent,
+                  depth > 1 && {paddingLeft: 6},
+                ]}>
                 <PostMeta
                   author={post.author}
                   moderation={moderation}
                   authorHasWarning={!!post.author.labels?.length}
                   timestamp={post.indexedAt}
                   postHref={postHref}
-                  showAvatar={isThreadedChild}
+                  showAvatar={false}
                   avatarModeration={moderation.ui('avatar')}
                   avatarSize={28}
                   displayNameType="md-bold"
@@ -594,6 +649,10 @@ function PostOuterWrapper({
   hasPrecedingItem,
   hideTopBorder,
   children,
+  hasNextItem,
+  lastPostIsSelfThreadCount,
+  currPost,
+  replyCurve,
 }: React.PropsWithChildren<{
   post: AppBskyFeedDefs.PostView
   treeView: boolean
@@ -601,10 +660,17 @@ function PostOuterWrapper({
   showParentReplyLine: boolean
   hasPrecedingItem: boolean
   hideTopBorder?: boolean
+  hasNextItem?: boolean
+  lastPostIsSelfThreadCount?: number
+  currPost: ThreadPost
+  replyCurve?: boolean
 }>) {
   const {isMobile} = useWebMediaQueries()
   const pal = usePalette('default')
   if (treeView && depth > 0) {
+    if (lastPostIsSelfThreadCount) depth = depth - lastPostIsSelfThreadCount
+    const independentFirstIndexPost =
+      depth === 1 && !((currPost.ctx.indentDecrease || 0) > 0)
     return (
       <View
         style={[
@@ -612,21 +678,55 @@ function PostOuterWrapper({
           styles.cursor,
           {
             flexDirection: 'row',
-            paddingHorizontal: isMobile ? 10 : 6,
-            borderTopWidth: depth === 1 ? hairlineWidth : 0,
+            paddingHorizontal: isMobile ? 10 : 8,
+            borderTopWidth: independentFirstIndexPost ? hairlineWidth : 0,
+            paddingBottom: depth === 1 && !hasNextItem ? 8 : 0,
           },
         ]}>
-        {Array.from(Array(depth - 1)).map((_, n: number) => (
-          <View
-            key={`${post.uri}-padding-${n}`}
-            style={{
-              borderLeftWidth: 2,
-              borderLeftColor: pal.colors.border,
-              marginLeft: isMobile ? 6 : 12,
-              paddingLeft: isMobile ? 6 : 8,
-            }}
-          />
-        ))}
+        {Array.from(Array(depth - 1)).map((_, n: number) => {
+          //const isLastItem = n === depth - 2
+          const isTransparent = currPost.ctx.disableLineArray
+            ? currPost.ctx.disableLineArray.includes(
+                n + 1 - (currPost.ctx.indentDecrease || 0),
+              )
+            : false
+          return (
+            <View
+              key={`${post.uri}-padding-${n}`}
+              style={[
+                styles.replyLine,
+                {
+                  backgroundColor: isTransparent ? '#0000' : pal.colors.border,
+                  marginLeft: n === 0 ? 26 : 24,
+                },
+              ]}
+            />
+          )
+        })}
+        {depth > 1 && (
+          <View style={{overflow: 'hidden', width: 12}}>
+            <View
+              style={[
+                {
+                  backgroundColor: '#0000',
+                  borderBottomColor: replyCurve
+                    ? pal.colors.replyLine
+                    : 'transparent',
+                  borderLeftColor: replyCurve
+                    ? pal.colors.replyLine
+                    : 'transparent',
+                  borderBottomWidth: 2.7,
+                  borderLeftWidth: 2,
+                  transform: [{translateX: -2}],
+                  borderBottomLeftRadius: 12,
+                  width: 14,
+                  height: 22,
+                },
+              ]}
+            />
+          </View>
+        )}
+
         <View style={{flex: 1}}>{children}</View>
       </View>
     )
