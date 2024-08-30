@@ -45,6 +45,9 @@ export interface ThreadCtx {
   isChildLoading?: boolean
   isSelfThread?: boolean
   hasMoreSelfThread?: boolean
+  isLastItem?: boolean
+  disableLineArray?: number[]
+  indentDecrease?: number
 }
 
 export type ThreadPost = {
@@ -150,9 +153,16 @@ export function sortThread(
   currentDid: string | undefined,
   justPostedUris: Set<string>,
   threadgateRecordHiddenReplies: Set<string>,
+  isLastItem: boolean = false,
 ): ThreadNode {
   if (node.type !== 'post') {
     return node
+  }
+  if (isLastItem) {
+    node.ctx = {
+      ...node.ctx,
+      isLastItem: true,
+    }
   }
   if (node.replies) {
     node.replies.sort((a: ThreadNode, b: ThreadNode) => {
@@ -241,7 +251,8 @@ export function sortThread(
       }
       return b.post.indexedAt.localeCompare(a.post.indexedAt)
     })
-    node.replies.forEach(reply =>
+    const lastReplyLenghter = node.replies.length
+    node.replies.forEach((reply, index) =>
       sortThread(
         reply,
         opts,
@@ -249,6 +260,7 @@ export function sortThread(
         currentDid,
         justPostedUris,
         threadgateRecordHiddenReplies,
+        index === lastReplyLenghter - 1,
       ),
     )
   }
@@ -299,6 +311,9 @@ function responseToThreadNodes(
           direction === 'down' && !node.replies?.length && !!node.replyCount,
         isSelfThread: false, // populated `annotateSelfThread`
         hasMoreSelfThread: false, // populated in `annotateSelfThread`
+        isLastItem: false, // populated in `sortThread`
+        disableLineArray: [], // populated in `PostThread.tsx`
+        indentDecrease: 0, // populated in `PostThread.tsx`
       },
     }
   } else if (AppBskyFeedDefs.isBlockedPost(node)) {
