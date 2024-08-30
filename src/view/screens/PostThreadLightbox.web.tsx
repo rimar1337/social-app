@@ -101,7 +101,11 @@ export function PostThreadLightboxScreen({route}: Props) {
       </View>
       {!isTabletOrMobile && isSidebarOpen && (
         <View style={styles.postThreadInternal}>
-          <PostThread uri={uri} imageGridDisabled={true} />
+          <PostThread
+            uri={uri}
+            imageGridDisabled={true}
+            lightboxSidebar={true}
+          />
         </View>
       )}
     </View>

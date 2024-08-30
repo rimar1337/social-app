@@ -89,9 +89,11 @@ const keyExtractor = (item: RowItem) => {
 export function PostThread({
   uri,
   imageGridDisabled,
+  lightboxSidebar,
 }: {
   uri: string | undefined
   imageGridDisabled?: boolean
+  lightboxSidebar?: boolean
 }) {
   const {hasSession, currentAccount} = useSession()
   const {_} = useLingui()
@@ -490,7 +492,9 @@ export function PostThread({
             threadgateRecord={threadgateRecord ?? undefined}
             moderation={threadModerationCache.get(item)}
             //treeView={item.ctx.isSelfThread ? false : treeView}
-            treeView={item.ctx.isSelfThread ? false : true}
+            treeView={
+              lightboxSidebar ? false : item.ctx.isSelfThread ? false : true
+            }
             depth={visualDepth}
             currPost={item}
             prevPost={prev}
