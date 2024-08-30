@@ -101,12 +101,7 @@ export function PostThreadLightboxScreen({route}: Props) {
       </View>
       {!isTabletOrMobile && isSidebarOpen && (
         <View style={styles.postThreadInternal}>
-          <PostThread
-            uri={uri}
-            onPressReply={onPressReply}
-            onCanReply={() => true}
-            imageGridDisabled={true}
-          />
+          <PostThread uri={uri} imageGridDisabled={true} />
         </View>
       )}
     </View>
@@ -114,7 +109,7 @@ export function PostThreadLightboxScreen({route}: Props) {
 }
 
 function PostThreadFetcher({uri, page}: {uri?: string; page: number}) {
-  const {data: thread} = usePostThreadQuery(uri)
+  const {data: {thread} = {}} = usePostThreadQuery(uri)
   const [rootPost, setRootPost] = useState<AppBskyFeedDefs.PostView | null>(
     null,
   )
@@ -200,7 +195,7 @@ const BottomCtrlsWrapper: React.FC<BottomCtrlsWrapperProps> = ({
   uri,
   onPressReply,
 }) => {
-  const {data: thread} = usePostThreadQuery(uri)
+  const {data: {thread} = {}} = usePostThreadQuery(uri)
   const [rootPost, setRootPost] = useState<AppBskyFeedDefs.PostView | null>(
     null,
   )

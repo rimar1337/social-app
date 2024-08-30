@@ -603,7 +603,12 @@ let PostThreadItemLoaded = ({
               ) : undefined}
               {post.embed && (
                 <View style={[a.pb_xs]}>
-                  <PostEmbeds embed={post.embed} moderation={moderation} />
+                  <PostEmbeds
+                    embed={post.embed}
+                    moderation={moderation}
+                    handle={post.author.handle}
+                    rkey={rkey}
+                  />
                 </View>
               )}
               <PostCtrls

@@ -143,7 +143,7 @@ export function PostEmbeds({
         })
       }
 
-      if (imageGridDisabled) return <></>
+      if (imageGridDisabled) return null
 
       if (images.length === 1) {
         const {alt, thumb, aspectRatio} = images[0]
