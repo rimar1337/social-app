@@ -1,11 +1,14 @@
 import {createUploadTask, FileSystemUploadType} from 'expo-file-system'
 import {AppBskyVideoDefs} from '@atproto/api'
+import {msg} from '@lingui/macro'
+import {useLingui} from '@lingui/react'
 import {useMutation} from '@tanstack/react-query'
 import {nanoid} from 'nanoid/non-secure'
 
 import {cancelable} from '#/lib/async/cancelable'
-import {CompressedVideo} from '#/lib/media/video/compress'
-import {createVideoEndpointUrl} from '#/state/queries/video/util'
+import {ServerError} from '#/lib/media/video/errors'
+import {CompressedVideo} from '#/lib/media/video/types'
+import {createVideoEndpointUrl, mimeToExt} from '#/state/queries/video/util'
 import {useAgent, useSession} from '#/state/session'
 import {getServiceAuthAudFromUrl} from 'lib/strings/url-helpers'
 
@@ -22,20 +25,18 @@ export const useUploadVideoMutation = ({
 }) => {
   const {currentAccount} = useSession()
   const agent = useAgent()
+  const {_} = useLingui()
 
   return useMutation({
     mutationKey: ['video', 'upload'],
     mutationFn: cancelable(async (video: CompressedVideo) => {
       const uri = createVideoEndpointUrl('/xrpc/app.bsky.video.uploadVideo', {
         did: currentAccount!.did,
-        name: `${nanoid(12)}.mp4`, // @TODO what are we limiting this to?
+        name: `${nanoid(12)}.${mimeToExt(video.mimeType)}`,
       })
 
-      if (!currentAccount?.service) {
-        throw new Error('User is not logged in')
-      }
+      const serviceAuthAud = getServiceAuthAudFromUrl(agent.dispatchUrl)
 
-      const serviceAuthAud = getServiceAuthAudFromUrl(currentAccount.service)
       if (!serviceAuthAud) {
         throw new Error('Agent does not have a PDS URL')
       }
@@ -44,7 +45,7 @@ export const useUploadVideoMutation = ({
         {
           aud: serviceAuthAud,
           lxm: 'com.atproto.repo.uploadBlob',
-          exp: Date.now() + 1000 * 60 * 30, // 30 minutes
+          exp: Date.now() / 1000 + 60 * 30, // 30 minutes
         },
       )
 
@@ -53,7 +54,7 @@ export const useUploadVideoMutation = ({
         video.uri,
         {
           headers: {
-            'content-type': 'video/mp4',
+            'content-type': video.mimeType,
             Authorization: `Bearer ${serviceAuth.token}`,
           },
           httpMethod: 'POST',
@@ -68,6 +69,13 @@ export const useUploadVideoMutation = ({
       }
 
       const responseBody = JSON.parse(res.body) as AppBskyVideoDefs.JobStatus
+
+      if (!responseBody.jobId) {
+        throw new ServerError(
+          responseBody.error || _(msg`Failed to upload video`),
+        )
+      }
+
       return responseBody
     }, signal),
     onError,

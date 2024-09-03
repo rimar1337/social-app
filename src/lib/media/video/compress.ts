@@ -1,9 +1,6 @@
 import {getVideoMetaData, Video} from 'react-native-compressor'
 
-export type CompressedVideo = {
-  uri: string
-  size: number
-}
+import {CompressedVideo} from './types'
 
 export async function compressVideo(
   file: string,
@@ -32,5 +29,6 @@ export async function compressVideo(
   )
 
   const info = await getVideoMetaData(compressed)
-  return {uri: compressed, size: info.size}
+
+  return {uri: compressed, size: info.size, mimeType: `video/${info.extension}`}
 }
