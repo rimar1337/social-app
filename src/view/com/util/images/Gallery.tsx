@@ -8,6 +8,7 @@ import {useLingui} from '@lingui/react'
 import {useLargeAltBadgeEnabled} from '#/state/preferences/large-alt-badge'
 import {PostEmbedViewContext} from '#/view/com/util/post-embeds/types'
 import {atoms as a, useTheme} from '#/alf'
+import {ArrowsDiagonalOut_Stroke2_Corner0_Rounded as Fullscreen} from '#/components/icons/ArrowsDiagonal'
 import {MediaInsetBorder} from '#/components/MediaInsetBorder'
 import {Text} from '#/components/Typography'
 
@@ -22,6 +23,10 @@ interface Props {
   imageStyle?: StyleProp<ImageStyle>
   viewContext?: PostEmbedViewContext
   insetBorderStyle?: StyleProp<ViewStyle>
+  empty?: boolean
+  vertis?: boolean
+  disableFlexOne?: boolean
+  isCropped?: boolean
 }
 
 export function GalleryItem({
@@ -33,6 +38,10 @@ export function GalleryItem({
   onLongPress,
   viewContext,
   insetBorderStyle,
+  empty,
+  vertis,
+  disableFlexOne,
+  isCropped,
 }: Props) {
   const t = useTheme()
   const {_} = useLingui()
@@ -42,13 +51,18 @@ export function GalleryItem({
   const hideBadges =
     viewContext === PostEmbedViewContext.FeedEmbedRecordWithMedia
   return (
-    <View style={a.flex_1}>
+    <View
+      style={[
+        empty && {justifyContent: 'center', backgroundColor: 'black'},
+        vertis ? {flexDirection: 'row'} : {flexDirection: 'column'},
+        !disableFlexOne && a.flex_1,
+      ]}>
       <Pressable
         onPress={onPress ? () => onPress(index) : undefined}
         onPressIn={onPressIn ? () => onPressIn(index) : undefined}
         onLongPress={onLongPress ? () => onLongPress(index) : undefined}
         style={[
-          a.flex_1,
+          !empty && a.flex_1,
           a.overflow_hidden,
           t.atoms.bg_contrast_25,
           imageStyle,
@@ -66,6 +80,36 @@ export function GalleryItem({
         />
         <MediaInsetBorder style={insetBorderStyle} />
       </Pressable>
+
+      {isCropped && !hideBadges && (
+        <View
+          accessible={false}
+          style={[
+            a.absolute,
+            a.flex_row,
+            a.align_center,
+            a.rounded_xs,
+            t.atoms.bg_contrast_25,
+            {
+              gap: 3,
+              padding: 3,
+              bottom: a.p_xs.padding,
+              right: a.p_xs.padding,
+              opacity: 0.8,
+            },
+            largeAltBadge && [
+              {
+                gap: 4,
+                padding: 5,
+              },
+            ],
+          ]}>
+          <Fullscreen
+            fill={t.atoms.text_contrast_high.color}
+            width={largeAltBadge ? 18 : 12}
+          />
+        </View>
+      )}
       {hasAlt && !hideBadges ? (
         <View
           accessible={false}
