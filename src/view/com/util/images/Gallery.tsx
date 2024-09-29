@@ -8,6 +8,7 @@ import {useLingui} from '@lingui/react'
 import {useLargeAltBadgeEnabled} from '#/state/preferences/large-alt-badge'
 import {PostEmbedViewContext} from '#/view/com/util/post-embeds/types'
 import {atoms as a, useTheme} from '#/alf'
+import {ArrowsDiagonalOut_Stroke2_Corner0_Rounded as Fullscreen} from '#/components/icons/ArrowsDiagonal'
 import {MediaInsetBorder} from '#/components/MediaInsetBorder'
 import {Text} from '#/components/Typography'
 
@@ -22,6 +23,7 @@ interface Props {
   imageStyle?: StyleProp<ImageStyle>
   viewContext?: PostEmbedViewContext
   insetBorderStyle?: StyleProp<ViewStyle>
+  isCropped?: boolean
 }
 
 export function GalleryItem({
@@ -33,6 +35,7 @@ export function GalleryItem({
   onLongPress,
   viewContext,
   insetBorderStyle,
+  isCropped,
 }: Props) {
   const t = useTheme()
   const {_} = useLingui()
@@ -66,7 +69,7 @@ export function GalleryItem({
         />
         <MediaInsetBorder style={insetBorderStyle} />
       </Pressable>
-      {hasAlt && !hideBadges ? (
+      {(hasAlt || isCropped) && !hideBadges ? (
         <View
           accessible={false}
           style={[
@@ -89,10 +92,18 @@ export function GalleryItem({
               },
             ],
           ]}>
-          <Text
-            style={[a.font_heavy, largeAltBadge ? a.text_xs : {fontSize: 8}]}>
-            ALT
-          </Text>
+          {hasAlt && (
+            <Text
+              style={[a.font_heavy, largeAltBadge ? a.text_xs : {fontSize: 8}]}>
+              ALT
+            </Text>
+          )}
+          {isCropped && (
+            <Fullscreen
+              fill={t.atoms.text_contrast_high.color}
+              width={largeAltBadge ? 18 : 12}
+            />
+          )}
         </View>
       ) : null}
     </View>
