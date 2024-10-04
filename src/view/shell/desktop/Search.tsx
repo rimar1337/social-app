@@ -16,7 +16,6 @@ import {useLingui} from '@lingui/react'
 import {StackActions, useNavigation} from '@react-navigation/native'
 import {useQueryClient} from '@tanstack/react-query'
 
-import {usePalette} from '#/lib/hooks/usePalette'
 import {makeProfileLink} from '#/lib/routes/links'
 import {NavigationProp} from '#/lib/routes/types'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
@@ -28,7 +27,7 @@ import {precacheProfile} from '#/state/queries/profile'
 import {Link} from '#/view/com/util/Link'
 import {Text} from '#/view/com/util/text/Text'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
-import {atoms as a} from '#/alf'
+import {atoms as a, useTheme} from '#/alf'
 import {SearchInput} from '#/components/forms/SearchInput'
 
 let SearchLinkCard = ({
@@ -42,12 +41,16 @@ let SearchLinkCard = ({
   onPress?: () => void
   style?: ViewStyle
 }): React.ReactNode => {
-  const pal = usePalette('default')
+  const t = useTheme()
 
   const inner = (
     <View
-      style={[pal.border, {paddingVertical: 16, paddingHorizontal: 12}, style]}>
-      <Text type="md" style={[pal.text]}>
+      style={[
+        t.atoms.border_contrast_high,
+        {paddingVertical: 16, paddingHorizontal: 12},
+        style,
+      ]}>
+      <Text type="md" style={[t.atoms.text]}>
         {label}
       </Text>
     </View>
@@ -68,11 +71,11 @@ let SearchLinkCard = ({
     <Link href={to} asAnchor anchorNoUnderline>
       <View
         style={[
-          pal.border,
+          t.atoms.border_contrast_high,
           {paddingVertical: 16, paddingHorizontal: 12},
           style,
         ]}>
-        <Text type="md" style={[pal.text]}>
+        <Text type="md" style={[t.atoms.text]}>
           {label}
         </Text>
       </View>
@@ -91,7 +94,7 @@ let SearchProfileCard = ({
   moderation: ModerationDecision
   onPress: () => void
 }): React.ReactNode => {
-  const pal = usePalette('default')
+  const t = useTheme()
   const queryClient = useQueryClient()
 
   const onPress = React.useCallback(() => {
@@ -109,7 +112,7 @@ let SearchProfileCard = ({
       onBeforePress={onPress}>
       <View
         style={[
-          pal.border,
+          t.atoms.border_contrast_high,
           {
             flexDirection: 'row',
             alignItems: 'center',
@@ -128,7 +131,7 @@ let SearchProfileCard = ({
           <Text
             emoji
             type="lg"
-            style={[s.bold, pal.text, a.self_start]}
+            style={[s.bold, t.atoms.text, a.self_start]}
             numberOfLines={1}
             lineHeight={1.2}>
             {sanitizeDisplayName(
@@ -136,7 +139,10 @@ let SearchProfileCard = ({
               moderation.ui('displayName'),
             )}
           </Text>
-          <Text type="md" style={[pal.textLight]} numberOfLines={1}>
+          <Text
+            type="md"
+            style={[t.atoms.text_contrast_medium]}
+            numberOfLines={1}>
             {sanitizeHandle(profile.handle, '@')}
           </Text>
         </View>
@@ -149,7 +155,7 @@ export {SearchProfileCard}
 
 export function DesktopSearch() {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useTheme()
   const navigation = useNavigation<NavigationProp>()
   const [isActive, setIsActive] = React.useState<boolean>(false)
   const [query, setQuery] = React.useState<string>('')
@@ -182,7 +188,7 @@ export function DesktopSearch() {
   }, [])
 
   return (
-    <View style={[styles.container, pal.view]}>
+    <View style={[styles.container, t.atoms.bg]}>
       <SearchInput
         value={query}
         onChangeText={onChangeText}
@@ -190,7 +196,12 @@ export function DesktopSearch() {
         onSubmitEditing={onSubmit}
       />
       {query !== '' && isActive && moderationOpts && (
-        <View style={[pal.view, pal.borderDark, styles.resultsContainer]}>
+        <View
+          style={[
+            t.atoms.bg,
+            t.atoms.border_contrast_medium,
+            styles.resultsContainer,
+          ]}>
           {isFetching && !autocompleteData?.length ? (
             <View style={{padding: 8}}>
               <ActivityIndicator />

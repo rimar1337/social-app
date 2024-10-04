@@ -12,7 +12,6 @@ import {
   useNavigationState,
 } from '@react-navigation/native'
 
-import {usePalette} from '#/lib/hooks/usePalette'
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {getCurrentRoute, isStateAtTabRoot, isTab} from '#/lib/routes/helpers'
 import {makeProfileLink} from '#/lib/routes/links'
@@ -105,7 +104,7 @@ const HIDDEN_BACK_BNT_ROUTES = ['StarterPackWizard', 'StarterPackEdit']
 
 function BackBtn() {
   const {isTablet} = useWebMediaQueries()
-  const pal = usePalette('default')
+  const t = useTheme()
   const navigation = useNavigation<NavigationProp>()
   const {_} = useLingui()
   const shouldShow = useNavigationState(
@@ -136,7 +135,7 @@ function BackBtn() {
       <FontAwesomeIcon
         size={24}
         icon="angle-left"
-        style={pal.text as FontAwesomeIconStyle}
+        style={t.atoms.text as FontAwesomeIconStyle}
       />
     </TouchableOpacity>
   )
@@ -316,7 +315,7 @@ function ComposeBtn() {
 }
 
 function ChatNavItem() {
-  const pal = usePalette('default')
+  const t = useTheme()
   const {_} = useLingui()
   const numUnreadMessages = useUnreadMessageCount()
 
@@ -324,8 +323,8 @@ function ChatNavItem() {
     <NavItem
       href="/messages"
       count={numUnreadMessages.numUnread}
-      icon={<Message style={pal.text} width={NAV_ICON_WIDTH} />}
-      iconFilled={<MessageFilled style={pal.text} width={NAV_ICON_WIDTH} />}
+      icon={<Message style={t.atoms.text} width={NAV_ICON_WIDTH} />}
+      iconFilled={<MessageFilled style={t.atoms.text} width={NAV_ICON_WIDTH} />}
       label={_(msg`Chat`)}
     />
   )
@@ -333,7 +332,7 @@ function ChatNavItem() {
 
 export function DesktopLeftNav() {
   const {hasSession, currentAccount} = useSession()
-  const pal = usePalette('default')
+  const t = useTheme()
   const {_} = useLingui()
   const {isDesktop, isTablet} = useWebMediaQueries()
   const numUnreadNotifications = useUnreadNotifications()
@@ -347,8 +346,8 @@ export function DesktopLeftNav() {
       style={[
         styles.leftNav,
         isTablet && styles.leftNavTablet,
-        pal.view,
-        pal.border,
+        t.atoms.bg,
+        t.atoms.border_contrast_high,
       ]}>
       {hasSession ? (
         <ProfileCard />
@@ -364,23 +363,32 @@ export function DesktopLeftNav() {
 
           <NavItem
             href="/"
-            icon={<Home width={NAV_ICON_WIDTH} style={pal.text} />}
-            iconFilled={<HomeFilled width={NAV_ICON_WIDTH} style={pal.text} />}
+            icon={<Home width={NAV_ICON_WIDTH} style={t.atoms.text} />}
+            iconFilled={
+              <HomeFilled width={NAV_ICON_WIDTH} style={t.atoms.text} />
+            }
             label={_(msg`Home`)}
           />
           <NavItem
             href="/search"
-            icon={<MagnifyingGlass style={pal.text} width={NAV_ICON_WIDTH} />}
+            icon={
+              <MagnifyingGlass style={t.atoms.text} width={NAV_ICON_WIDTH} />
+            }
             iconFilled={
-              <MagnifyingGlassFilled style={pal.text} width={NAV_ICON_WIDTH} />
+              <MagnifyingGlassFilled
+                style={t.atoms.text}
+                width={NAV_ICON_WIDTH}
+              />
             }
             label={_(msg`Search`)}
           />
           <NavItem
             href="/notifications"
             count={numUnreadNotifications}
-            icon={<Bell width={NAV_ICON_WIDTH} style={pal.text} />}
-            iconFilled={<BellFilled width={NAV_ICON_WIDTH} style={pal.text} />}
+            icon={<Bell width={NAV_ICON_WIDTH} style={t.atoms.text} />}
+            iconFilled={
+              <BellFilled width={NAV_ICON_WIDTH} style={t.atoms.text} />
+            }
             label={_(msg`Notifications`)}
           />
           <ChatNavItem />
@@ -388,13 +396,13 @@ export function DesktopLeftNav() {
             href="/feeds"
             icon={
               <Hashtag
-                style={pal.text as FontAwesomeIconStyle}
+                style={t.atoms.text as FontAwesomeIconStyle}
                 width={NAV_ICON_WIDTH}
               />
             }
             iconFilled={
               <HashtagFilled
-                style={pal.text as FontAwesomeIconStyle}
+                style={t.atoms.text as FontAwesomeIconStyle}
                 width={NAV_ICON_WIDTH}
               />
             }
@@ -402,23 +410,25 @@ export function DesktopLeftNav() {
           />
           <NavItem
             href="/lists"
-            icon={<List style={pal.text} width={NAV_ICON_WIDTH} />}
-            iconFilled={<ListFilled style={pal.text} width={NAV_ICON_WIDTH} />}
+            icon={<List style={t.atoms.text} width={NAV_ICON_WIDTH} />}
+            iconFilled={
+              <ListFilled style={t.atoms.text} width={NAV_ICON_WIDTH} />
+            }
             label={_(msg`Lists`)}
           />
           <NavItem
             href={currentAccount ? makeProfileLink(currentAccount) : '/'}
-            icon={<UserCircle width={NAV_ICON_WIDTH} style={pal.text} />}
+            icon={<UserCircle width={NAV_ICON_WIDTH} style={t.atoms.text} />}
             iconFilled={
-              <UserCircleFilled width={NAV_ICON_WIDTH} style={pal.text} />
+              <UserCircleFilled width={NAV_ICON_WIDTH} style={t.atoms.text} />
             }
             label={_(msg`Profile`)}
           />
           <NavItem
             href="/settings"
-            icon={<Settings width={NAV_ICON_WIDTH} style={pal.text} />}
+            icon={<Settings width={NAV_ICON_WIDTH} style={t.atoms.text} />}
             iconFilled={
-              <SettingsFilled width={NAV_ICON_WIDTH} style={pal.text} />
+              <SettingsFilled width={NAV_ICON_WIDTH} style={t.atoms.text} />
             }
             label={_(msg`Settings`)}
           />

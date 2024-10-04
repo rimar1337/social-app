@@ -1,22 +1,23 @@
 import React, {useEffect, useState} from 'react'
 import {StyleSheet, View} from 'react-native'
-import lande from 'lande'
-import {Trans, msg} from '@lingui/macro'
+import {
+  FontAwesomeIcon,
+  FontAwesomeIconStyle,
+} from '@fortawesome/react-native-fontawesome'
+import {msg, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
-import {Text} from '../../util/text/Text'
-import {Button} from '../../util/forms/Button'
+import lande from 'lande'
+
+import {s} from '#/lib/styles'
 import {code3ToCode2Strict, codeToLanguageName} from '#/locale/helpers'
 import {
   toPostLanguages,
   useLanguagePrefs,
   useLanguagePrefsApi,
 } from '#/state/preferences/languages'
-import {usePalette} from '#/lib/hooks/usePalette'
-import {s} from '#/lib/styles'
-import {
-  FontAwesomeIcon,
-  FontAwesomeIconStyle,
-} from '@fortawesome/react-native-fontawesome'
+import {useTheme} from '#/alf'
+import {Button} from '../../util/forms/Button'
+import {Text} from '../../util/text/Text'
 
 // fallbacks for safari
 const onIdle = globalThis.requestIdleCallback || (cb => setTimeout(cb, 1))
@@ -28,7 +29,7 @@ export function SuggestedLanguage({text}: {text: string}) {
   >()
   const langPrefs = useLanguagePrefs()
   const setLangPrefs = useLanguagePrefsApi()
-  const pal = usePalette('default')
+  const t = useTheme()
   const {_} = useLingui()
 
   useEffect(() => {
@@ -50,16 +51,16 @@ export function SuggestedLanguage({text}: {text: string}) {
 
   return suggestedLanguage &&
     !toPostLanguages(langPrefs.postLanguage).includes(suggestedLanguage) ? (
-    <View style={[pal.border, styles.infoBar]}>
+    <View style={[t.atoms.border_contrast_high, styles.infoBar]}>
       <FontAwesomeIcon
         icon="language"
-        style={pal.text as FontAwesomeIconStyle}
+        style={t.atoms.text as FontAwesomeIconStyle}
         size={24}
       />
-      <Text style={[pal.text, s.flex1]}>
+      <Text style={[t.atoms.text, s.flex1]}>
         <Trans>
           Are you writing in{' '}
-          <Text type="sm-bold" style={pal.text}>
+          <Text type="sm-bold" style={t.atoms.text}>
             {codeToLanguageName(suggestedLanguage)}
           </Text>
           ?
@@ -73,7 +74,7 @@ export function SuggestedLanguage({text}: {text: string}) {
           msg`Change post language to ${codeToLanguageName(suggestedLanguage)}`,
         )}
         accessibilityHint="">
-        <Text type="button" style={[pal.link, s.fw600]}>
+        <Text type="button" style={[{color: t.palette.primary_500}, s.fw600]}>
           <Trans>Yes</Trans>
         </Text>
       </Button>

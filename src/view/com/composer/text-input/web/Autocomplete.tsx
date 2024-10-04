@@ -14,10 +14,10 @@ import {
 } from '@tiptap/suggestion'
 import tippy, {Instance as TippyInstance} from 'tippy.js'
 
-import {usePalette} from '#/lib/hooks/usePalette'
 import {ActorAutocompleteFn} from '#/state/queries/actor-autocomplete'
 import {Text} from '#/view/com/util/text/Text'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
+import {useTheme} from '#/alf'
 import {useGrapheme} from '../hooks/useGrapheme'
 
 interface MentionListRef {
@@ -97,7 +97,7 @@ export function createSuggestion({
 const MentionList = forwardRef<MentionListRef, SuggestionProps>(
   function MentionListImpl(props: SuggestionProps, ref) {
     const [selectedIndex, setSelectedIndex] = useState(0)
-    const pal = usePalette('default')
+    const t = useTheme()
     const {getGraphemeString} = useGrapheme()
 
     const selectItem = (index: number) => {
@@ -149,7 +149,12 @@ const MentionList = forwardRef<MentionListRef, SuggestionProps>(
 
     return (
       <div className="items">
-        <View style={[pal.borderDark, pal.view, styles.container]}>
+        <View
+          style={[
+            t.atoms.border_contrast_medium,
+            t.atoms.bg,
+            styles.container,
+          ]}>
           {items.length > 0 ? (
             items.map((item, index) => {
               const {name: displayName} = getGraphemeString(
@@ -162,8 +167,8 @@ const MentionList = forwardRef<MentionListRef, SuggestionProps>(
                 <Pressable
                   key={item.handle}
                   style={[
-                    isSelected ? pal.viewLight : undefined,
-                    pal.borderDark,
+                    isSelected ? t.atoms.bg_contrast_25 : undefined,
+                    t.atoms.border_contrast_medium,
                     styles.mentionContainer,
                     index === 0
                       ? styles.firstMention
@@ -181,18 +186,21 @@ const MentionList = forwardRef<MentionListRef, SuggestionProps>(
                       size={26}
                       type={item.associated?.labeler ? 'labeler' : 'user'}
                     />
-                    <Text emoji style={pal.text} numberOfLines={1}>
+                    <Text emoji style={t.atoms.text} numberOfLines={1}>
                       {displayName}
                     </Text>
                   </View>
-                  <Text type="xs" style={pal.textLight} numberOfLines={1}>
+                  <Text
+                    type="xs"
+                    style={t.atoms.text_contrast_medium}
+                    numberOfLines={1}>
                     @{item.handle}
                   </Text>
                 </Pressable>
               )
             })
           ) : (
-            <Text type="sm" style={[pal.text, styles.noResult]}>
+            <Text type="sm" style={[t.atoms.text, styles.noResult]}>
               <Trans>No result</Trans>
             </Text>
           )}

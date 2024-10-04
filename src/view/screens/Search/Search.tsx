@@ -9,6 +9,7 @@ import {
   StyleSheet,
   TextInput,
   View,
+  ViewStyle,
 } from 'react-native'
 import {ScrollView as RNGHScrollView} from 'react-native-gesture-handler'
 import RNPickerSelect from 'react-native-picker-select'
@@ -26,7 +27,6 @@ import {LANGUAGES} from '#/lib/../locale/languages'
 import {createHitslop} from '#/lib/constants'
 import {HITSLOP_10} from '#/lib/constants'
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
-import {usePalette} from '#/lib/hooks/usePalette'
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {MagnifyingGlassIcon} from '#/lib/icons'
 import {makeProfileLink} from '#/lib/routes/links'
@@ -68,7 +68,7 @@ import {Menu_Stroke2_Corner0_Rounded as Menu} from '#/components/icons/Menu'
 import {SettingsGear2_Stroke2_Corner0_Rounded as Gear} from '#/components/icons/SettingsGear2'
 
 function Loader() {
-  const pal = usePalette('default')
+  const t = useThemeNew()
   const {isMobile} = useWebMediaQueries()
   return (
     <CenteredView
@@ -78,7 +78,7 @@ function Loader() {
           padding: 18,
           height: isWeb ? '100vh' : undefined,
         },
-        pal.border,
+        t.atoms.border_contrast_medium,
       ]}
       sideBorders={!isMobile}>
       <ActivityIndicator />
@@ -87,22 +87,22 @@ function Loader() {
 }
 
 function EmptyState({message, error}: {message: string; error?: string}) {
-  const pal = usePalette('default')
+  const t = useThemeNew()
   const {isMobile} = useWebMediaQueries()
 
   return (
     <CenteredView
       sideBorders={!isMobile}
       style={[
-        pal.border,
+        t.atoms.border_contrast_medium,
         // @ts-ignore web only -prf
         {
           padding: 18,
           height: isWeb ? '100vh' : undefined,
         },
       ]}>
-      <View style={[pal.viewLight, {padding: 18, borderRadius: 8}]}>
-        <Text style={[pal.text]}>{message}</Text>
+      <View style={[t.atoms.bg_contrast_25, {padding: 18, borderRadius: 8}]}>
+        <Text style={[t.atoms.text]}>{message}</Text>
 
         {error && (
           <>
@@ -112,13 +112,13 @@ function EmptyState({message, error}: {message: string; error?: string}) {
                   marginVertical: 12,
                   height: 1,
                   width: '100%',
-                  backgroundColor: pal.text.color,
+                  backgroundColor: t.atoms.text.color,
                   opacity: 0.2,
                 },
               ]}
             />
 
-            <Text style={[pal.textLight]}>
+            <Text style={[t.atoms.text_contrast_medium]}>
               <Trans>Error:</Trans> {error}
             </Text>
           </>
@@ -472,7 +472,7 @@ let SearchScreenInner = ({
   queryWithParams: string
   headerHeight: number
 }): React.ReactNode => {
-  const pal = usePalette('default')
+  const t = useThemeNew()
   const setMinimalShellMode = useSetMinimalShellMode()
   const setDrawerSwipeDisabled = useSetDrawerSwipeDisabled()
   const {hasSession} = useSession()
@@ -534,8 +534,8 @@ let SearchScreenInner = ({
         <CenteredView
           sideBorders
           style={[
-            pal.border,
-            pal.view,
+            t.atoms.border_contrast_medium,
+            t.atoms.bg,
             web({
               position: isWeb ? 'sticky' : '',
               zIndex: 1,
@@ -553,7 +553,7 @@ let SearchScreenInner = ({
   ) : hasSession ? (
     <Explore />
   ) : (
-    <CenteredView sideBorders style={pal.border}>
+    <CenteredView sideBorders style={t.atoms.border_contrast_medium}>
       <View
         // @ts-ignore web only -esb
         style={{
@@ -563,8 +563,8 @@ let SearchScreenInner = ({
           <Text
             type="title"
             style={[
-              pal.text,
-              pal.border,
+              t.atoms.text,
+              t.atoms.border_contrast_medium,
               {
                 display: 'flex',
                 paddingVertical: 12,
@@ -588,9 +588,11 @@ let SearchScreenInner = ({
           <MagnifyingGlassIcon
             strokeWidth={3}
             size={isDesktop ? 60 : 60}
-            style={pal.textLight}
+            style={t.atoms.text_contrast_medium as StyleProp<ViewStyle>}
           />
-          <Text type="xl" style={[pal.textLight, {paddingHorizontal: 18}]}>
+          <Text
+            type="xl"
+            style={[t.atoms.text_contrast_medium, {paddingHorizontal: 18}]}>
             <Trans>Find posts and users on Bluesky</Trans>
           </Text>
         </View>
@@ -1044,7 +1046,7 @@ function SearchHistory({
   onRemoveProfileClick: (profile: AppBskyActorDefs.ProfileViewBasic) => void
 }) {
   const {isTabletOrDesktop, isMobile} = useWebMediaQueries()
-  const pal = usePalette('default')
+  const t = useThemeNew()
   const {_} = useLingui()
 
   return (
@@ -1056,7 +1058,7 @@ function SearchHistory({
       }}>
       <View style={styles.searchHistoryContainer}>
         {(searchHistory.length > 0 || selectedProfiles.length > 0) && (
-          <Text style={[pal.text, styles.searchHistoryTitle]}>
+          <Text style={[t.atoms.text, styles.searchHistoryTitle]}>
             <Trans>Recent Searches</Trans>
           </Text>
         )}
@@ -1094,7 +1096,7 @@ function SearchHistory({
                     />
                     <Text
                       emoji
-                      style={[pal.text, styles.profileName]}
+                      style={[t.atoms.text, styles.profileName]}
                       numberOfLines={1}>
                       {profile.displayName || profile.handle}
                     </Text>
@@ -1111,7 +1113,9 @@ function SearchHistory({
                     <FontAwesomeIcon
                       icon="xmark"
                       size={14}
-                      style={pal.textLight as FontAwesomeIconStyle}
+                      style={
+                        t.atoms.text_contrast_medium as FontAwesomeIconStyle
+                      }
                     />
                   </Pressable>
                 </View>
@@ -1135,7 +1139,7 @@ function SearchHistory({
                   onPress={() => onItemClick(historyItem)}
                   hitSlop={HITSLOP_10}
                   style={[a.flex_1, a.py_sm]}>
-                  <Text style={pal.text}>{historyItem}</Text>
+                  <Text style={t.atoms.text}>{historyItem}</Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
@@ -1145,7 +1149,7 @@ function SearchHistory({
                   <FontAwesomeIcon
                     icon="xmark"
                     size={16}
-                    style={pal.textLight as FontAwesomeIconStyle}
+                    style={t.atoms.text_contrast_medium as FontAwesomeIconStyle}
                   />
                 </Pressable>
               </View>

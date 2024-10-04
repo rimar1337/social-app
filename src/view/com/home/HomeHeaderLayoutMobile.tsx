@@ -6,7 +6,6 @@ import {useLingui} from '@lingui/react'
 
 import {HITSLOP_10} from '#/lib/constants'
 import {useMinimalShellHeaderTransform} from '#/lib/hooks/useMinimalShellTransform'
-import {usePalette} from '#/lib/hooks/usePalette'
 import {isWeb} from '#/platform/detection'
 import {useSession} from '#/state/session'
 import {useSetDrawerOpen} from '#/state/shell/drawer-open'
@@ -28,7 +27,6 @@ export function HomeHeaderLayoutMobile({
   tabBarAnchor: JSX.Element | null | undefined
 }) {
   const t = useTheme()
-  const pal = usePalette('default')
   const {_} = useLingui()
   const setDrawerOpen = useSetDrawerOpen()
   const {headerHeight} = useShellLayout()
@@ -41,12 +39,17 @@ export function HomeHeaderLayoutMobile({
 
   return (
     <Animated.View
-      style={[pal.view, pal.border, styles.tabBar, headerMinimalShellTransform]}
+      style={[
+        t.atoms.bg,
+        t.atoms.border_contrast_high,
+        styles.tabBar,
+        headerMinimalShellTransform,
+      ]}
       onLayout={e => {
         headerHeight.value = e.nativeEvent.layout.height
       }}>
-      <View style={[pal.view, styles.topBar]}>
-        <View style={[pal.view, {width: 100}]}>
+      <View style={[t.atoms.bg, styles.topBar]}>
+        <View style={[t.atoms.bg, {width: 100}]}>
           <TouchableOpacity
             testID="viewHeaderDrawerBtn"
             onPress={onPressAvi}
@@ -68,7 +71,7 @@ export function HomeHeaderLayoutMobile({
             atoms.justify_end,
             atoms.align_center,
             atoms.gap_md,
-            pal.view,
+            t.atoms.bg,
             {width: 100},
           ]}>
           {IS_DEV && (

@@ -2,14 +2,14 @@ import React from 'react'
 import {Linking} from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 
-import {isNative} from '#/platform/detection'
-import * as persisted from '#/state/persisted'
-import {usePalette} from 'lib/hooks/usePalette'
 import {
   createBskyAppAbsoluteUrl,
   isBskyRSSUrl,
   isRelativeUrl,
-} from 'lib/strings/url-helpers'
+} from '#/lib/strings/url-helpers'
+import {isNative} from '#/platform/detection'
+import * as persisted from '#/state/persisted'
+import {useTheme} from '#/alf'
 import {useModalControls} from '../modals'
 
 type StateContext = persisted.Schema['useInAppBrowser']
@@ -59,7 +59,7 @@ export function useSetInAppBrowser() {
 export function useOpenLink() {
   const {openModal} = useModalControls()
   const enabled = useInAppBrowser()
-  const pal = usePalette('default')
+  const t = useTheme()
 
   const openLink = React.useCallback(
     (url: string, override?: boolean) => {
@@ -78,7 +78,7 @@ export function useOpenLink() {
           WebBrowser.openBrowserAsync(url, {
             presentationStyle:
               WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-            toolbarColor: pal.colors.backgroundLight,
+            toolbarColor: t.atoms.bg_contrast_25.backgroundColor,
             createTask: false,
           })
           return
@@ -86,7 +86,7 @@ export function useOpenLink() {
       }
       Linking.openURL(url)
     },
-    [enabled, openModal, pal.colors.backgroundLight],
+    [enabled, openModal, t.atoms.bg_contrast_25.backgroundColor],
   )
 
   return openLink

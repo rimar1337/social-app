@@ -5,10 +5,10 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome'
 import * as DropdownMenu from 'zeego/dropdown-menu'
 import {MenuItemCommonProps} from 'zeego/lib/typescript/menu'
 
-import {HITSLOP_10} from 'lib/constants'
-import {usePalette} from 'lib/hooks/usePalette'
-import {useTheme} from 'lib/ThemeContext'
-import {isIOS, isWeb} from 'platform/detection'
+import {HITSLOP_10} from '#/lib/constants'
+import {usePalette} from '#/lib/hooks/usePalette'
+import {isIOS, isWeb} from '#/platform/detection'
+import {useTheme} from '#/alf'
 import {Portal} from '#/components/Portal'
 
 // Custom Dropdown Menu Components
@@ -28,8 +28,8 @@ type TriggerProps = Omit<
   }>
 export const DropdownMenuTrigger = DropdownMenu.create(
   (props: TriggerProps) => {
-    const theme = useTheme()
-    const defaultCtrlColor = theme.palette.default.postCtrl
+    const t = useTheme()
+    const defaultCtrlColor = t.atoms.bg_contrast_500.backgroundColor
     const ref = React.useRef<View>(null)
 
     // HACK
@@ -75,9 +75,9 @@ export const DropdownMenuTrigger = DropdownMenu.create(
 type ItemProps = React.ComponentProps<(typeof DropdownMenu)['Item']>
 export const DropdownMenuItem = DropdownMenu.create(
   (props: ItemProps & {testID?: string}) => {
-    const theme = useTheme()
+    const t = useTheme()
     const [focused, setFocused] = React.useState(false)
-    const backgroundColor = theme.colorScheme === 'dark' ? '#fff1' : '#0001'
+    const backgroundColor = t.name === 'dark' ? '#fff1' : '#0001'
 
     return (
       <DropdownMenu.Item
@@ -120,9 +120,9 @@ type SeparatorProps = React.ComponentProps<(typeof DropdownMenu)['Separator']>
 export const DropdownMenuSeparator = DropdownMenu.create(
   (props: SeparatorProps) => {
     const pal = usePalette('default')
-    const theme = useTheme()
+    const t = useTheme()
     const {borderColor: separatorColor} =
-      theme.colorScheme === 'dark' ? pal.borderDark : pal.border
+      t.name === 'dark' ? pal.borderDark : pal.border
     return (
       <DropdownMenu.Separator
         {...props}
@@ -170,10 +170,9 @@ export function NativeDropdown({
   accessibilityHint,
 }: React.PropsWithChildren<Props>) {
   const pal = usePalette('default')
-  const theme = useTheme()
+  const t = useTheme()
   const [isOpen, setIsOpen] = React.useState(false)
-  const dropDownBackgroundColor =
-    theme.colorScheme === 'dark' ? pal.btn : pal.viewLight
+  const dropDownBackgroundColor = t.name === 'dark' ? pal.btn : pal.viewLight
 
   return (
     <>

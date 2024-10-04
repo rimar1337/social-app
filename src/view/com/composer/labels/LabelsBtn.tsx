@@ -5,11 +5,11 @@ import {FontAwesomeIconStyle} from '@fortawesome/react-native-fontawesome'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
+import {ShieldExclamation} from '#/lib/icons'
+import {isNative} from '#/platform/detection'
 import {useModalControls} from '#/state/modals'
-import {usePalette} from 'lib/hooks/usePalette'
-import {ShieldExclamation} from 'lib/icons'
-import {isNative} from 'platform/detection'
-import {Button} from 'view/com/util/forms/Button'
+import {Button} from '#/view/com/util/forms/Button'
+import {useTheme} from '#/alf'
 
 export function LabelsBtn({
   labels,
@@ -20,7 +20,7 @@ export function LabelsBtn({
   hasMedia: boolean
   onChange: (v: string[]) => void
 }) {
-  const pal = usePalette('default')
+  const t = useTheme()
   const {_} = useLingui()
   const {openModal} = useModalControls()
 
@@ -39,12 +39,12 @@ export function LabelsBtn({
         }
         openModal({name: 'self-label', labels, hasMedia, onChange})
       }}>
-      <ShieldExclamation style={pal.link} size={24} />
+      <ShieldExclamation style={{color: t.palette.primary_500}} size={24} />
       {labels.length > 0 ? (
         <FontAwesomeIcon
           icon="check"
           size={16}
-          style={pal.link as FontAwesomeIconStyle}
+          style={{color: t.palette.primary_500} as FontAwesomeIconStyle}
         />
       ) : null}
     </Button>

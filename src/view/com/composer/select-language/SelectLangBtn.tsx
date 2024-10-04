@@ -7,6 +7,7 @@ import {
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
+import {isNative} from '#/platform/detection'
 import {useModalControls} from '#/state/modals'
 import {
   hasPostLanguage,
@@ -14,18 +15,17 @@ import {
   useLanguagePrefs,
   useLanguagePrefsApi,
 } from '#/state/preferences/languages'
-import {usePalette} from 'lib/hooks/usePalette'
-import {isNative} from 'platform/detection'
 import {
   DropdownButton,
   DropdownItem,
   DropdownItemButton,
-} from 'view/com/util/forms/DropdownButton'
-import {Text} from 'view/com/util/text/Text'
+} from '#/view/com/util/forms/DropdownButton'
+import {Text} from '#/view/com/util/text/Text'
+import {useTheme} from '#/alf'
 import {codeToLanguageName} from '../../../../locale/helpers'
 
 export function SelectLangBtn() {
-  const pal = usePalette('default')
+  const t = useTheme()
   const {_} = useLingui()
   const {openModal} = useModalControls()
   const langPrefs = useLanguagePrefs()
@@ -105,13 +105,16 @@ export function SelectLangBtn() {
       accessibilityLabel={_(msg`Language selection`)}
       accessibilityHint="">
       {postLanguagesPref.length > 0 ? (
-        <Text type="lg-bold" style={[pal.link, styles.label]} numberOfLines={1}>
+        <Text
+          type="lg-bold"
+          style={[{color: t.palette.primary_500}, styles.label]}
+          numberOfLines={1}>
           {postLanguagesPref.map(lang => codeToLanguageName(lang)).join(', ')}
         </Text>
       ) : (
         <FontAwesomeIcon
           icon="language"
-          style={pal.link as FontAwesomeIconStyle}
+          style={{color: t.palette.primary_500} as FontAwesomeIconStyle}
           size={26}
         />
       )}

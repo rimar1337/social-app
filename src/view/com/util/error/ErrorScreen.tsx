@@ -4,15 +4,16 @@ import {
   FontAwesomeIcon,
   FontAwesomeIconStyle,
 } from '@fortawesome/react-native-fontawesome'
-import {Text} from '../text/Text'
-import {useTheme} from 'lib/ThemeContext'
-import {usePalette} from 'lib/hooks/usePalette'
-import {Button} from '../forms/Button'
-import {CenteredView} from '../Views'
-import {Trans, msg} from '@lingui/macro'
+import {msg, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
-import {ViewHeader} from 'view/com/util/ViewHeader'
-import {useWebMediaQueries} from 'lib/hooks/useWebMediaQueries'
+
+import {usePalette} from '#/lib/hooks/usePalette'
+import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
+import {ViewHeader} from '#/view/com/util/ViewHeader'
+import {useTheme} from '#/alf'
+import {Button} from '../forms/Button'
+import {Text} from '../text/Text'
+import {CenteredView} from '../Views'
 
 export function ErrorScreen({
   title,
@@ -29,7 +30,7 @@ export function ErrorScreen({
   testID?: string
   showHeader?: boolean
 }) {
-  const theme = useTheme()
+  const t = useTheme()
   const {isMobile} = useWebMediaQueries()
   const pal = usePalette('default')
   const {_} = useLingui()
@@ -42,7 +43,7 @@ export function ErrorScreen({
           <View
             style={[
               styles.errorIcon,
-              {backgroundColor: theme.palette.inverted.background},
+              {backgroundColor: t.atoms.bg_inverted.backgroundColor},
             ]}>
             <FontAwesomeIcon
               icon="exclamation"

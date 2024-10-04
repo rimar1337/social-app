@@ -13,6 +13,12 @@ import * as NavigationBar from 'expo-navigation-bar'
 import {StatusBar} from 'expo-status-bar'
 import {useNavigation, useNavigationState} from '@react-navigation/native'
 
+import {useDedupe} from '#/lib/hooks/useDedupe'
+import {useNotificationsHandler} from '#/lib/hooks/useNotificationHandler'
+import {useNotificationsRegistration} from '#/lib/notifications/notifications'
+import {isStateAtTabRoot} from '#/lib/routes/helpers'
+import {isAndroid} from '#/platform/detection'
+import {useDialogStateContext} from '#/state/dialogs'
 import {useSession} from '#/state/session'
 import {
   useIsDrawerOpen,
@@ -20,17 +26,10 @@ import {
   useSetDrawerOpen,
 } from '#/state/shell'
 import {useCloseAnyActiveElement} from '#/state/util'
-import {useDedupe} from 'lib/hooks/useDedupe'
-import {useNotificationsHandler} from 'lib/hooks/useNotificationHandler'
-import {usePalette} from 'lib/hooks/usePalette'
-import {useNotificationsRegistration} from 'lib/notifications/notifications'
-import {isStateAtTabRoot} from 'lib/routes/helpers'
-import {useTheme} from 'lib/ThemeContext'
-import {isAndroid} from 'platform/detection'
-import {useDialogStateContext} from 'state/dialogs'
-import {Lightbox} from 'view/com/lightbox/Lightbox'
-import {ModalsContainer} from 'view/com/modals/Modal'
-import {ErrorBoundary} from 'view/com/util/ErrorBoundary'
+import {Lightbox} from '#/view/com/lightbox/Lightbox'
+import {ModalsContainer} from '#/view/com/modals/Modal'
+import {ErrorBoundary} from '#/view/com/util/ErrorBoundary'
+import {useTheme} from '#/alf'
 import {MutedWordsDialog} from '#/components/dialogs/MutedWords'
 import {SigninDialog} from '#/components/dialogs/Signin'
 import {Outlet as PortalOutlet} from '#/components/Portal'
@@ -127,20 +126,17 @@ function ShellInner() {
 }
 
 export const Shell: React.FC = function ShellImpl() {
-  const pal = usePalette('default')
-  const theme = useTheme()
+  const t = useTheme()
   React.useEffect(() => {
     if (isAndroid) {
-      NavigationBar.setBackgroundColorAsync(theme.palette.default.background)
-      NavigationBar.setBorderColorAsync(theme.palette.default.background)
-      NavigationBar.setButtonStyleAsync(
-        theme.colorScheme === 'dark' ? 'light' : 'dark',
-      )
+      NavigationBar.setBackgroundColorAsync(t.palette.white)
+      NavigationBar.setBorderColorAsync(t.palette.white)
+      NavigationBar.setButtonStyleAsync(t.name === 'dark' ? 'light' : 'dark')
     }
-  }, [theme])
+  }, [t])
   return (
-    <View testID="mobileShellView" style={[styles.outerContainer, pal.view]}>
-      <StatusBar style={theme.colorScheme === 'dark' ? 'light' : 'dark'} />
+    <View testID="mobileShellView" style={[styles.outerContainer, t.atoms.bg]}>
+      <StatusBar style={t.name === 'dark' ? 'light' : 'dark'} />
       <RoutesContainer>
         <ShellInner />
       </RoutesContainer>

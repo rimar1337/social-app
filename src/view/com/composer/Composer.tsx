@@ -56,7 +56,6 @@ import {
 } from '#/lib/gif-alt-text'
 import {useAnimatedScrollHandler} from '#/lib/hooks/useAnimatedScrollHandler_FIXED'
 import {useIsKeyboardVisible} from '#/lib/hooks/useIsKeyboardVisible'
-import {usePalette} from '#/lib/hooks/usePalette'
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {LikelyType} from '#/lib/link-meta/link-meta'
 import {logEvent} from '#/lib/statsig/statsig'
@@ -148,7 +147,6 @@ export const ComposePost = ({
   const {data: currentProfile} = useProfileQuery({did: currentDid})
   const {isModalActive} = useModals()
   const {closeComposer} = useComposerControls()
-  const pal = usePalette('default')
   const {isMobile} = useWebMediaQueries()
   const {_} = useLingui()
   const requireAltTextEnabled = useRequireAltTextEnabled()
@@ -661,7 +659,9 @@ export const ComposePost = ({
             <View style={a.flex_1} />
             {isProcessing ? (
               <>
-                <Text style={pal.textLight}>{processingState}</Text>
+                <Text style={t.atoms.text_contrast_medium}>
+                  {processingState}
+                </Text>
                 <View style={styles.postBtn}>
                   <ActivityIndicator />
                 </View>
@@ -695,8 +695,8 @@ export const ComposePost = ({
                     </ButtonText>
                   </Button>
                 ) : (
-                  <View style={[styles.postBtn, pal.btn]}>
-                    <Text style={[pal.textLight, s.f16, s.bold]}>
+                  <View style={[styles.postBtn, t.atoms.bg_contrast_25]}>
+                    <Text style={[t.atoms.text_contrast_medium, s.f16, s.bold]}>
                       <Trans context="action">Post</Trans>
                     </Text>
                   </View>
@@ -706,7 +706,7 @@ export const ComposePost = ({
           </View>
 
           {isAltTextRequiredAndMissing && (
-            <View style={[styles.reminderLine, pal.viewLight]}>
+            <View style={[styles.reminderLine, t.atoms.bg_contrast_25]}>
               <View style={styles.errorIcon}>
                 <FontAwesomeIcon
                   icon="exclamation"
@@ -714,7 +714,7 @@ export const ComposePost = ({
                   size={10}
                 />
               </View>
-              <Text style={[pal.text, a.flex_1]}>
+              <Text style={[t.atoms.text, a.flex_1]}>
                 <Trans>One or more images is missing alt text.</Trans>
               </Text>
             </View>

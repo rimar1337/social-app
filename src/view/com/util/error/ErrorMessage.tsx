@@ -1,8 +1,8 @@
 import React from 'react'
 import {
+  StyleProp,
   StyleSheet,
   TouchableOpacity,
-  StyleProp,
   View,
   ViewStyle,
 } from 'react-native'
@@ -10,11 +10,12 @@ import {
   FontAwesomeIcon,
   FontAwesomeIconStyle,
 } from '@fortawesome/react-native-fontawesome'
-import {Text} from '../text/Text'
-import {useTheme} from 'lib/ThemeContext'
-import {usePalette} from 'lib/hooks/usePalette'
-import {useLingui} from '@lingui/react'
 import {msg} from '@lingui/macro'
+import {useLingui} from '@lingui/react'
+
+import {usePalette} from '#/lib/hooks/usePalette'
+import {useTheme} from '#/alf'
+import {Text} from '../text/Text'
 
 export function ErrorMessage({
   message,
@@ -27,13 +28,13 @@ export function ErrorMessage({
   style?: StyleProp<ViewStyle>
   onPressTryAgain?: () => void
 }) {
-  const theme = useTheme()
+  const t = useTheme()
   const pal = usePalette('error')
   const {_} = useLingui()
   return (
     <View testID="errorMessageView" style={[styles.outer, pal.view, style]}>
       <View
-        style={[styles.errorIcon, {backgroundColor: theme.palette.error.icon}]}>
+        style={[styles.errorIcon, {backgroundColor: t.palette.negative_600}]}>
         <FontAwesomeIcon
           icon="exclamation"
           style={pal.text as FontAwesomeIconStyle}
@@ -58,7 +59,7 @@ export function ErrorMessage({
           )}>
           <FontAwesomeIcon
             icon="arrows-rotate"
-            style={{color: theme.palette.error.icon}}
+            style={{color: t.palette.negative_600}}
             size={18}
           />
         </TouchableOpacity>

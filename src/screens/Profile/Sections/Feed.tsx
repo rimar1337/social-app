@@ -5,7 +5,6 @@ import {useLingui} from '@lingui/react'
 import {useQueryClient} from '@tanstack/react-query'
 
 import {useInitialNumToRender} from '#/lib/hooks/useInitialNumToRender'
-import {usePalette} from '#/lib/hooks/usePalette'
 import {isNative} from '#/platform/detection'
 import {FeedDescriptor} from '#/state/queries/post-feed'
 import {RQKEY as FEED_RQKEY} from '#/state/queries/post-feed'
@@ -15,6 +14,7 @@ import {EmptyState} from '#/view/com/util/EmptyState'
 import {ListRef} from '#/view/com/util/List'
 import {LoadLatestBtn} from '#/view/com/util/load-latest/LoadLatestBtn'
 import {Text} from '#/view/com/util/text/Text'
+import {useTheme} from '#/alf'
 import {ios} from '#/alf'
 import {SectionRef} from './types'
 
@@ -102,15 +102,20 @@ export const ProfileFeedSection = React.forwardRef<
 })
 
 function ProfileEndOfFeed() {
-  const pal = usePalette('default')
+  const t = useTheme()
 
   return (
     <View
       style={[
-        pal.border,
+        t.atoms.border_contrast_low,
         {paddingTop: 32, paddingBottom: 32, borderTopWidth: 1},
       ]}>
-      <Text style={[pal.textLight, pal.border, {textAlign: 'center'}]}>
+      <Text
+        style={[
+          t.atoms.text_contrast_high,
+          t.atoms.border_contrast_low,
+          {textAlign: 'center'},
+        ]}>
         <Trans>End of feed</Trans>
       </Text>
     </View>

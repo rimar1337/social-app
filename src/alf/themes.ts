@@ -343,6 +343,9 @@ export function createThemes({
       bg: {
         backgroundColor: lightPalette.white,
       },
+      bg_inverted: {
+        backgroundColor: darkPalette.black,
+      },
       bg_contrast_25: {
         backgroundColor: lightPalette.contrast_25,
       },
@@ -428,6 +431,9 @@ export function createThemes({
       },
       bg: {
         backgroundColor: darkPalette.black,
+      },
+      bg_inverted: {
+        backgroundColor: lightPalette.white,
       },
       bg_contrast_25: {
         backgroundColor: darkPalette.contrast_25,
@@ -519,6 +525,9 @@ export function createThemes({
       },
       bg: {
         backgroundColor: dimPalette.black,
+      },
+      bg_inverted: {
+        backgroundColor: lightPalette.white,
       },
       bg_contrast_25: {
         backgroundColor: dimPalette.contrast_25,

@@ -10,17 +10,16 @@ import {LinearGradient} from 'expo-linear-gradient'
 import {msg, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
+import {usePalette} from '#/lib/hooks/usePalette'
+import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
+import {cleanError} from '#/lib/strings/errors'
+import {colors, gradients, s} from '#/lib/styles'
+import {isAndroid, isWeb} from '#/platform/detection'
 import {useModalControls} from '#/state/modals'
 import {DM_SERVICE_HEADERS} from '#/state/queries/messages/const'
 import {useAgent, useSession, useSessionApi} from '#/state/session'
-import {usePalette} from 'lib/hooks/usePalette'
-import {useWebMediaQueries} from 'lib/hooks/useWebMediaQueries'
-import {cleanError} from 'lib/strings/errors'
-import {colors, gradients, s} from 'lib/styles'
-import {useTheme} from 'lib/ThemeContext'
-import {isAndroid, isWeb} from 'platform/detection'
 import {DeactivateAccountDialog} from '#/screens/Settings/components/DeactivateAccountDialog'
-import {atoms as a, useTheme as useNewTheme} from '#/alf'
+import {atoms as a, useTheme} from '#/alf'
 import {useDialogControl} from '#/components/Dialog'
 import {CircleInfo_Stroke2_Corner0_Rounded as CircleInfo} from '#/components/icons/CircleInfo'
 import {InlineLinkText} from '#/components/Link'
@@ -35,8 +34,7 @@ export const snapPoints = isAndroid ? ['90%'] : ['55%']
 
 export function Component({}: {}) {
   const pal = usePalette('default')
-  const theme = useTheme()
-  const t = useNewTheme()
+  const t = useTheme()
   const {currentAccount} = useSession()
   const agent = useAgent()
   const {removeAccount} = useSessionApi()
@@ -237,7 +235,7 @@ export function Component({}: {}) {
               style={[styles.textInput, pal.borderDark, pal.text, styles.mb20]}
               placeholder={_(msg`Confirmation code`)}
               placeholderTextColor={pal.textLight.color}
-              keyboardAppearance={theme.colorScheme}
+              keyboardAppearance={t.name === 'dark' ? 'dark' : 'light'}
               value={confirmCode}
               onChangeText={setConfirmCode}
               accessibilityLabelledBy="confirmationCode"
@@ -256,7 +254,7 @@ export function Component({}: {}) {
               style={[styles.textInput, pal.borderDark, pal.text]}
               placeholder={_(msg`Password`)}
               placeholderTextColor={pal.textLight.color}
-              keyboardAppearance={theme.colorScheme}
+              keyboardAppearance={t.name === 'dark' ? 'dark' : 'light'}
               secureTextEntry
               value={password}
               onChangeText={setPassword}

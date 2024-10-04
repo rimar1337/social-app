@@ -16,7 +16,6 @@ import {StackActions, useNavigation} from '@react-navigation/native'
 
 import {FEEDBACK_FORM_URL, HELP_DESK_URL} from '#/lib/constants'
 import {useNavigationTabState} from '#/lib/hooks/useNavigationTabState'
-import {usePalette} from '#/lib/hooks/usePalette'
 import {getTabState, TabState} from '#/lib/routes/helpers'
 import {NavigationProp} from '#/lib/routes/types'
 import {colors, s} from '#/lib/styles'
@@ -68,7 +67,7 @@ let DrawerProfileCard = ({
   onPressProfile: () => void
 }): React.ReactNode => {
   const {_, i18n} = useLingui()
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   const {data: profile} = useProfileQuery({did: account.did})
 
   return (
@@ -86,13 +85,13 @@ let DrawerProfileCard = ({
       />
       <Text
         type="title-lg"
-        style={[pal.text, s.bold, styles.profileCardDisplayName]}
+        style={[t.atoms.text, s.bold, styles.profileCardDisplayName]}
         numberOfLines={1}>
         {profile?.displayName || account.handle}
       </Text>
       <Text
         type="2xl"
-        style={[pal.textLight, styles.profileCardHandle]}
+        style={[t.atoms.text_contrast_medium, styles.profileCardHandle]}
         numberOfLines={1}>
         @{account.handle}
       </Text>
@@ -104,9 +103,9 @@ let DrawerProfileCard = ({
           a.align_center,
           a.flex_wrap,
         ]}>
-        <Text type="xl" style={pal.textLight}>
+        <Text type="xl" style={t.atoms.text_contrast_medium}>
           <Trans>
-            <Text type="xl-medium" style={pal.text}>
+            <Text type="xl-medium" style={t.atoms.text}>
               {formatCount(i18n, profile?.followersCount ?? 0)}
             </Text>{' '}
             <Plural
@@ -116,12 +115,12 @@ let DrawerProfileCard = ({
             />
           </Trans>
         </Text>
-        <Text type="xl" style={pal.textLight}>
+        <Text type="xl" style={t.atoms.text_contrast_medium}>
           &middot;
         </Text>
-        <Text type="xl" style={pal.textLight}>
+        <Text type="xl" style={t.atoms.text_contrast_medium}>
           <Trans>
-            <Text type="xl-medium" style={pal.text}>
+            <Text type="xl-medium" style={t.atoms.text}>
               {formatCount(i18n, profile?.followsCount ?? 0)}
             </Text>{' '}
             <Plural
@@ -141,7 +140,6 @@ export {DrawerProfileCard}
 let DrawerContent = ({}: {}): React.ReactNode => {
   const theme = useTheme()
   const t = useAlfTheme()
-  const pal = usePalette('default')
   const {_} = useLingui()
   const setDrawerOpen = useSetDrawerOpen()
   const navigation = useNavigation<NavigationProp>()
@@ -232,7 +230,7 @@ let DrawerContent = ({}: {}): React.ReactNode => {
       testID="drawer"
       style={[
         styles.view,
-        theme.colorScheme === 'light' ? pal.view : t.atoms.bg_contrast_25,
+        theme.colorScheme === 'light' ? t.atoms.bg : t.atoms.bg_contrast_25,
       ]}>
       <SafeAreaView style={s.flex1}>
         <ScrollView style={styles.main}>
@@ -279,24 +277,24 @@ let DrawerContent = ({}: {}): React.ReactNode => {
           <View style={[{flexWrap: 'wrap', gap: 12}, s.flexCol]}>
             <TextLink
               type="md"
-              style={pal.link}
+              style={{color: t.palette.primary_500}}
               href="https://bsky.social/about/support/tos"
               text={_(msg`Terms of Service`)}
             />
             <TextLink
               type="md"
-              style={pal.link}
+              style={{color: t.palette.primary_500}}
               href="https://bsky.social/about/support/privacy-policy"
               text={_(msg`Privacy Policy`)}
             />
             {kawaii && (
-              <Text type="md" style={pal.textLight}>
+              <Text type="md" style={t.atoms.text_contrast_medium}>
                 Logo by{' '}
                 <TextLink
                   type="md"
                   href="/profile/sawaratsuki.bsky.social"
                   text="@sawaratsuki.bsky.social"
-                  style={pal.link}
+                  style={{color: t.palette.primary_500}}
                 />
               </Text>
             )}
@@ -371,18 +369,18 @@ let SearchMenuItem = ({
   onPress: () => void
 }): React.ReactNode => {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   return (
     <MenuItem
       icon={
         isActive ? (
           <MagnifyingGlassFilled
-            style={pal.text as StyleProp<ViewStyle>}
+            style={t.atoms.text as StyleProp<ViewStyle>}
             width={iconWidth}
           />
         ) : (
           <MagnifyingGlass
-            style={pal.text as StyleProp<ViewStyle>}
+            style={t.atoms.text as StyleProp<ViewStyle>}
             width={iconWidth}
           />
         )
@@ -405,17 +403,20 @@ let HomeMenuItem = ({
   onPress: () => void
 }): React.ReactNode => {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   return (
     <MenuItem
       icon={
         isActive ? (
           <HomeFilled
-            style={pal.text as StyleProp<ViewStyle>}
+            style={t.atoms.text as StyleProp<ViewStyle>}
             width={iconWidth}
           />
         ) : (
-          <Home style={pal.text as StyleProp<ViewStyle>} width={iconWidth} />
+          <Home
+            style={t.atoms.text as StyleProp<ViewStyle>}
+            width={iconWidth}
+          />
         )
       }
       label={_(msg`Home`)}
@@ -436,18 +437,21 @@ let NotificationsMenuItem = ({
   onPress: () => void
 }): React.ReactNode => {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   const numUnreadNotifications = useUnreadNotifications()
   return (
     <MenuItem
       icon={
         isActive ? (
           <BellFilled
-            style={pal.text as StyleProp<ViewStyle>}
+            style={t.atoms.text as StyleProp<ViewStyle>}
             width={iconWidth}
           />
         ) : (
-          <Bell style={pal.text as StyleProp<ViewStyle>} width={iconWidth} />
+          <Bell
+            style={t.atoms.text as StyleProp<ViewStyle>}
+            width={iconWidth}
+          />
         )
       }
       label={_(msg`Notifications`)}
@@ -473,17 +477,20 @@ let FeedsMenuItem = ({
   onPress: () => void
 }): React.ReactNode => {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   return (
     <MenuItem
       icon={
         isActive ? (
           <HashtagFilled
             width={iconWidth}
-            style={pal.text as FontAwesomeIconStyle}
+            style={t.atoms.text as FontAwesomeIconStyle}
           />
         ) : (
-          <Hashtag width={iconWidth} style={pal.text as FontAwesomeIconStyle} />
+          <Hashtag
+            width={iconWidth}
+            style={t.atoms.text as FontAwesomeIconStyle}
+          />
         )
       }
       label={_(msg`Feeds`)}
@@ -498,10 +505,10 @@ FeedsMenuItem = React.memo(FeedsMenuItem)
 
 let ListsMenuItem = ({onPress}: {onPress: () => void}): React.ReactNode => {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   return (
     <MenuItem
-      icon={<List style={pal.text} width={iconWidth} />}
+      icon={<List style={t.atoms.text} width={iconWidth} />}
       label={_(msg`Lists`)}
       accessibilityLabel={_(msg`Lists`)}
       accessibilityHint=""
@@ -519,18 +526,18 @@ let ProfileMenuItem = ({
   onPress: () => void
 }): React.ReactNode => {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   return (
     <MenuItem
       icon={
         isActive ? (
           <UserCircleFilled
-            style={pal.text as StyleProp<ViewStyle>}
+            style={t.atoms.text as StyleProp<ViewStyle>}
             width={iconWidth}
           />
         ) : (
           <UserCircle
-            style={pal.text as StyleProp<ViewStyle>}
+            style={t.atoms.text as StyleProp<ViewStyle>}
             width={iconWidth}
           />
         )
@@ -546,11 +553,14 @@ ProfileMenuItem = React.memo(ProfileMenuItem)
 
 let SettingsMenuItem = ({onPress}: {onPress: () => void}): React.ReactNode => {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   return (
     <MenuItem
       icon={
-        <Settings style={pal.text as StyleProp<ViewStyle>} width={iconWidth} />
+        <Settings
+          style={t.atoms.text as StyleProp<ViewStyle>}
+          width={iconWidth}
+        />
       }
       label={_(msg`Settings`)}
       accessibilityLabel={_(msg`Settings`)}
@@ -569,7 +579,7 @@ function MenuItem({
   bold,
   onPress,
 }: MenuItemProps) {
-  const pal = usePalette('default')
+  const t = useAlfTheme()
   return (
     <TouchableOpacity
       testID={`menuItemButton-${label}`}
@@ -600,7 +610,7 @@ function MenuItem({
       </View>
       <Text
         type={bold ? '2xl-bold' : '2xl'}
-        style={[pal.text, s.flex1]}
+        style={[t.atoms.text, s.flex1]}
         numberOfLines={1}>
         {label}
       </Text>

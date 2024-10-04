@@ -23,9 +23,9 @@ import {
 } from 'react-native'
 import Animated from 'react-native-reanimated'
 
-import {usePalette} from 'lib/hooks/usePalette'
-import {useWebMediaQueries} from 'lib/hooks/useWebMediaQueries'
-import {addStyle} from 'lib/styles'
+import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
+import {addStyle} from '#/lib/styles'
+import {useTheme} from '#/alf'
 
 interface AddedProps {
   desktopFixedHeight?: boolean | number
@@ -42,7 +42,7 @@ export const CenteredView = React.forwardRef(function CenteredView(
   >,
   ref: React.Ref<View>,
 ) {
-  const pal = usePalette('default')
+  const t = useTheme()
   const {isMobile} = useWebMediaQueries()
   if (!isMobile) {
     style = addStyle(style, styles.container)
@@ -52,13 +52,13 @@ export const CenteredView = React.forwardRef(function CenteredView(
       borderLeftWidth: StyleSheet.hairlineWidth,
       borderRightWidth: StyleSheet.hairlineWidth,
     })
-    style = addStyle(style, pal.border)
+    style = addStyle(style, t.atoms.border_contrast_high)
   }
   if (topBorder) {
     style = addStyle(style, {
       borderTopWidth: 1,
     })
-    style = addStyle(style, pal.border)
+    style = addStyle(style, t.atoms.border_contrast_high)
   }
   return <View ref={ref} style={style} {...props} />
 })
@@ -73,7 +73,7 @@ export const FlatList_INTERNAL = React.forwardRef(function FlatListImpl<ItemT>(
   }: React.PropsWithChildren<FlatListProps<ItemT> & AddedProps>,
   ref: React.Ref<FlatList<ItemT>>,
 ) {
-  const pal = usePalette('default')
+  const t = useTheme()
   const {isMobile} = useWebMediaQueries()
   if (!isMobile) {
     contentContainerStyle = addStyle(
@@ -124,7 +124,7 @@ export const FlatList_INTERNAL = React.forwardRef(function FlatListImpl<ItemT>(
       contentContainerStyle={[
         styles.contentContainer,
         contentContainerStyle,
-        pal.border,
+        t.atoms.border_contrast_high,
       ]}
       style={style}
       contentOffset={contentOffset}
@@ -137,7 +137,7 @@ export const ScrollView = React.forwardRef(function ScrollViewImpl(
   {contentContainerStyle, ...props}: React.PropsWithChildren<ScrollViewProps>,
   ref: React.Ref<Animated.ScrollView>,
 ) {
-  const pal = usePalette('default')
+  const t = useTheme()
 
   const {isMobile} = useWebMediaQueries()
   if (!isMobile) {
@@ -151,7 +151,7 @@ export const ScrollView = React.forwardRef(function ScrollViewImpl(
       contentContainerStyle={[
         styles.contentContainer,
         contentContainerStyle,
-        pal.border,
+        t.atoms.border_contrast_high,
       ]}
       // @ts-ignore something is wrong with the reanimated types -prf
       ref={ref}

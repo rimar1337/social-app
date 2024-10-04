@@ -88,6 +88,9 @@ export type ThemedAtoms = {
   bg: {
     backgroundColor: string
   }
+  bg_inverted: {
+    backgroundColor: string
+  }
   bg_contrast_25: {
     backgroundColor: string
   }

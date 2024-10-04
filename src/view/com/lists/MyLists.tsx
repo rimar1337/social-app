@@ -11,7 +11,6 @@ import {AppBskyGraphDefs as GraphDefs} from '@atproto/api'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
-import {usePalette} from '#/lib/hooks/usePalette'
 import {cleanError} from '#/lib/strings/errors'
 import {s} from '#/lib/styles'
 import {logger} from '#/logger'
@@ -41,7 +40,6 @@ export function MyLists({
   renderItem?: (list: GraphDefs.ListView, index: number) => JSX.Element
   testID?: string
 }) {
-  const pal = usePalette('default')
   const t = useTheme()
   const {_} = useLingui()
   const moderationOpts = useModerationOpts()
@@ -135,8 +133,8 @@ export function MyLists({
               <RefreshControl
                 refreshing={isPTRing}
                 onRefresh={onRefresh}
-                tintColor={pal.colors.text}
-                titleColor={pal.colors.text}
+                tintColor={t.atoms.text.color}
+                titleColor={t.atoms.text.color}
               />
             }
             contentContainerStyle={[s.contentContainer]}

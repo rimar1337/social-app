@@ -4,7 +4,6 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
-import {usePalette} from '#/lib/hooks/usePalette'
 import {logEvent} from '#/lib/statsig/statsig'
 import {s} from '#/lib/styles'
 import {isIOS} from '#/platform/detection'
@@ -17,6 +16,7 @@ import {ErrorBoundary} from '#/view/com/util/ErrorBoundary'
 import {Login} from '#/screens/Login'
 import {Signup} from '#/screens/Signup'
 import {LandingScreen} from '#/screens/StarterPack/StarterPackLandingScreen'
+import {useTheme} from '#/alf'
 import {SplashScreen} from './SplashScreen'
 
 enum ScreenState {
@@ -29,7 +29,7 @@ export {ScreenState as LoggedOutScreenState}
 
 export function LoggedOut({onDismiss}: {onDismiss?: () => void}) {
   const {_} = useLingui()
-  const pal = usePalette('default')
+  const t = useTheme()
   const setMinimalShellMode = useSetMinimalShellMode()
   const {requestedAccountSwitchTo} = useLoggedOutView()
   const [screenState, setScreenState] = React.useState<ScreenState>(() => {
@@ -57,7 +57,7 @@ export function LoggedOut({onDismiss}: {onDismiss?: () => void}) {
   }, [clearRequestedAccount, onDismiss])
 
   return (
-    <View testID="noSessionView" style={[s.hContentRegion, pal.view]}>
+    <View testID="noSessionView" style={[s.hContentRegion, t.atoms.bg]}>
       <ErrorBoundary>
         {onDismiss && screenState === ScreenState.S_LoginOrCreateAccount ? (
           <Pressable
@@ -70,7 +70,7 @@ export function LoggedOut({onDismiss}: {onDismiss?: () => void}) {
               right: 20,
               padding: 10,
               zIndex: 100,
-              backgroundColor: pal.text.color,
+              backgroundColor: t.atoms.text.color,
               borderRadius: 100,
             }}
             onPress={onPressDismiss}>
@@ -78,7 +78,7 @@ export function LoggedOut({onDismiss}: {onDismiss?: () => void}) {
               icon="x"
               size={12}
               style={{
-                color: String(pal.textInverted.color),
+                color: String(t.atoms.text_inverted.color),
               }}
             />
           </Pressable>

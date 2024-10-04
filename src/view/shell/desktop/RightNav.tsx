@@ -3,21 +3,20 @@ import {StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
+import {FEEDBACK_FORM_URL, HELP_DESK_URL} from '#/lib/constants'
+import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
+import {s} from '#/lib/styles'
 import {useKawaiiMode} from '#/state/preferences/kawaii'
 import {useSession} from '#/state/session'
-import {FEEDBACK_FORM_URL, HELP_DESK_URL} from 'lib/constants'
-import {usePalette} from 'lib/hooks/usePalette'
-import {useWebMediaQueries} from 'lib/hooks/useWebMediaQueries'
-import {s} from 'lib/styles'
-import {TextLink} from 'view/com/util/Link'
-import {Text} from 'view/com/util/text/Text'
-import {atoms as a} from '#/alf'
+import {TextLink} from '#/view/com/util/Link'
+import {Text} from '#/view/com/util/text/Text'
+import {atoms as a, useTheme} from '#/alf'
 import {ProgressGuideList} from '#/components/ProgressGuide/List'
 import {DesktopFeeds} from './Feeds'
 import {DesktopSearch} from './Search'
 
 export function DesktopRightNav({routeName}: {routeName: string}) {
-  const pal = usePalette('default')
+  const t = useTheme()
   const {_} = useLingui()
   const {hasSession, currentAccount} = useSession()
 
@@ -29,7 +28,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
   }
 
   return (
-    <View style={[styles.rightNav, pal.view]}>
+    <View style={[styles.rightNav, t.atoms.bg]}>
       <View style={{paddingVertical: 20}}>
         {routeName === 'Search' ? (
           <View style={{marginBottom: 18}}>
@@ -42,7 +41,11 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
             {hasSession && (
               <>
                 <ProgressGuideList style={[{marginTop: 22, marginBottom: 8}]} />
-                <View style={[pal.border, styles.desktopFeedsContainer]}>
+                <View
+                  style={[
+                    t.atoms.border_contrast_high,
+                    styles.desktopFeedsContainer,
+                  ]}>
                   <DesktopFeeds />
                 </View>
               </>
@@ -62,51 +65,53 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
               <>
                 <TextLink
                   type="md"
-                  style={pal.link}
+                  style={{color: t.palette.primary_500}}
                   href={FEEDBACK_FORM_URL({
                     email: currentAccount?.email,
                     handle: currentAccount?.handle,
                   })}
                   text={_(msg`Feedback`)}
                 />
-                <Text type="md" style={pal.textLight}>
+                <Text type="md" style={t.atoms.text_contrast_medium}>
                   &middot;
                 </Text>
               </>
             )}
             <TextLink
               type="md"
-              style={pal.link}
+              style={{color: t.palette.primary_500}}
               href="https://bsky.social/about/support/privacy-policy"
               text={_(msg`Privacy`)}
             />
-            <Text type="md" style={pal.textLight}>
+            <Text type="md" style={t.atoms.text_contrast_medium}>
               &middot;
             </Text>
             <TextLink
               type="md"
-              style={pal.link}
+              style={{color: t.palette.primary_500}}
               href="https://bsky.social/about/support/tos"
               text={_(msg`Terms`)}
             />
-            <Text type="md" style={pal.textLight}>
+            <Text type="md" style={t.atoms.text_contrast_medium}>
               &middot;
             </Text>
             <TextLink
               type="md"
-              style={pal.link}
+              style={{color: t.palette.primary_500}}
               href={HELP_DESK_URL}
               text={_(msg`Help`)}
             />
           </View>
           {kawaii && (
-            <Text type="md" style={[pal.textLight, {marginTop: 12}]}>
+            <Text
+              type="md"
+              style={[t.atoms.text_contrast_medium, {marginTop: 12}]}>
               Logo by{' '}
               <TextLink
                 type="md"
                 href="/profile/sawaratsuki.bsky.social"
                 text="@sawaratsuki.bsky.social"
-                style={pal.link}
+                style={{color: t.palette.primary_500}}
               />
             </Text>
           )}

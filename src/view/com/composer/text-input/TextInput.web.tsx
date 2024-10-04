@@ -13,15 +13,14 @@ import {Text as TiptapText} from '@tiptap/extension-text'
 import {generateJSON} from '@tiptap/html'
 import {EditorContent, JSONContent, useEditor} from '@tiptap/react'
 
-import {usePalette} from '#/lib/hooks/usePalette'
+import {useColorSchemeStyle} from '#/lib/hooks/useColorSchemeStyle'
+import {blobToDataUri, isUriImage} from '#/lib/media/util'
 import {useActorAutocompleteFn} from '#/state/queries/actor-autocomplete'
-import {useColorSchemeStyle} from 'lib/hooks/useColorSchemeStyle'
-import {blobToDataUri, isUriImage} from 'lib/media/util'
-import {textInputWebEmitter} from '#/view/com/composer/text-input/textInputWebEmitter'
 import {
   LinkFacetMatch,
   suggestLinkCardUri,
-} from 'view/com/composer/text-input/text-input-util'
+} from '#/view/com/composer/text-input/text-input-util'
+import {textInputWebEmitter} from '#/view/com/composer/text-input/textInputWebEmitter'
 import {atoms as a, useAlf} from '#/alf'
 import {Portal} from '#/components/Portal'
 import {normalizeTextStyles} from '#/components/Typography'
@@ -62,7 +61,6 @@ export const TextInput = React.forwardRef(function TextInputImpl(
 ) {
   const {theme: t, fonts} = useAlf()
   const autocomplete = useActorAutocompleteFn()
-  const pal = usePalette('default')
   const modeClass = useColorSchemeStyle('ProseMirror-light', 'ProseMirror-dark')
 
   const [isDropping, setIsDropping] = React.useState(false)
@@ -284,10 +282,19 @@ export const TextInput = React.forwardRef(function TextInputImpl(
             style={styles.dropContainer}
             entering={FadeIn.duration(80)}
             exiting={FadeOut.duration(80)}>
-            <View style={[pal.view, pal.border, styles.dropModal]}>
+            <View
+              style={[
+                t.atoms.bg,
+                t.atoms.border_contrast_high,
+                styles.dropModal,
+              ]}>
               <Text
                 type="lg"
-                style={[pal.text, pal.borderDark, styles.dropText]}>
+                style={[
+                  t.atoms.text,
+                  t.atoms.border_contrast_medium,
+                  styles.dropText,
+                ]}>
                 <Trans>Drop to add images</Trans>
               </Text>
             </View>

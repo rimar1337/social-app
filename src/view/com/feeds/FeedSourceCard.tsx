@@ -13,7 +13,6 @@ import {msg, Plural, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
 import {useNavigationDeduped} from '#/lib/hooks/useNavigationDeduped'
-import {usePalette} from '#/lib/hooks/usePalette'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {s} from '#/lib/styles'
 import {logger} from '#/logger'
@@ -96,7 +95,6 @@ export function FeedSourceCardLoaded({
   hideTopBorder?: boolean
 }) {
   const t = useTheme()
-  const pal = usePalette('default')
   const {_} = useLingui()
   const removePromptControl = Prompt.usePromptControl()
   const navigation = useNavigationDeduped()
@@ -160,7 +158,7 @@ export function FeedSourceCardLoaded({
     return (
       <View
         style={[
-          pal.border,
+          t.atoms.border_contrast_high,
           {
             borderTopWidth: showMinimalPlaceholder || hideTopBorder ? 0 : 1,
             flexDirection: 'row',
@@ -192,7 +190,7 @@ export function FeedSourceCardLoaded({
             <FontAwesomeIcon
               icon={['far', 'trash-can']}
               size={19}
-              color={pal.colors.icon}
+              color={t.atoms.bg_contrast_500.backgroundColor}
             />
           </Pressable>
         )}
@@ -206,9 +204,11 @@ export function FeedSourceCardLoaded({
         accessibilityRole="button"
         style={[
           styles.container,
-          pal.border,
+          t.atoms.border_contrast_high,
           style,
-          {borderTopWidth: hideTopBorder ? 0 : StyleSheet.hairlineWidth},
+          {
+            borderTopWidth: hideTopBorder ? 0 : StyleSheet.hairlineWidth,
+          },
         ]}
         onPress={e => {
           const shouldOpenInNewTab = shouldClickOpenNewTab(e)
@@ -242,10 +242,10 @@ export function FeedSourceCardLoaded({
             <UserAvatar type="algo" size={36} avatar={feed.avatar} />
           </View>
           <View style={[styles.headerTextContainer]}>
-            <Text emoji style={[pal.text, s.bold]} numberOfLines={1}>
+            <Text emoji style={[t.atoms.text, s.bold]} numberOfLines={1}>
               {feed.displayName}
             </Text>
-            <Text style={[pal.textLight]} numberOfLines={1}>
+            <Text style={[t.atoms.text_contrast_medium]} numberOfLines={1}>
               {feed.type === 'feed' ? (
                 <Trans>Feed by {sanitizeHandle(feed.creatorHandle, '@')}</Trans>
               ) : (
@@ -273,13 +273,13 @@ export function FeedSourceCardLoaded({
                   <FontAwesomeIcon
                     icon={['far', 'trash-can']}
                     size={19}
-                    color={pal.colors.icon}
+                    color={t.atoms.bg_contrast_500.backgroundColor}
                   />
                 ) : (
                   <FontAwesomeIcon
                     icon="plus"
                     size={18}
-                    color={pal.colors.link}
+                    color={t.palette.primary_500}
                   />
                 )}
               </Pressable>
@@ -296,7 +296,9 @@ export function FeedSourceCardLoaded({
         ) : null}
 
         {showLikes && feed.type === 'feed' ? (
-          <Text type="sm-medium" style={[pal.text, pal.textLight]}>
+          <Text
+            type="sm-medium"
+            style={[t.atoms.text, t.atoms.text_contrast_medium]}>
             <Plural
               value={feed.likeCount || 0}
               one="Liked by # user"

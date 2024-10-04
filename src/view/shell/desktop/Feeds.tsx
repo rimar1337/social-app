@@ -4,16 +4,16 @@ import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 import {useNavigation, useNavigationState} from '@react-navigation/native'
 
-import {usePalette} from '#/lib/hooks/usePalette'
 import {getCurrentRoute} from '#/lib/routes/helpers'
 import {NavigationProp} from '#/lib/routes/types'
 import {emitSoftReset} from '#/state/events'
 import {usePinnedFeedsInfos} from '#/state/queries/feed'
 import {useSelectedFeed, useSetSelectedFeed} from '#/state/shell/selected-feed'
 import {TextLink} from '#/view/com/util/Link'
+import {useTheme} from '#/alf'
 
 export function DesktopFeeds() {
-  const pal = usePalette('default')
+  const t = useTheme()
   const {_} = useLingui()
   const {data: pinnedFeedInfos} = usePinnedFeedsInfos()
   const selectedFeed = useSelectedFeed()
@@ -29,7 +29,7 @@ export function DesktopFeeds() {
     return null
   }
   return (
-    <View style={[styles.container, pal.view]}>
+    <View style={[styles.container, t.atoms.bg]}>
       {pinnedFeedInfos.map(feedInfo => {
         const feed = feedInfo.feedDescriptor
         return (
@@ -53,7 +53,7 @@ export function DesktopFeeds() {
           type="lg"
           href="/feeds"
           text={_(msg`More feeds`)}
-          style={[pal.link]}
+          style={{color: t.palette.primary_500}}
         />
       </View>
     </View>
@@ -71,7 +71,7 @@ function FeedItem({
   current: boolean
   onPress: () => void
 }) {
-  const pal = usePalette('default')
+  const t = useTheme()
   return (
     <View style={{paddingVertical: 6}}>
       <TextLink
@@ -80,7 +80,7 @@ function FeedItem({
         text={title}
         onPress={onPress}
         style={[
-          current ? pal.text : pal.textLight,
+          current ? t.atoms.text : t.atoms.text_contrast_medium,
           {letterSpacing: 0.15, fontWeight: current ? '600' : '400'},
         ]}
       />

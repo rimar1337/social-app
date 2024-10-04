@@ -7,10 +7,10 @@ import {
 } from '@fortawesome/react-native-fontawesome'
 import {useLingui} from '@lingui/react'
 
-import {usePalette} from 'lib/hooks/usePalette'
-import {TypographyVariant} from 'lib/ThemeContext'
-import {useTheme} from 'lib/ThemeContext'
-import {isAndroid, isIOS} from 'platform/detection'
+import {usePalette} from '#/lib/hooks/usePalette'
+import {TypographyVariant} from '#/lib/ThemeContext'
+import {isAndroid, isIOS} from '#/platform/detection'
+import {useTheme} from '#/alf'
 import {Text} from '../text/Text'
 import {Button, ButtonType} from './Button'
 
@@ -31,7 +31,7 @@ interface Props {
 export function DateInput(props: Props) {
   const {i18n} = useLingui()
   const [show, setShow] = useState(false)
-  const theme = useTheme()
+  const t = useTheme()
   const pal = usePalette('default')
 
   const onChangeInternal = useCallback(
@@ -80,7 +80,7 @@ export function DateInput(props: Props) {
           timeZoneOffsetInMinutes={0}
           modal={isAndroid}
           open={isAndroid}
-          theme={theme.colorScheme}
+          theme={t.name === 'dark' ? 'dark' : 'light'}
           date={props.value}
           onDateChange={onChangeInternal}
           onConfirm={onChangeInternal}

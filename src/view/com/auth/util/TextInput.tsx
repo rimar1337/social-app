@@ -1,9 +1,9 @@
 import React, {ComponentProps} from 'react'
 import {StyleSheet, TextInput as RNTextInput, View} from 'react-native'
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome'
 import {IconProp} from '@fortawesome/fontawesome-svg-core'
-import {usePalette} from 'lib/hooks/usePalette'
-import {useTheme} from 'lib/ThemeContext'
+import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome'
+
+import {atoms as a,useTheme} from '#/alf'
 
 interface Props extends Omit<ComponentProps<typeof RNTextInput>, 'onChange'> {
   testID?: string
@@ -12,18 +12,21 @@ interface Props extends Omit<ComponentProps<typeof RNTextInput>, 'onChange'> {
 }
 
 export function TextInput({testID, icon, onChange, ...props}: Props) {
-  const theme = useTheme()
-  const pal = usePalette('default')
+  const t = useTheme()
   return (
-    <View style={[pal.border, styles.container]}>
-      <FontAwesomeIcon icon={icon} style={[pal.textLight, styles.icon]} />
+    <View style={[a.border, styles.container]}>
+      <FontAwesomeIcon
+        icon={icon}
+        color={t.atoms.text_contrast_medium.color}
+        style={[styles.icon]}
+      />
       <RNTextInput
         testID={testID}
-        style={[pal.text, styles.textInput]}
-        placeholderTextColor={pal.colors.textLight}
+        style={[t.atoms.text, styles.textInput]}
+        placeholderTextColor={t.atoms.text_contrast_medium.color}
         autoCapitalize="none"
         autoCorrect={false}
-        keyboardAppearance={theme.colorScheme}
+        keyboardAppearance={t.name === 'dark' ? 'dark' : 'light'}
         onChangeText={v => onChange(v)}
         {...props}
       />

@@ -5,17 +5,17 @@ import ProgressCircle from 'react-native-progress/Circle'
 // @ts-ignore no type definition -prf
 import ProgressPie from 'react-native-progress/Pie'
 
-import {MAX_GRAPHEME_LENGTH} from 'lib/constants'
-import {usePalette} from 'lib/hooks/usePalette'
-import {s} from 'lib/styles'
+import {MAX_GRAPHEME_LENGTH} from '#/lib/constants'
+import {s} from '#/lib/styles'
+import {useTheme} from '#/alf'
 import {Text} from '../../util/text/Text'
 
 const DANGER_LENGTH = MAX_GRAPHEME_LENGTH
 
 export function CharProgress({count}: {count: number}) {
-  const pal = usePalette('default')
-  const textColor = count > DANGER_LENGTH ? '#e60000' : pal.colors.text
-  const circleColor = count > DANGER_LENGTH ? '#e60000' : pal.colors.link
+  const t = useTheme()
+  const textColor = count > DANGER_LENGTH ? '#e60000' : t.atoms.text.color
+  const circleColor = count > DANGER_LENGTH ? '#e60000' : t.palette.primary_500
   return (
     <>
       <Text style={[s.mr10, s.tabularNum, {color: textColor}]}>
@@ -37,7 +37,7 @@ export function CharProgress({count}: {count: number}) {
           <ProgressCircle
             size={30}
             borderWidth={1}
-            borderColor={pal.colors.border}
+            borderColor={t.atoms.bg_contrast_100.backgroundColor}
             color={circleColor}
             progress={count / MAX_GRAPHEME_LENGTH}
           />

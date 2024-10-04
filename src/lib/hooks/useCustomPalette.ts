@@ -1,13 +1,15 @@
 import React from 'react'
-import {useTheme} from 'lib/ThemeContext'
-import {choose} from 'lib/functions'
+
+import {choose} from '#/lib/functions'
+import {useTheme} from '#/alf'
 
 export function useCustomPalette<T>({light, dark}: {light: T; dark: T}) {
-  const theme = useTheme()
+  const t = useTheme()
+  const themeName = t.name === 'dark' ? 'dark' : 'light'
   return React.useMemo(() => {
-    return choose<T, Record<string, T>>(theme.colorScheme, {
+    return choose<T, Record<string, T>>(themeName, {
       dark,
       light,
     })
-  }, [theme.colorScheme, dark, light])
+  }, [themeName, dark, light])
 }

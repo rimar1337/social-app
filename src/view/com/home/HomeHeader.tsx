@@ -1,11 +1,11 @@
 import React from 'react'
 import {useNavigation} from '@react-navigation/native'
 
-import {usePalette} from '#/lib/hooks/usePalette'
+import {NavigationProp} from '#/lib/routes/types'
 import {FeedSourceInfo} from '#/state/queries/feed'
 import {useSession} from '#/state/session'
-import {NavigationProp} from 'lib/routes/types'
-import {RenderTabBarFnProps} from 'view/com/pager/Pager'
+import {RenderTabBarFnProps} from '#/view/com/pager/Pager'
+import {useTheme} from '#/alf'
 import {TabBar} from '../pager/TabBar'
 import {HomeHeaderLayout} from './HomeHeaderLayout'
 
@@ -19,7 +19,7 @@ export function HomeHeader(
   const {feeds} = props
   const {hasSession} = useSession()
   const navigation = useNavigation<NavigationProp>()
-  const pal = usePalette('default')
+  const t = useTheme()
 
   const hasPinnedCustom = React.useMemo<boolean>(() => {
     if (!hasSession) return false
@@ -61,7 +61,7 @@ export function HomeHeader(
         onSelect={onSelect}
         testID={props.testID}
         items={items}
-        indicatorColor={pal.colors.link}
+        indicatorColor={t.palette.primary_500}
       />
     </HomeHeaderLayout>
   )
