@@ -9,8 +9,7 @@ import {
 
 import {usePalette} from '#/lib/hooks/usePalette'
 import {s} from '#/lib/styles'
-import {useTheme} from '#/lib/ThemeContext'
-import {atoms as a, useTheme as useTheme_NEW} from '#/alf'
+import {atoms as a, useTheme} from '#/alf'
 import {Bubble_Stroke2_Corner2_Rounded as Bubble} from '#/components/icons/Bubble'
 import {
   Heart2_Filled_Stroke2_Corner0_Rounded as HeartIconFilled,
@@ -27,7 +26,7 @@ export function LoadingPlaceholder({
   height: DimensionValue
   style?: StyleProp<ViewStyle>
 }) {
-  const theme = useTheme()
+  const t = useTheme()
   return (
     <View
       style={[
@@ -35,7 +34,7 @@ export function LoadingPlaceholder({
         {
           width,
           height,
-          backgroundColor: theme.palette.default.backgroundLight,
+          backgroundColor: t.atoms.bg_contrast_25.backgroundColor,
         },
         style,
       ]}
@@ -48,7 +47,7 @@ export function PostLoadingPlaceholder({
 }: {
   style?: StyleProp<ViewStyle>
 }) {
-  const t = useTheme_NEW()
+  const t = useTheme()
   const pal = usePalette('default')
   return (
     <View style={[styles.post, pal.view, style]}>
