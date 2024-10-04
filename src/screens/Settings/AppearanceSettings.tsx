@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react'
+import React, {useCallback, useState} from 'react'
 import {View} from 'react-native'
 import Animated, {
   FadeInDown,
@@ -15,9 +15,12 @@ import {useSetThemePrefs, useThemePrefs} from '#/state/shell'
 import {SimpleViewHeader} from '#/view/com/util/SimpleViewHeader'
 import {ScrollView} from '#/view/com/util/Views'
 import {atoms as a, native, useAlf, useTheme} from '#/alf'
+import {Button, ButtonText} from '#/components/Button'
+import * as TextField from '#/components/forms/TextField'
 import * as ToggleButton from '#/components/forms/ToggleButton'
 import {Props as SVGIconProps} from '#/components/icons/common'
 import {Moon_Stroke2_Corner0_Rounded as MoonIcon} from '#/components/icons/Moon'
+import {PaintRoller_Stroke2_Corner2_Rounded as PaintRollerIcon} from '#/components/icons/PaintRoller'
 import {Phone_Stroke2_Corner0_Rounded as PhoneIcon} from '#/components/icons/Phone'
 import {TextSize_Stroke2_Corner0_Rounded as TextSize} from '#/components/icons/TextSize'
 import {TitleCase_Stroke2_Corner0_Rounded as Aa} from '#/components/icons/TitleCase'
@@ -30,8 +33,8 @@ export function AppearanceSettingsScreen({}: Props) {
   const {isTabletOrMobile} = useWebMediaQueries()
   const {fonts} = useAlf()
 
-  const {colorMode, darkTheme} = useThemePrefs()
-  const {setColorMode, setDarkTheme} = useSetThemePrefs()
+  const {colorMode, darkTheme, accentColor} = useThemePrefs()
+  const {setColorMode, setDarkTheme, setAccentColor} = useSetThemePrefs()
 
   const onChangeAppearance = useCallback(
     (keys: string[]) => {
@@ -73,6 +76,20 @@ export function AppearanceSettingsScreen({}: Props) {
     },
     [fonts],
   )
+
+  const [tempHue, setTempHue] = useState(accentColor)
+  const onChangeAccent = useCallback((hue: any) => {
+    if (isNaN(hue)) {
+      setTempHue(0)
+    } else {
+      const h = (hue || 0) % 360
+      setTempHue(h)
+    }
+  }, [])
+
+  const handleApply = useCallback(() => {
+    setAccentColor(tempHue)
+  }, [setAccentColor, tempHue])
 
   return (
     <LayoutAnimationConfig skipExiting skipEntering>
@@ -136,6 +153,47 @@ export function AppearanceSettingsScreen({}: Props) {
                   />
                 </Animated.View>
               )}
+
+              <View style={[a.gap_sm]}>
+                <View style={[a.gap_xs]}>
+                  <View style={[a.flex_row, a.align_center, a.gap_md]}>
+                    <PaintRollerIcon style={t.atoms.text} />
+                    <Text style={[a.text_md, a.font_bold]}>
+                      {_(msg`Accent Color`)}
+                    </Text>
+                  </View>
+                  {true && (
+                    <Text
+                      style={[
+                        a.text_sm,
+                        a.leading_snug,
+                        t.atoms.text_contrast_medium,
+                      ]}>
+                      {_(msg`Change the accent color of the app.`)}
+                    </Text>
+                  )}
+                </View>
+                <View style={[a.flex_row, a.align_start, a.gap_sm]}>
+                  <View style={[a.flex_1]}>
+                    <TextField.Root>
+                      <TextField.Input
+                        value={tempHue.toString()}
+                        onChangeText={onChangeAccent}
+                        label="Text field"
+                      />
+                    </TextField.Root>
+                  </View>
+                  <Button
+                    label="Apply"
+                    size="large"
+                    variant="solid"
+                    color="primary"
+                    onPress={handleApply} // Add the onPress handler here
+                  >
+                    <ButtonText>{_(msg`Apply`)}</ButtonText>
+                  </Button>
+                </View>
+              </View>
 
               <AppearanceToggleButtonGroup
                 title={_(msg`Font`)}

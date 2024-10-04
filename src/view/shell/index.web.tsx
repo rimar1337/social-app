@@ -4,12 +4,13 @@ import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 import {useNavigation} from '@react-navigation/native'
 
+import {useColorSchemeStyle} from '#/lib/hooks/useColorSchemeStyle'
 import {useWebBodyScrollLock} from '#/lib/hooks/useWebBodyScrollLock'
+import {NavigationProp} from '#/lib/routes/types'
+import {colors, s} from '#/lib/styles'
 import {useIsDrawerOpen, useSetDrawerOpen} from '#/state/shell'
 import {useCloseAllActiveElements} from '#/state/util'
-import {useColorSchemeStyle} from 'lib/hooks/useColorSchemeStyle'
-import {NavigationProp} from 'lib/routes/types'
-import {colors, s} from 'lib/styles'
+import {useTheme} from '#/alf/index'
 import {MutedWordsDialog} from '#/components/dialogs/MutedWords'
 import {SigninDialog} from '#/components/dialogs/Signin'
 import {Outlet as PortalOutlet} from '#/components/Portal'
@@ -28,8 +29,19 @@ function ShellInner() {
   const navigator = useNavigation<NavigationProp>()
   const closeAllActiveElements = useCloseAllActiveElements()
   const {_} = useLingui()
+  const t = useTheme()
 
   useWebBodyScrollLock(isDrawerOpen)
+
+  useEffect(() => {
+    const rootElement = document.documentElement
+    rootElement.className = `html`
+    rootElement.style.setProperty(
+      'background',
+      `${t.atoms.bg.backgroundColor}`,
+      'important',
+    )
+  }, [t.atoms.bg.backgroundColor, t.name])
 
   useEffect(() => {
     const unsubscribe = navigator.addListener('state', () => {

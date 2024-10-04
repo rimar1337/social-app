@@ -1,6 +1,7 @@
 import React from 'react'
 import {useMediaQuery} from 'react-responsive'
 
+import {useThemePrefs} from '#/state/shell'
 import {
   computeFontScaleMultiplier,
   getFontFamily,
@@ -93,6 +94,7 @@ export function ThemeProvider({
     },
     [setFontFamily],
   )
+  const {accentColor} = useThemePrefs()
   const themes = React.useMemo(() => {
     return createThemes({
       hues: {
@@ -100,8 +102,9 @@ export function ThemeProvider({
         negative: RED_HUE,
         positive: GREEN_HUE,
       },
+      hueShift: accentColor,
     })
-  }, [])
+  }, [accentColor])
 
   return (
     <Context.Provider

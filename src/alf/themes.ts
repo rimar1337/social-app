@@ -1,3 +1,7 @@
+// needs to be imported for tree shaking, yet is not actually used in this file directly
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import {formatHex, modeHsl, modeOklch, useMode as utilMode} from 'culori'
+
 import {atoms} from '#/alf/atoms'
 import {Palette, Theme} from '#/alf/types'
 import {
@@ -45,12 +49,14 @@ export const defaultTheme = themes.light
 
 export function createThemes({
   hues,
+  hueShift,
 }: {
   hues: {
     primary: number
     negative: number
     positive: number
   }
+  hueShift?: number
 }): {
   lightPalette: Palette
   darkPalette: Palette
@@ -59,38 +65,48 @@ export function createThemes({
   dark: Theme
   dim: Theme
 } {
+  function changeHue(color: string) {
+    const lchHue =
+      ((hueShift || 360) < 0 ? -1 * (hueShift || 360) : hueShift || 360) % 360
+    if (lchHue === 0 || !hueShift) return color
+    let lablch = utilMode(modeOklch)
+    const {l, c, h} = lablch(color) as {l: number; c: number; h: number}
+    const hueshufted = formatHex({mode: 'oklch', l, c, h: (h + lchHue) % 360})
+    return hueshufted
+  }
+
   const color = {
     trueBlack: '#000000',
 
-    gray_0: `hsl(${hues.primary}, 20%, ${defaultScale[14]}%)`,
-    gray_25: `hsl(${hues.primary}, 20%, ${defaultScale[13]}%)`,
-    gray_50: `hsl(${hues.primary}, 20%, ${defaultScale[12]}%)`,
-    gray_100: `hsl(${hues.primary}, 20%, ${defaultScale[11]}%)`,
-    gray_200: `hsl(${hues.primary}, 20%, ${defaultScale[10]}%)`,
-    gray_300: `hsl(${hues.primary}, 20%, ${defaultScale[9]}%)`,
-    gray_400: `hsl(${hues.primary}, 20%, ${defaultScale[8]}%)`,
-    gray_500: `hsl(${hues.primary}, 20%, ${defaultScale[7]}%)`,
-    gray_600: `hsl(${hues.primary}, 24%, ${defaultScale[6]}%)`,
-    gray_700: `hsl(${hues.primary}, 24%, ${defaultScale[5]}%)`,
-    gray_800: `hsl(${hues.primary}, 28%, ${defaultScale[4]}%)`,
-    gray_900: `hsl(${hues.primary}, 28%, ${defaultScale[3]}%)`,
-    gray_950: `hsl(${hues.primary}, 28%, ${defaultScale[2]}%)`,
-    gray_975: `hsl(${hues.primary}, 28%, ${defaultScale[1]}%)`,
-    gray_1000: `hsl(${hues.primary}, 28%, ${defaultScale[0]}%)`,
+    gray_0: changeHue(`hsl(${hues.primary}, 20%, ${defaultScale[14]}%)`),
+    gray_25: changeHue(`hsl(${hues.primary}, 20%, ${defaultScale[13]}%)`),
+    gray_50: changeHue(`hsl(${hues.primary}, 20%, ${defaultScale[12]}%)`),
+    gray_100: changeHue(`hsl(${hues.primary}, 20%, ${defaultScale[11]}%)`),
+    gray_200: changeHue(`hsl(${hues.primary}, 20%, ${defaultScale[10]}%)`),
+    gray_300: changeHue(`hsl(${hues.primary}, 20%, ${defaultScale[9]}%)`),
+    gray_400: changeHue(`hsl(${hues.primary}, 20%, ${defaultScale[8]}%)`),
+    gray_500: changeHue(`hsl(${hues.primary}, 20%, ${defaultScale[7]}%)`),
+    gray_600: changeHue(`hsl(${hues.primary}, 24%, ${defaultScale[6]}%)`),
+    gray_700: changeHue(`hsl(${hues.primary}, 24%, ${defaultScale[5]}%)`),
+    gray_800: changeHue(`hsl(${hues.primary}, 28%, ${defaultScale[4]}%)`),
+    gray_900: changeHue(`hsl(${hues.primary}, 28%, ${defaultScale[3]}%)`),
+    gray_950: changeHue(`hsl(${hues.primary}, 28%, ${defaultScale[2]}%)`),
+    gray_975: changeHue(`hsl(${hues.primary}, 28%, ${defaultScale[1]}%)`),
+    gray_1000: changeHue(`hsl(${hues.primary}, 28%, ${defaultScale[0]}%)`),
 
-    primary_25: `hsl(${hues.primary}, 99%, 97%)`,
-    primary_50: `hsl(${hues.primary}, 99%, 95%)`,
-    primary_100: `hsl(${hues.primary}, 99%, 90%)`,
-    primary_200: `hsl(${hues.primary}, 99%, 80%)`,
-    primary_300: `hsl(${hues.primary}, 99%, 70%)`,
-    primary_400: `hsl(${hues.primary}, 99%, 60%)`,
-    primary_500: `hsl(${hues.primary}, 99%, 53%)`,
-    primary_600: `hsl(${hues.primary}, 99%, 42%)`,
-    primary_700: `hsl(${hues.primary}, 99%, 34%)`,
-    primary_800: `hsl(${hues.primary}, 99%, 26%)`,
-    primary_900: `hsl(${hues.primary}, 99%, 18%)`,
-    primary_950: `hsl(${hues.primary}, 99%, 10%)`,
-    primary_975: `hsl(${hues.primary}, 99%, 7%)`,
+    primary_25: changeHue(`hsl(${hues.primary}, 99%, 97%)`),
+    primary_50: changeHue(`hsl(${hues.primary}, 99%, 95%)`),
+    primary_100: changeHue(`hsl(${hues.primary}, 99%, 90%)`),
+    primary_200: changeHue(`hsl(${hues.primary}, 99%, 80%)`),
+    primary_300: changeHue(`hsl(${hues.primary}, 99%, 70%)`),
+    primary_400: changeHue(`hsl(${hues.primary}, 99%, 60%)`),
+    primary_500: changeHue(`hsl(${hues.primary}, 99%, 53%)`),
+    primary_600: changeHue(`hsl(${hues.primary}, 99%, 42%)`),
+    primary_700: changeHue(`hsl(${hues.primary}, 99%, 34%)`),
+    primary_800: changeHue(`hsl(${hues.primary}, 99%, 26%)`),
+    primary_900: changeHue(`hsl(${hues.primary}, 99%, 18%)`),
+    primary_950: changeHue(`hsl(${hues.primary}, 99%, 10%)`),
+    primary_975: changeHue(`hsl(${hues.primary}, 99%, 7%)`),
 
     green_25: `hsl(${hues.positive}, 82%, 97%)`,
     green_50: `hsl(${hues.positive}, 82%, 95%)`,
@@ -245,35 +261,35 @@ export function createThemes({
 
   const dimPalette: Palette = {
     ...darkPalette,
-    black: `hsl(${hues.primary}, 28%, ${dimScale[0]}%)`,
+    black: changeHue(`hsl(${hues.primary}, 28%, ${dimScale[0]}%)`),
 
-    contrast_25: `hsl(${hues.primary}, 28%, ${dimScale[1]}%)`,
-    contrast_50: `hsl(${hues.primary}, 28%, ${dimScale[2]}%)`,
-    contrast_100: `hsl(${hues.primary}, 28%, ${dimScale[3]}%)`,
-    contrast_200: `hsl(${hues.primary}, 28%, ${dimScale[4]}%)`,
-    contrast_300: `hsl(${hues.primary}, 24%, ${dimScale[5]}%)`,
-    contrast_400: `hsl(${hues.primary}, 24%, ${dimScale[6]}%)`,
-    contrast_500: `hsl(${hues.primary}, 20%, ${dimScale[7]}%)`,
-    contrast_600: `hsl(${hues.primary}, 20%, ${dimScale[8]}%)`,
-    contrast_700: `hsl(${hues.primary}, 20%, ${dimScale[9]}%)`,
-    contrast_800: `hsl(${hues.primary}, 20%, ${dimScale[10]}%)`,
-    contrast_900: `hsl(${hues.primary}, 20%, ${dimScale[11]}%)`,
-    contrast_950: `hsl(${hues.primary}, 20%, ${dimScale[12]}%)`,
-    contrast_975: `hsl(${hues.primary}, 20%, ${dimScale[13]}%)`,
+    contrast_25: changeHue(`hsl(${hues.primary}, 28%, ${dimScale[1]}%)`),
+    contrast_50: changeHue(`hsl(${hues.primary}, 28%, ${dimScale[2]}%)`),
+    contrast_100: changeHue(`hsl(${hues.primary}, 28%, ${dimScale[3]}%)`),
+    contrast_200: changeHue(`hsl(${hues.primary}, 28%, ${dimScale[4]}%)`),
+    contrast_300: changeHue(`hsl(${hues.primary}, 24%, ${dimScale[5]}%)`),
+    contrast_400: changeHue(`hsl(${hues.primary}, 24%, ${dimScale[6]}%)`),
+    contrast_500: changeHue(`hsl(${hues.primary}, 20%, ${dimScale[7]}%)`),
+    contrast_600: changeHue(`hsl(${hues.primary}, 20%, ${dimScale[8]}%)`),
+    contrast_700: changeHue(`hsl(${hues.primary}, 20%, ${dimScale[9]}%)`),
+    contrast_800: changeHue(`hsl(${hues.primary}, 20%, ${dimScale[10]}%)`),
+    contrast_900: changeHue(`hsl(${hues.primary}, 20%, ${dimScale[11]}%)`),
+    contrast_950: changeHue(`hsl(${hues.primary}, 20%, ${dimScale[12]}%)`),
+    contrast_975: changeHue(`hsl(${hues.primary}, 20%, ${dimScale[13]}%)`),
 
-    primary_25: `hsl(${hues.primary}, 50%, ${dimScale[1]}%)`,
-    primary_50: `hsl(${hues.primary}, 60%, ${dimScale[2]}%)`,
-    primary_100: `hsl(${hues.primary}, 70%, ${dimScale[3]}%)`,
-    primary_200: `hsl(${hues.primary}, 82%, ${dimScale[4]}%)`,
-    primary_300: `hsl(${hues.primary}, 90%, ${dimScale[5]}%)`,
-    primary_400: `hsl(${hues.primary}, 95%, ${dimScale[6]}%)`,
-    primary_500: `hsl(${hues.primary}, 99%, ${dimScale[7]}%)`,
-    primary_600: `hsl(${hues.primary}, 99%, ${dimScale[8]}%)`,
-    primary_700: `hsl(${hues.primary}, 99%, ${dimScale[9]}%)`,
-    primary_800: `hsl(${hues.primary}, 99%, ${dimScale[10]}%)`,
-    primary_900: `hsl(${hues.primary}, 99%, ${dimScale[11]}%)`,
-    primary_950: `hsl(${hues.primary}, 99%, ${dimScale[12]}%)`,
-    primary_975: `hsl(${hues.primary}, 99%, ${dimScale[13]}%)`,
+    primary_25: changeHue(`hsl(${hues.primary}, 50%, ${dimScale[1]}%)`),
+    primary_50: changeHue(`hsl(${hues.primary}, 60%, ${dimScale[2]}%)`),
+    primary_100: changeHue(`hsl(${hues.primary}, 70%, ${dimScale[3]}%)`),
+    primary_200: changeHue(`hsl(${hues.primary}, 82%, ${dimScale[4]}%)`),
+    primary_300: changeHue(`hsl(${hues.primary}, 90%, ${dimScale[5]}%)`),
+    primary_400: changeHue(`hsl(${hues.primary}, 95%, ${dimScale[6]}%)`),
+    primary_500: changeHue(`hsl(${hues.primary}, 99%, ${dimScale[7]}%)`),
+    primary_600: changeHue(`hsl(${hues.primary}, 99%, ${dimScale[8]}%)`),
+    primary_700: changeHue(`hsl(${hues.primary}, 99%, ${dimScale[9]}%)`),
+    primary_800: changeHue(`hsl(${hues.primary}, 99%, ${dimScale[10]}%)`),
+    primary_900: changeHue(`hsl(${hues.primary}, 99%, ${dimScale[11]}%)`),
+    primary_950: changeHue(`hsl(${hues.primary}, 99%, ${dimScale[12]}%)`),
+    primary_975: changeHue(`hsl(${hues.primary}, 99%, ${dimScale[13]}%)`),
 
     positive_25: `hsl(${hues.positive}, 50%, ${dimScale[1]}%)`,
     positive_50: `hsl(${hues.positive}, 60%, ${dimScale[2]}%)`,
