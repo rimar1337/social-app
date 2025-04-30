@@ -1,11 +1,11 @@
 import React, {useMemo, useState} from 'react'
-import {StyleProp, StyleSheet, View, ViewStyle} from 'react-native'
+import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
 import {
-  AppBskyFeedDefs,
+  type AppBskyFeedDefs,
   AppBskyFeedPost,
   AtUri,
   moderatePost,
-  ModerationDecision,
+  type ModerationDecision,
   RichText as RichTextAPI,
 } from '@atproto/api'
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome'
@@ -18,7 +18,7 @@ import {usePalette} from '#/lib/hooks/usePalette'
 import {makeProfileLink} from '#/lib/routes/links'
 import {countLines} from '#/lib/strings/helpers'
 import {colors, s} from '#/lib/styles'
-import {POST_TOMBSTONE, Shadow, usePostShadow} from '#/state/cache/post-shadow'
+import {POST_TOMBSTONE, type Shadow, usePostShadow} from '#/state/cache/post-shadow'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {precacheProfile} from '#/state/queries/profile'
 import {useSession} from '#/state/session'
@@ -251,6 +251,8 @@ function PostInner({
                 embed={post.embed}
                 moderation={moderation}
                 viewContext={PostEmbedViewContext.Feed}
+                handle={post.author.handle}
+                rkey={itemUrip.rkey}
               />
             ) : null}
           </ContentHider>

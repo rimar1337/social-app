@@ -40,11 +40,13 @@ export function CountWheel({
   big,
   isLiked,
   hasBeenToggled,
+  white,
 }: {
   likeCount: number
   big?: boolean
   isLiked: boolean
   hasBeenToggled: boolean
+  white?: boolean
 }) {
   const t = useTheme()
   const shouldAnimate = !useReducedMotion() && hasBeenToggled
@@ -94,7 +96,7 @@ export function CountWheel({
             a.user_select_none,
             isLiked
               ? [a.font_bold, s.likeColor]
-              : {color: t.palette.contrast_500},
+              : {color: white ? 'rgb(255,255,255)' : t.palette.contrast_500},
           ]}>
           {formattedCount}
         </Text>

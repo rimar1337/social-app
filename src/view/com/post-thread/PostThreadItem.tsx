@@ -83,6 +83,7 @@ export function PostThreadItem({
   overrideBlur,
   onPostReply,
   hideTopBorder,
+  imageGridDisabled,
   threadgateRecord,
 }: {
   post: AppBskyFeedDefs.PostView
@@ -100,6 +101,7 @@ export function PostThreadItem({
   overrideBlur: boolean
   onPostReply: (postUri: string | undefined) => void
   hideTopBorder?: boolean
+  imageGridDisabled?: boolean
   threadgateRecord?: AppBskyFeedThreadgate.Record
 }) {
   const postShadowed = usePostShadow(post)
@@ -135,6 +137,7 @@ export function PostThreadItem({
         overrideBlur={overrideBlur}
         onPostReply={onPostReply}
         hideTopBorder={hideTopBorder}
+        imageGridDisabled={imageGridDisabled}
         threadgateRecord={threadgateRecord}
       />
     )
@@ -180,6 +183,7 @@ let PostThreadItemLoaded = ({
   overrideBlur,
   onPostReply,
   hideTopBorder,
+  imageGridDisabled,
   threadgateRecord,
 }: {
   post: Shadow<AppBskyFeedDefs.PostView>
@@ -198,6 +202,7 @@ let PostThreadItemLoaded = ({
   overrideBlur: boolean
   onPostReply: (postUri: string | undefined) => void
   hideTopBorder?: boolean
+  imageGridDisabled?: boolean
   threadgateRecord?: AppBskyFeedThreadgate.Record
 }): React.ReactNode => {
   const t = useTheme()
@@ -211,6 +216,7 @@ let PostThreadItemLoaded = ({
   const {currentAccount} = useSession()
   const shadowedPostAuthor = useProfileShadow(post.author)
   const rootUri = record.reply?.root?.uri || post.uri
+  const rkey = new AtUri(post.uri).rkey
   const postHref = React.useMemo(() => {
     const urip = new AtUri(post.uri)
     return makeProfileLink(post.author, 'post', urip.rkey)
@@ -409,6 +415,9 @@ let PostThreadItemLoaded = ({
                     embed={post.embed}
                     moderation={moderation}
                     viewContext={PostEmbedViewContext.ThreadHighlighted}
+                    handle={post.author.handle}
+                    rkey={rkey}
+                    imageGridDisabled={imageGridDisabled}
                   />
                 </View>
               )}
@@ -634,6 +643,8 @@ let PostThreadItemLoaded = ({
                     embed={post.embed}
                     moderation={moderation}
                     viewContext={PostEmbedViewContext.Feed}
+                    handle={post.author.handle}
+                    rkey={rkey}
                   />
                 </View>
               )}

@@ -42,10 +42,12 @@ export function AnimatedLikeIcon({
   isLiked,
   big,
   hasBeenToggled,
+  white,
 }: {
   isLiked: boolean
   big?: boolean
   hasBeenToggled: boolean
+  white?: boolean
 }) {
   const t = useTheme()
   const size = big ? 22 : 18
@@ -78,7 +80,12 @@ export function AnimatedLikeIcon({
         </View>
       ) : (
         <HeartIconOutline
-          style={[{color: t.palette.contrast_500}, {pointerEvents: 'none'}]}
+          style={[
+            white
+              ? {color: 'rgba(255, 255, 255, 1)'}
+              : {color: t.palette.contrast_500},
+            {pointerEvents: 'none'},
+          ]}
           width={size}
         />
       )}

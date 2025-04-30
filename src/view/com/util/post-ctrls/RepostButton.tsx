@@ -20,6 +20,7 @@ interface Props {
   onRepost: () => void
   onQuote: () => void
   big?: boolean
+  white?: boolean
   embeddingDisabled: boolean
 }
 
@@ -29,6 +30,7 @@ let RepostButton = ({
   onRepost,
   onQuote,
   big,
+  white,
   embeddingDisabled,
 }: Props): React.ReactNode => {
   const t = useTheme()
@@ -38,9 +40,13 @@ let RepostButton = ({
   const playHaptic = useHaptics()
   const color = React.useMemo(
     () => ({
-      color: isReposted ? t.palette.positive_600 : t.palette.contrast_500,
+      color: isReposted
+        ? t.palette.positive_600
+        : white
+        ? '#EEE'
+        : t.palette.contrast_500,
     }),
-    [t, isReposted],
+    [t, isReposted, white],
   )
   return (
     <>
@@ -61,7 +67,11 @@ let RepostButton = ({
           a.bg_transparent,
           {padding: 5},
         ]}
-        hoverStyle={t.atoms.bg_contrast_25}
+        hoverStyle={
+          white
+            ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+            : t.atoms.bg_contrast_25
+        }
         label={
           isReposted
             ? _(

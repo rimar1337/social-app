@@ -1,12 +1,16 @@
 import React from 'react'
 import {
   InteractionManager,
-  StyleProp,
+  type StyleProp,
   StyleSheet,
   View,
-  ViewStyle,
+  type ViewStyle,
 } from 'react-native'
-import {MeasuredDimensions, runOnJS, runOnUI} from 'react-native-reanimated'
+import {
+  type MeasuredDimensions,
+  runOnJS,
+  runOnUI,
+} from 'react-native-reanimated'
 import {Image} from 'expo-image'
 import {
   AppBskyEmbedExternal,
@@ -18,11 +22,15 @@ import {
   AppBskyGraphDefs,
   moderateFeedGenerator,
   moderateUserList,
-  ModerationDecision,
+  type ModerationDecision,
 } from '@atproto/api'
+import {useNavigation} from '@react-navigation/native'
 
-import {HandleRef, measureHandle} from '#/lib/hooks/useHandleRef'
+import {type HandleRef, measureHandle} from '#/lib/hooks/useHandleRef'
 import {usePalette} from '#/lib/hooks/usePalette'
+import {getCurrentRoute} from '#/lib/routes/helpers'
+import {type NavigationProp} from '#/lib/routes/types'
+import {isWeb} from '#/platform/detection'
 import {useLightboxControls} from '#/state/lightbox'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {FeedSourceCard} from '#/view/com/feeds/FeedSourceCard'
@@ -30,7 +38,7 @@ import {atoms as a, useTheme} from '#/alf'
 import * as ListCard from '#/components/ListCard'
 import {Embed as StarterPackCard} from '#/components/StarterPack/StarterPackCard'
 import {ContentHider} from '../../../../components/moderation/ContentHider'
-import {Dimensions} from '../../lightbox/ImageViewing/@types'
+import {type Dimensions} from '../../lightbox/ImageViewing/@types'
 import {AutoSizedImage} from '../images/AutoSizedImage'
 import {ImageLayoutGrid} from '../images/ImageLayoutGrid'
 import {ExternalLinkEmbed} from './ExternalLinkEmbed'
@@ -55,6 +63,9 @@ export function PostEmbeds({
   style,
   allowNestedQuotes,
   viewContext,
+  handle,
+  rkey,
+  imageGridDisabled,
 }: {
   embed?: Embed
   moderation?: ModerationDecision
@@ -62,8 +73,12 @@ export function PostEmbeds({
   style?: StyleProp<ViewStyle>
   allowNestedQuotes?: boolean
   viewContext?: PostEmbedViewContext
+  handle?: string
+  rkey?: string
+  imageGridDisabled?: boolean
 }) {
   const {openLightbox} = useLightboxControls()
+  const navigation = useNavigation<NavigationProp>()
 
   // quote post with media
   // =
@@ -75,6 +90,9 @@ export function PostEmbeds({
           moderation={moderation}
           onOpen={onOpen}
           viewContext={viewContext}
+          handle={handle}
+          rkey={rkey}
+          imageGridDisabled={imageGridDisabled}
         />
         <MaybeQuoteEmbed
           embed={embed.record}
@@ -146,15 +164,32 @@ export function PostEmbeds({
         thumbRects: (MeasuredDimensions | null)[],
         fetchedDims: (Dimensions | null)[],
       ) => {
-        openLightbox({
-          images: items.map((item, i) => ({
-            ...item,
-            thumbRect: thumbRects[i] ?? null,
-            thumbDimensions: fetchedDims[i] ?? null,
-            type: 'image',
-          })),
-          index,
-        })
+        if (!isWeb) {
+          openLightbox({
+            images: items.map((item, i) => ({
+              ...item,
+              thumbRect: thumbRects[i] ?? null,
+              thumbDimensions: fetchedDims[i] ?? null,
+              type: 'image',
+            })),
+            index,
+          })
+        } else if (handle && rkey) {
+          const route = getCurrentRoute(navigation.getState())
+          if (route.name === 'PostThreadLightbox') {
+            navigation.replace('PostThreadLightbox', {
+              name: handle,
+              rkey: rkey,
+              page: index + 1 || 1,
+            })
+          } else {
+            navigation.push('PostThreadLightbox', {
+              name: handle,
+              rkey: rkey,
+              page: index + 1 || 1,
+            })
+          }
+        }
       }
       const onPress = (
         index: number,
@@ -173,6 +208,8 @@ export function PostEmbeds({
           Image.prefetch(items.map(i => i.uri))
         })
       }
+
+      if (imageGridDisabled) return null
 
       if (images.length === 1) {
         const image = images[0]

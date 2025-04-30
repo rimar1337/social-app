@@ -8,11 +8,11 @@ import {
 } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import {
-  AppBskyFeedDefs,
-  AppBskyFeedPost,
-  AppBskyFeedThreadgate,
+  type AppBskyFeedDefs,
+  type AppBskyFeedPost,
+  type AppBskyFeedThreadgate,
   AtUri,
-  RichText as RichTextAPI,
+  type RichText as RichTextAPI,
 } from '@atproto/api'
 import {msg, plural} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
@@ -26,7 +26,7 @@ import {makeProfileLink} from '#/lib/routes/links'
 import {shareUrl} from '#/lib/sharing'
 import {useGate} from '#/lib/statsig/statsig'
 import {toShareUrl} from '#/lib/strings/url-helpers'
-import {Shadow} from '#/state/cache/types'
+import {type Shadow} from '#/state/cache/types'
 import {useFeedFeedbackContext} from '#/state/feed-feedback'
 import {
   usePostLikeMutationQueue,
@@ -51,6 +51,7 @@ import {RepostButton} from './RepostButton'
 
 let PostCtrls = ({
   big,
+  white,
   post,
   record,
   richText,
@@ -62,6 +63,7 @@ let PostCtrls = ({
   threadgateRecord,
 }: {
   big?: boolean
+  white?: boolean
   post: Shadow<AppBskyFeedDefs.PostView>
   record: AppBskyFeedPost.Record
   richText: RichTextAPI
@@ -107,9 +109,9 @@ let PostCtrls = ({
 
   const defaultCtrlColor = React.useMemo(
     () => ({
-      color: t.palette.contrast_500,
+      color: white ? '#EEE' : t.palette.contrast_500,
     }),
-    [t],
+    [t, white],
   ) as StyleProp<ViewStyle>
 
   const [hasLikeIconBeenToggled, setHasLikeIconBeenToggled] =
@@ -241,9 +243,12 @@ let PostCtrls = ({
       a.align_center,
       a.overflow_hidden,
       {padding: 5},
-      (pressed || hovered) && t.atoms.bg_contrast_25,
+      (pressed || hovered) &&
+        (white
+          ? {backgroundColor: 'rgba(255, 255, 255, 0.15)'}
+          : t.atoms.bg_contrast_25),
     ],
-    [t.atoms.bg_contrast_25],
+    [t.atoms.bg_contrast_25, white],
   )
 
   return (
@@ -294,6 +299,7 @@ let PostCtrls = ({
           onRepost={onRepost}
           onQuote={onQuote}
           big={big}
+          white={white}
           embeddingDisabled={Boolean(post.viewer?.embeddingDisabled)}
         />
       </View>
@@ -323,11 +329,13 @@ let PostCtrls = ({
           <AnimatedLikeIcon
             isLiked={Boolean(post.viewer?.like)}
             big={big}
+            white={white}
             hasBeenToggled={hasLikeIconBeenToggled}
           />
           <CountWheel
             likeCount={post.likeCount ?? 0}
             big={big}
+            white={white}
             isLiked={Boolean(post.viewer?.like)}
             hasBeenToggled={hasLikeIconBeenToggled}
           />
@@ -371,6 +379,7 @@ let PostCtrls = ({
         <PostDropdownBtn
           testID="postDropdownBtn"
           post={post}
+          white={white}
           postFeedContext={feedContext}
           record={record}
           richText={richText}

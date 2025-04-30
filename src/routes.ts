@@ -23,6 +23,7 @@ export const router = new Router({
   ProfileSearch: '/profile/:name/search',
   ProfileList: '/profile/:name/lists/:rkey',
   PostThread: '/profile/:name/post/:rkey',
+  PostThreadLightbox: '/profile/:name/post/:rkey/image/:page',
   PostLikedBy: '/profile/:name/post/:rkey/liked-by',
   PostRepostedBy: '/profile/:name/post/:rkey/reposted-by',
   PostQuotes: '/profile/:name/post/:rkey/quotes',

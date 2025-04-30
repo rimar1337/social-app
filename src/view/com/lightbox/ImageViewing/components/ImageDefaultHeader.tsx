@@ -5,8 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import {StyleSheet, TouchableOpacity, ViewStyle} from 'react-native'
+import {StyleSheet, TouchableOpacity, type ViewStyle} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
+import {faAnglesLeft} from '@fortawesome/free-solid-svg-icons/faAnglesLeft'
+import {faAnglesRight} from '@fortawesome/free-solid-svg-icons/faAnglesRight'
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
@@ -15,11 +17,12 @@ import {createHitslop} from '#/lib/constants'
 
 type Props = {
   onRequestClose: () => void
+  sidebarToggle?: boolean
 }
 
 const HIT_SLOP = createHitslop(16)
 
-const ImageDefaultHeader = ({onRequestClose}: Props) => {
+const ImageDefaultHeader = ({onRequestClose, sidebarToggle}: Props) => {
   const {_} = useLingui()
   return (
     <SafeAreaView style={styles.root}>
@@ -31,7 +34,17 @@ const ImageDefaultHeader = ({onRequestClose}: Props) => {
         accessibilityLabel={_(msg`Close image`)}
         accessibilityHint={_(msg`Closes viewer for header image`)}
         onAccessibilityEscape={onRequestClose}>
-        <FontAwesomeIcon icon="close" color={'#fff'} size={22} />
+        {sidebarToggle !== undefined ? (
+          <>
+            {sidebarToggle ? (
+              <FontAwesomeIcon icon={faAnglesRight} color={'#fff'} size={22} />
+            ) : (
+              <FontAwesomeIcon icon={faAnglesLeft} color={'#fff'} size={22} />
+            )}
+          </>
+        ) : (
+          <FontAwesomeIcon icon={'close'} color={'#fff'} size={22} />
+        )}
       </TouchableOpacity>
     </SafeAreaView>
   )

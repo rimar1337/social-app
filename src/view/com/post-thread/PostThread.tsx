@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {
   AppBskyFeedDefs,
-  AppBskyFeedThreadgate,
+  type AppBskyFeedThreadgate,
   moderatePost,
 } from '@atproto/api'
 import {msg, Trans} from '@lingui/macro'
@@ -25,11 +25,11 @@ import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {
   fillThreadModerationCache,
   sortThread,
-  ThreadBlocked,
-  ThreadModerationCache,
-  ThreadNode,
-  ThreadNotFound,
-  ThreadPost,
+  type ThreadBlocked,
+  type ThreadModerationCache,
+  type ThreadNode,
+  type ThreadNotFound,
+  type ThreadPost,
   usePostThreadQuery,
 } from '#/state/queries/post-thread'
 import {useSetThreadViewPreferencesMutation} from '#/state/queries/preferences'
@@ -37,7 +37,7 @@ import {usePreferencesQuery} from '#/state/queries/preferences'
 import {useSession} from '#/state/session'
 import {useComposerControls} from '#/state/shell'
 import {useMergedThreadgateHiddenReplies} from '#/state/threadgate-hidden-replies'
-import {List, ListMethods} from '#/view/com/util/List'
+import {List, type ListMethods} from '#/view/com/util/List'
 import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonIcon} from '#/components/Button'
 import {SettingsSliderVertical_Stroke2_Corner0_Rounded as SettingsSlider} from '#/components/icons/SettingsSlider'
@@ -93,7 +93,13 @@ const keyExtractor = (item: RowItem) => {
   return item._reactKey
 }
 
-export function PostThread({uri}: {uri: string | undefined}) {
+export function PostThread({
+  uri,
+  imageGridDisabled,
+}: {
+  uri: string | undefined
+  imageGridDisabled?: boolean
+}) {
   const {hasSession, currentAccount} = useSession()
   const {_} = useLingui()
   const t = useTheme()
@@ -511,6 +517,7 @@ export function PostThread({uri}: {uri: string | undefined}) {
             }
             onPostReply={onPostReply}
             hideTopBorder={index === 0 && !item.ctx.isParentLoading}
+            imageGridDisabled={imageGridDisabled}
           />
         </View>
       )

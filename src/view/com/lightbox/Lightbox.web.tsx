@@ -1,17 +1,17 @@
 import React, {useCallback, useEffect, useState} from 'react'
 import {
   Image,
-  ImageStyle,
+  type ImageStyle,
   Pressable,
   StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-  ViewStyle,
+  type ViewStyle,
 } from 'react-native'
 import {
   FontAwesomeIcon,
-  FontAwesomeIconStyle,
+  type FontAwesomeIconStyle,
 } from '@fortawesome/react-native-fontawesome'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
@@ -21,7 +21,7 @@ import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {colors, s} from '#/lib/styles'
 import {useLightbox, useLightboxControls} from '#/state/lightbox'
 import {Text} from '../util/text/Text'
-import {ImageSource} from './ImageViewing/@types'
+import {type ImageSource} from './ImageViewing/@types'
 import ImageDefaultHeader from './ImageViewing/components/ImageDefaultHeader'
 
 export function Lightbox() {
@@ -47,14 +47,16 @@ export function Lightbox() {
   )
 }
 
-function LightboxInner({
+export function LightboxInner({
   imgs,
   initialIndex = 0,
   onClose,
+  postThread,
 }: {
   imgs: ImageSource[]
   initialIndex: number
   onClose: () => void
+  postThread?: boolean
 }) {
   const {_} = useLingui()
   const [index, setIndex] = useState<number>(initialIndex)
@@ -102,7 +104,7 @@ function LightboxInner({
   const img = imgs[index]
   const isAvi = img.type === 'circle-avi' || img.type === 'rect-avi'
   return (
-    <View style={styles.mask}>
+    <View style={[postThread ? styles.maskPostThread : styles.mask]}>
       <TouchableWithoutFeedback
         onPress={onClose}
         accessibilityRole="button"
@@ -134,7 +136,7 @@ function LightboxInner({
               accessibilityIgnoresInvertColors
               source={img}
               style={styles.image as ImageStyle}
-              accessibilityLabel={img.alt}
+              accessibilityLabel={'alt' in imgs ? imgs[index].alt : ''}
               accessibilityHint=""
             />
             {canGoLeft && (
@@ -179,7 +181,11 @@ function LightboxInner({
         )}
       </TouchableWithoutFeedback>
       {img.alt ? (
-        <View style={styles.footer}>
+        <View
+          style={[
+            styles.footer,
+            (postThread && {paddingTop: 12}) || {paddingVertical: 24},
+          ]}>
           <Pressable
             accessibilityLabel={_(msg`Expand alt text`)}
             accessibilityHint={_(
@@ -197,7 +203,7 @@ function LightboxInner({
           </Pressable>
         </View>
       ) : null}
-      <View style={styles.closeBtn}>
+      <View style={[postThread ? styles.closeBtnPostThread : styles.closeBtn]}>
         <ImageDefaultHeader onRequestClose={onClose} />
       </View>
     </View>
@@ -213,6 +219,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#000c',
+  },
+  maskPostThread: {
+    top: 0,
+    left: 0,
+    flex: 1,
   },
   imageCenterer: {
     flex: 1,
@@ -245,6 +256,11 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
   },
+  closeBtnPostThread: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+  },
   btn: {
     position: 'absolute',
     backgroundColor: '#00000077',
@@ -275,7 +291,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 32,
-    paddingVertical: 24,
     backgroundColor: colors.black,
   },
   blurredBackground: {

@@ -108,6 +108,7 @@ import {useDialogControl} from '#/components/Dialog'
 import {VerifyEmailDialog} from '#/components/dialogs/VerifyEmailDialog'
 import {router} from '#/routes'
 import {Referrer} from '../modules/expo-bluesky-swiss-army'
+import {PostThreadLightboxScreen} from './view/screens/PostThreadLightbox'
 
 const navigationRef = createNavigationContainerRef<AllNavigatorParams>()
 
@@ -230,6 +231,13 @@ function commonScreens(Stack: typeof HomeTab, unreadCountLabel?: string) {
       <Stack.Screen
         name="PostThread"
         getComponent={() => PostThreadScreen}
+        options={({route}) => ({
+          title: title(msg`Post by @${route.params.name}`),
+        })}
+      />
+      <Stack.Screen
+        name="PostThreadLightbox"
+        getComponent={() => PostThreadLightboxScreen}
         options={({route}) => ({
           title: title(msg`Post by @${route.params.name}`),
         })}

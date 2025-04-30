@@ -1,4 +1,4 @@
-import React, {memo, useMemo, useState} from 'react'
+import {memo, useMemo, useState} from 'react'
 import {
   Pressable,
   type PressableProps,
@@ -6,16 +6,17 @@ import {
   type ViewStyle,
 } from 'react-native'
 import {
-  AppBskyFeedDefs,
-  AppBskyFeedPost,
-  AppBskyFeedThreadgate,
-  RichText as RichTextAPI,
+  type AppBskyFeedDefs,
+  type AppBskyFeedPost,
+  type AppBskyFeedThreadgate,
+  type RichText as RichTextAPI,
 } from '@atproto/api'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
+import type React from 'react';
 
 import {useTheme} from '#/lib/ThemeContext'
-import {Shadow} from '#/state/cache/post-shadow'
+import {type Shadow} from '#/state/cache/post-shadow'
 import {atoms as a, useTheme as useAlf} from '#/alf'
 import {DotGrid_Stroke2_Corner0_Rounded as DotsHorizontal} from '#/components/icons/DotGrid'
 import {useMenuControl} from '#/components/Menu'
@@ -33,6 +34,7 @@ let PostDropdownBtn = ({
   hitSlop,
   size,
   timestamp,
+  white,
   threadgateRecord,
 }: {
   testID: string
@@ -44,12 +46,13 @@ let PostDropdownBtn = ({
   hitSlop?: PressableProps['hitSlop']
   size?: 'lg' | 'md' | 'sm'
   timestamp: string
+  white?: boolean
   threadgateRecord?: AppBskyFeedThreadgate.Record
 }): React.ReactNode => {
   const theme = useTheme()
   const alf = useAlf()
   const {_} = useLingui()
-  const defaultCtrlColor = theme.palette.default.postCtrl
+  const defaultCtrlColor = white ? '#EEE' : theme.palette.default.postCtrl
   const menuControl = useMenuControl()
   const [hasBeenOpen, setHasBeenOpen] = useState(false)
   const lazyMenuControl = useMemo(

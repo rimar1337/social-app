@@ -1,10 +1,10 @@
 import React from 'react'
 import {
-  StyleProp,
+  type StyleProp,
   StyleSheet,
   TouchableOpacity,
   View,
-  ViewStyle,
+  type ViewStyle,
 } from 'react-native'
 import {
   AppBskyEmbedExternal,
@@ -12,10 +12,10 @@ import {
   AppBskyEmbedRecord,
   AppBskyEmbedRecordWithMedia,
   AppBskyEmbedVideo,
-  AppBskyFeedDefs,
+  type AppBskyFeedDefs,
   AppBskyFeedPost,
   moderatePost,
-  ModerationDecision,
+  type ModerationDecision,
   RichText as RichTextAPI,
 } from '@atproto/api'
 import {AtUri} from '@atproto/api'
@@ -43,7 +43,7 @@ import {Link} from '../Link'
 import {PostMeta} from '../PostMeta'
 import {Text} from '../text/Text'
 import {PostEmbeds} from '.'
-import {QuoteEmbedViewContext} from './types'
+import {type QuoteEmbedViewContext} from './types'
 
 export function MaybeQuoteEmbed({
   embed,
@@ -130,6 +130,7 @@ function QuoteEmbedModerated({
   viewContext?: QuoteEmbedViewContext
 }) {
   const moderationOpts = useModerationOpts()
+  const rkey = new AtUri(viewRecord.uri).rkey
   const postView = React.useMemo(
     () => viewRecordToPostView(viewRecord),
     [viewRecord],
@@ -146,6 +147,8 @@ function QuoteEmbedModerated({
       style={style}
       allowNestedQuotes={allowNestedQuotes}
       viewContext={viewContext}
+      handle={viewRecord.author.handle}
+      rkey={rkey}
     />
   )
 }
@@ -156,6 +159,8 @@ export function QuoteEmbed({
   onOpen,
   style,
   allowNestedQuotes,
+  handle,
+  rkey,
 }: {
   quote: AppBskyFeedDefs.PostView
   moderation?: ModerationDecision
@@ -163,6 +168,8 @@ export function QuoteEmbed({
   style?: StyleProp<ViewStyle>
   allowNestedQuotes?: boolean
   viewContext?: QuoteEmbedViewContext
+  handle: string
+  rkey: string
 }) {
   const t = useTheme()
   const queryClient = useQueryClient()
@@ -262,7 +269,14 @@ export function QuoteEmbed({
               disableLinks
             />
           ) : null}
-          {embed && <PostEmbeds embed={embed} moderation={moderation} />}
+          {embed && (
+            <PostEmbeds
+              embed={embed}
+              moderation={moderation}
+              handle={handle}
+              rkey={rkey}
+            />
+          )}
         </Link>
       </ContentHider>
     </View>
@@ -305,7 +319,15 @@ export function LazyQuoteEmbed({uri}: {uri: string}) {
   const moderation = moderationOpts
     ? moderatePost(data.view, moderationOpts)
     : undefined
-  return <QuoteEmbed quote={data.view} moderation={moderation} />
+  return (
+    <QuoteEmbed
+      quote={data.view}
+      moderation={moderation}
+      handle={data.view.author.handle}
+      // TODO fix this shitttt
+      rkey={data.view.uri}
+    />
+  )
 }
 
 function viewRecordToPostView(
