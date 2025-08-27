@@ -22,7 +22,7 @@ import {
   type ThreadViewPreferences,
   type UsePreferencesQueryResponse,
 } from '#/state/queries/preferences/types'
-import {useAgent} from '#/state/session'
+import {useBlankPrefAuthedAgent as useAgent} from '#/state/session'
 import {saveLabelers} from '#/state/session/agent-config'
 
 export * from '#/state/queries/preferences/const'
