@@ -44,6 +44,16 @@ function ShellInner() {
   const {state: policyUpdateState} = usePolicyUpdateContext()
 
   useLayoutEffect(() => {
+    const rootElement = document.documentElement
+    rootElement.className = `html`
+    rootElement.style.setProperty(
+      'background',
+      `${t.atoms.bg.backgroundColor}`,
+      'important',
+    )
+  }, [t.atoms.bg.backgroundColor, t.name])
+
+  useLayoutEffect(() => {
     if (showDrawer !== showDrawerDelayedExit) {
       if (showDrawer) {
         setShowDrawerDelayedExit(true)

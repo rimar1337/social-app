@@ -9911,6 +9911,11 @@ csstype@^3.0.2:
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.2.tgz#1d4bf9d572f11c14031f0436e1c10bc1f571f50b"
   integrity sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==
 
+culori@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/culori/-/culori-4.0.2.tgz#fbb28dbeb8d13d0eeab7520191f74ab822a8ca71"
+  integrity sha512-1+BhOB8ahCn4O0cep0Sh2l9KCOfOdY+BXJnKMHFFzDEouSr/el18QwXEMRlOj9UY5nCeA8UN3a/82rUWRBeyBw==
+
 data-urls@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/data-urls/-/data-urls-3.0.2.tgz#9cf24a477ae22bcef5cd5f6f0bfbc1d2d3be9143"
