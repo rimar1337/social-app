@@ -1,4 +1,4 @@
-import React from 'react'
+import {useCallback, useState} from 'react'
 import {View} from 'react-native'
 import {
   type AppBskyGraphGetStarterPacksWithMembership,
@@ -22,16 +22,16 @@ import {
 } from '#/state/queries/list-memberships'
 import * as Toast from '#/view/com/util/Toast'
 import {atoms as a, useTheme} from '#/alf'
+import {AvatarStack} from '#/components/AvatarStack'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import * as Dialog from '#/components/Dialog'
 import {Divider} from '#/components/Divider'
+import {PlusLarge_Stroke2_Corner0_Rounded as PlusIcon} from '#/components/icons/Plus'
+import {StarterPack} from '#/components/icons/StarterPack'
+import {TimesLarge_Stroke2_Corner0_Rounded as XIcon} from '#/components/icons/Times'
 import {Loader} from '#/components/Loader'
 import {Text} from '#/components/Typography'
 import * as bsky from '#/types/bsky'
-import {AvatarStack} from '../AvatarStack'
-import {PlusLarge_Stroke2_Corner0_Rounded} from '../icons/Plus'
-import {StarterPack} from '../icons/StarterPack'
-import {TimesLarge_Stroke2_Corner0_Rounded} from '../icons/Times'
 
 type StarterPackWithMembership =
   AppBskyGraphGetStarterPacksWithMembership.StarterPackWithMembership
@@ -51,7 +51,7 @@ export function StarterPackDialog({
   const navigation = useNavigation<NavigationProp>()
   const requireEmailVerification = useRequireEmailVerification()
 
-  const navToWizard = React.useCallback(() => {
+  const navToWizard = useCallback(() => {
     control.close()
     navigation.navigate('StarterPackWizard', {
       fromDialog: true,
@@ -78,7 +78,6 @@ export function StarterPackDialog({
     <Dialog.Outer control={control}>
       <Dialog.Handle />
       <StarterPackList
-        control={control}
         onStartWizard={wrappedNavToWizard}
         targetDid={targetDid}
         enabled={enabled}
@@ -91,7 +90,6 @@ function Empty({onStartWizard}: {onStartWizard: () => void}) {
   const {_} = useLingui()
   const t = useTheme()
 
-  isWeb
   return (
     <View style={[a.gap_2xl, {paddingTop: isWeb ? 100 : 64}]}>
       <View style={[a.gap_xs, a.align_center]}>
@@ -115,7 +113,7 @@ function Empty({onStartWizard}: {onStartWizard: () => void}) {
               Create
             </Trans>
           </ButtonText>
-          <ButtonIcon icon={PlusLarge_Stroke2_Corner0_Rounded} />
+          <ButtonIcon icon={PlusIcon} />
         </Button>
       </View>
     </View>
@@ -123,22 +121,19 @@ function Empty({onStartWizard}: {onStartWizard: () => void}) {
 }
 
 function StarterPackList({
-  control,
   onStartWizard,
   targetDid,
   enabled,
 }: {
-  control: Dialog.DialogControlProps
   onStartWizard: () => void
   targetDid: string
   enabled?: boolean
 }) {
+  const control = Dialog.useDialogContext()
   const {_} = useLingui()
-  const t = useTheme()
 
   const {
     data,
-    refetch,
     isError,
     isLoading,
     hasNextPage,
@@ -149,15 +144,7 @@ function StarterPackList({
   const membershipItems =
     data?.pages.flatMap(page => page.starterPacksWithMembership) || []
 
-  const _onRefresh = React.useCallback(async () => {
-    try {
-      await refetch()
-    } catch (err) {
-      // Error handling is optional since this is just a refresh
-    }
-  }, [refetch])
-
-  const _onEndReached = React.useCallback(async () => {
+  const onEndReached = useCallback(async () => {
     if (isFetchingNextPage || !hasNextPage || isError) return
     try {
       await fetchNextPage()
@@ -166,24 +153,16 @@ function StarterPackList({
     }
   }, [isFetchingNextPage, hasNextPage, isError, fetchNextPage])
 
-  const renderItem = React.useCallback(
+  const renderItem = useCallback(
     ({item}: {item: StarterPackWithMembership}) => (
       <StarterPackItem starterPackWithMembership={item} targetDid={targetDid} />
     ),
     [targetDid],
   )
 
-  const onClose = React.useCallback(() => {
+  const onClose = useCallback(() => {
     control.close()
   }, [control])
-
-  const XIcon = React.useMemo(() => {
-    return (
-      <TimesLarge_Stroke2_Corner0_Rounded
-        fill={t.atoms.text_contrast_medium.color}
-      />
-    )
-  }, [t])
 
   const listHeader = (
     <>
@@ -196,8 +175,14 @@ function StarterPackList({
         <Text style={[a.text_lg, a.font_bold]}>
           <Trans>Add to starter packs</Trans>
         </Text>
-        <Button label={_(msg`Close`)} onPress={onClose}>
-          <ButtonIcon icon={() => XIcon} />
+        <Button
+          label={_(msg`Close`)}
+          onPress={onClose}
+          variant="ghost"
+          color="secondary"
+          size="small"
+          shape="round">
+          <ButtonIcon icon={XIcon} />
         </Button>
       </View>
       {membershipItems.length > 0 && (
@@ -217,7 +202,7 @@ function StarterPackList({
                   Create
                 </Trans>
               </ButtonText>
-              <ButtonIcon icon={PlusLarge_Stroke2_Corner0_Rounded} />
+              <ButtonIcon icon={PlusIcon} />
             </Button>
           </View>
           <Divider />
@@ -243,9 +228,7 @@ function StarterPackList({
           ? () => 'starter_pack_dialog_loader'
           : (item: StarterPackWithMembership) => item.starterPack.uri
       }
-      refreshing={false}
-      onRefresh={_onRefresh}
-      onEndReached={_onEndReached}
+      onEndReached={onEndReached}
       onEndReachedThreshold={0.1}
       ListHeaderComponent={listHeader}
       ListEmptyComponent={<Empty onStartWizard={onStartWizard} />}
@@ -268,7 +251,7 @@ function StarterPackItem({
   const starterPack = starterPackWithMembership.starterPack
   const isInPack = !!starterPackWithMembership.listItem
 
-  const [isPendingRefresh, setIsPendingRefresh] = React.useState(false)
+  const [isPendingRefresh, setIsPendingRefresh] = useState(false)
 
   const {mutate: addMembership} = useListMembershipAddMutation({
     onSuccess: () => {
@@ -386,7 +369,7 @@ function StarterPackItem({
 
       <Button
         label={isInPack ? _(msg`Remove`) : _(msg`Add`)}
-        color={isInPack ? 'secondary' : 'primary'}
+        color={isInPack ? 'secondary' : 'primary_subtle'}
         size="tiny"
         disabled={isPendingRefresh}
         onPress={handleToggleMembership}>
