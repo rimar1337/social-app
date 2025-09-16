@@ -58,6 +58,7 @@ import {ProfileHoverCard} from '#/components/ProfileHoverCard'
 import {RichText} from '#/components/RichText'
 import {SubtleWebHover} from '#/components/SubtleWebHover'
 import * as bsky from '#/types/bsky'
+import {useHydratedEmbed} from '#/state/queries/redDwarf/useHydrated'
 
 interface FeedItemProps {
   record: AppBskyFeedPost.Record
@@ -80,7 +81,7 @@ interface FeedItemProps {
   isParentNotFound?: boolean
 }
 
-export function PostFeedItem({
+export function PostFeedItemPartial({
   post,
   record,
   reason,
@@ -97,14 +98,10 @@ export function PostFeedItem({
   isParentNotFound,
   rootPost,
   onShowLess,
-  profileLoading,
-  embedLoading,
 }: FeedItemProps & {
   post: AppBskyFeedDefs.PostView
   rootPost: AppBskyFeedDefs.PostView
   onShowLess?: (interaction: AppBskyFeedDefs.Interaction) => void
-  profileLoading?: boolean
-  embedLoading?: boolean
 }): React.ReactNode {
   const postShadowed = usePostShadow(post)
   const richText = useMemo(
@@ -120,7 +117,7 @@ export function PostFeedItem({
   }
   if (richText && moderation) {
     return (
-      <FeedItemInner
+      <FeedItemPartialInner
         // Safeguard from clobbering per-post state below:
         key={postShadowed.uri}
         post={postShadowed}
@@ -140,15 +137,13 @@ export function PostFeedItem({
         isParentNotFound={isParentNotFound}
         rootPost={rootPost}
         onShowLess={onShowLess}
-        profileLoading={profileLoading}
-        embedLoading={embedLoading}
       />
     )
   }
   return null
 }
 
-let FeedItemInner = ({
+let FeedItemPartialInner = ({
   post,
   record,
   reason,
@@ -166,15 +161,11 @@ let FeedItemInner = ({
   isParentNotFound,
   rootPost,
   onShowLess,
-  profileLoading,
-  embedLoading,
 }: FeedItemProps & {
   richText: RichTextAPI
   post: Shadow<AppBskyFeedDefs.PostView>
   rootPost: AppBskyFeedDefs.PostView
   onShowLess?: (interaction: AppBskyFeedDefs.Interaction) => void
-  profileLoading?: boolean
-  embedLoading?: boolean
 }): React.ReactNode => {
   const queryClient = useQueryClient()
   const {openComposer} = useOpenComposer()
@@ -425,7 +416,7 @@ let FeedItemInner = ({
 
       <View style={styles.layout}>
         <View style={styles.layoutAvi}>
-          {profileLoading ? (
+          {false ? (
             <LoadingPlaceholder
               width={36}
               height={36}
@@ -477,15 +468,27 @@ let FeedItemInner = ({
               />
             )}
           <LabelsOnMyPost post={post} />
-          <PostContent
-            moderation={moderation}
-            richText={richText}
-            postEmbed={post.embed}
-            postAuthor={post.author}
-            onOpenEmbed={onOpenEmbed}
-            post={post}
-            threadgateRecord={threadgateRecord}
-          />
+          {post?.record?.embed ? (
+            <PostContentHookLoader
+              moderation={moderation}
+              richText={richText}
+              postUndoneEmbed={post?.record?.embed}
+              postAuthor={post.author}
+              onOpenEmbed={onOpenEmbed}
+              post={post}
+              threadgateRecord={threadgateRecord}
+            />
+          ) : (
+            <PostContent
+              moderation={moderation}
+              richText={richText}
+              postEmbed={undefined}
+              postAuthor={post.author}
+              onOpenEmbed={onOpenEmbed}
+              post={post}
+              threadgateRecord={threadgateRecord}
+            />
+          )}
           <PostControls
             post={post}
             record={record}
@@ -505,7 +508,61 @@ let FeedItemInner = ({
     </Link>
   )
 }
-FeedItemInner = memo(FeedItemInner)
+FeedItemPartialInner = memo(FeedItemPartialInner)
+
+function PostContentHookLoader({
+  post,
+  moderation,
+  richText,
+  postUndoneEmbed,
+  postAuthor,
+  onOpenEmbed,
+  threadgateRecord,
+}: {
+  moderation: ModerationDecision
+  richText: RichTextAPI
+  postUndoneEmbed: any
+  postAuthor: AppBskyFeedDefs.PostView['author']
+  onOpenEmbed: () => void
+  post: AppBskyFeedDefs.PostView
+  threadgateRecord?: AppBskyFeedThreadgate.Record
+}) {
+  const {
+    data: hydratedEmbed,
+    //isLoading: isEmbedLoading,
+    //error: embedError,
+  } = useHydratedEmbed(postUndoneEmbed, postAuthor.did)
+
+  if (!hydratedEmbed) {
+    return (
+      <>
+        <LoadingPlaceholder
+          width={36}
+          height={36}
+          style={[
+            {
+              borderRadius: 999,
+              marginRight: 0,
+            },
+            {borderRadius: 8},
+          ]}
+        />
+      </>
+    )
+  }
+
+  return (
+    <PostContent
+      moderation={moderation}
+      richText={richText}
+      postEmbed={hydratedEmbed}
+      postAuthor={post.author}
+      onOpenEmbed={onOpenEmbed}
+      post={post}
+      threadgateRecord={threadgateRecord}
+    />
+  )
+}
 
 let PostContent = ({
   post,
