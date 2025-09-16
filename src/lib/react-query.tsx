@@ -14,7 +14,7 @@ import {listenNetworkConfirmed, listenNetworkLost} from '#/state/events'
 
 // any query keys in this array will be persisted to AsyncStorage
 export const labelersDetailedInfoQueryKeyRoot = 'labelers-detailed-info'
-const STORED_CACHE_QUERY_KEY_ROOTS = [labelersDetailedInfoQueryKeyRoot]
+const STORED_CACHE_QUERY_KEY_ROOTS = [labelersDetailedInfoQueryKeyRoot, "constellation","arbitrary","identity","post","profile"]
 
 async function checkIsOnline(): Promise<boolean> {
   try {
