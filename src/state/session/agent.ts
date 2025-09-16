@@ -342,6 +342,12 @@ class BskyAppAgent extends BskyAgent {
     this.sessionManager.session = undefined
     this.persistSessionHandler = undefined
   }
+
+  cloneWithoutProxy(): BskyAgent {
+    const cloned = new BskyAgent({service: this.serviceUrl.toString()})
+    cloned.sessionManager.session = this.sessionManager.session
+    return cloned
+  }
 }
 
 export type {BskyAppAgent}

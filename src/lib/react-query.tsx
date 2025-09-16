@@ -11,6 +11,7 @@ import type React from 'react'
 
 import {isNative} from '#/platform/detection'
 import {listenNetworkConfirmed, listenNetworkLost} from '#/state/events'
+import {PUBLIC_BSKY_SERVICE} from './constants'
 
 // any query keys in this array will be persisted to AsyncStorage
 export const labelersDetailedInfoQueryKeyRoot = 'labelers-detailed-info'
@@ -22,7 +23,7 @@ async function checkIsOnline(): Promise<boolean> {
     setTimeout(() => {
       controller.abort()
     }, 15e3)
-    const res = await fetch('https://public.api.bsky.app/xrpc/_health', {
+    const res = await fetch(`https://${PUBLIC_BSKY_SERVICE}/xrpc/_health`, {
       cache: 'no-store',
       signal: controller.signal,
     })

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useMemo} from 'react'
 import {type AtpSessionEvent, type BskyAgent} from '@atproto/api'
 
 import {isWeb} from '#/platform/detection'
@@ -366,4 +366,15 @@ export function useAgent(): BskyAgent {
     throw Error('useAgent() must be below <SessionProvider>.')
   }
   return agent
+}
+
+export function useBlankPrefAuthedAgent(): BskyAgent {
+  const agent = React.useContext(AgentContext)
+  if (!agent) {
+    throw Error('useAgent() must be below <SessionProvider>.')
+  }
+
+  return useMemo(() => {
+    return (agent as BskyAppAgent).cloneWithoutProxy()
+  }, [agent])
 }
