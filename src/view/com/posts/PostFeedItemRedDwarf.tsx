@@ -29,6 +29,7 @@ import {
 } from '#/state/cache/post-shadow'
 import {useFeedFeedbackContext} from '#/state/feed-feedback'
 import {unstableCacheProfileView} from '#/state/queries/profile'
+import {useHydratedEmbed} from '#/state/queries/redDwarf/useHydrated'
 import {useSession} from '#/state/session'
 import {useMergedThreadgateHiddenReplies} from '#/state/threadgate-hidden-replies'
 import {
@@ -58,7 +59,6 @@ import {ProfileHoverCard} from '#/components/ProfileHoverCard'
 import {RichText} from '#/components/RichText'
 import {SubtleWebHover} from '#/components/SubtleWebHover'
 import * as bsky from '#/types/bsky'
-import {useHydratedEmbed} from '#/state/queries/redDwarf/useHydrated'
 
 interface FeedItemProps {
   record: AppBskyFeedPost.Record
@@ -536,9 +536,18 @@ function PostContentHookLoader({
   if (!hydratedEmbed) {
     return (
       <>
+        <PostContent
+          moderation={moderation}
+          richText={richText}
+          postEmbed={undefined}
+          postAuthor={post.author}
+          onOpenEmbed={onOpenEmbed}
+          post={post}
+          threadgateRecord={threadgateRecord}
+        />
         <LoadingPlaceholder
-          width={36}
-          height={36}
+          width={108}
+          height={72}
           style={[
             {
               borderRadius: 999,
@@ -564,7 +573,7 @@ function PostContentHookLoader({
   )
 }
 
-let PostContent = ({
+export let PostContent = ({
   post,
   moderation,
   richText,
@@ -576,7 +585,7 @@ let PostContent = ({
   moderation: ModerationDecision
   richText: RichTextAPI
   postEmbed: AppBskyFeedDefs.PostView['embed']
-  postAuthor: AppBskyFeedDefs.PostView['author']
+  postAuthor?: AppBskyFeedDefs.PostView['author']
   onOpenEmbed: () => void
   post: AppBskyFeedDefs.PostView
   threadgateRecord?: AppBskyFeedThreadgate.Record
@@ -632,7 +641,7 @@ let PostContent = ({
             value={richText}
             numberOfLines={limitLines ? MAX_POST_LINES : undefined}
             style={[a.flex_1, a.text_md]}
-            authorHandle={postAuthor.handle}
+            authorHandle={postAuthor?.handle}
             shouldProxyLinks={true}
           />
           {limitLines && (

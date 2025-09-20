@@ -7359,6 +7359,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/culori@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@types/culori/-/culori-4.0.1.tgz#39ed095e0ef7107342d9091b1707ae8fb8681297"
+  integrity sha512-43M51r/22CjhbOXyGT361GZ9vncSVQ39u62x5eJdBQFviI8zWp2X5jzqg7k4M6PVgDQAClpy2bUe2dtwEgEDVQ==
+
 "@types/elliptic@^6.4.9":
   version "6.4.18"
   resolved "https://registry.yarnpkg.com/@types/elliptic/-/elliptic-6.4.18.tgz#bc96e26e1ccccbabe8b6f0e409c85898635482e1"

@@ -1,98 +1,38 @@
-import {
-  type JSX,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import React from 'react'
-import {
-  ActivityIndicator,
-  AppState,
-  Dimensions,
-  LayoutAnimation,
-  type ListRenderItemInfo,
-  Pressable,
-  type StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from 'react-native'
-import {
-  type AppBskyActorDefs,
-  AppBskyEmbedVideo,
-  type AppBskyFeedDefs,
-} from '@atproto/api'
-import {type AppBskyFeedPost, AtUri, ModerationDecision} from '@atproto/api'
+import {type JSX, memo, useCallback, useEffect, useState} from 'react'
+import {AppState, type StyleProp, Text, type ViewStyle} from 'react-native'
+import {type AppBskyActorDefs, RichText} from '@atproto/api'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 import {useQueryClient} from '@tanstack/react-query'
+import type React from 'react'
 
-import {isStatusStillActive, validateStatus} from '#/lib/actor-status'
-import {DISCOVER_FEED_URI, KNOWN_SHUTDOWN_FEEDS} from '#/lib/constants'
-import {useInitialNumToRender} from '#/lib/hooks/useInitialNumToRender'
+import {DISCOVER_FEED_URI} from '#/lib/constants'
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
-import {logEvent} from '#/lib/statsig/statsig'
 import {logger} from '#/logger'
-import {isIOS, isNative, isWeb} from '#/platform/detection'
+import {isIOS} from '#/platform/detection'
 import {listenPostCreated} from '#/state/events'
-import {useFeedFeedbackContext} from '#/state/feed-feedback'
-import {useTrendingSettings} from '#/state/preferences/trending'
-import {STALE} from '#/state/queries'
 import {
-  type AuthorFilter,
-  createApi,
   type FeedDescriptor,
   type FeedParams,
   type FeedPostSlice,
   type FeedPostSliceItem,
-  pollLatest,
-  RQKEY,
-  usePostFeedQuery,
 } from '#/state/queries/post-feed'
-import {useHydratedEmbed} from '#/state/queries/redDwarf/useHydrated'
+import {useATURILoader, useRawRecordShim} from '#/state/queries/redDwarf/shims'
 import {
   useInfiniteQueryFeedSkeleton,
   useQueryArbitrary,
-  useQueryConstellation,
   useQueryIdentity,
-  useQueryPost,
-  useQueryProfile,
 } from '#/state/queries/redDwarf/useQuery'
-import {useLiveNowConfig} from '#/state/service-config'
 import {useAgent, useSession} from '#/state/session'
-import {useProgressGuide} from '#/state/shell/progress-guide'
-import {useSelectedFeed} from '#/state/shell/selected-feed'
 import {List, type ListRef} from '#/view/com/util/List'
 import {
   PostFeedLoadingPlaceholder,
   PostLoadingPlaceholder,
 } from '#/view/com/util/LoadingPlaceholder'
-import {LoadMoreRetryBtn} from '#/view/com/util/LoadMoreRetryBtn'
-import {type VideoFeedSourceContext} from '#/screens/VideoFeed/types'
-import {useBreakpoints, useLayoutBreakpoints} from '#/alf'
-import {
-  AgeAssuranceDismissibleFeedBanner,
-  useInternalState as useAgeAssuranceBannerState,
-} from '#/components/ageAssurance/AgeAssuranceDismissibleFeedBanner'
-import {ProgressGuide, SuggestedFollows} from '#/components/FeedInterstitials'
-import {
-  PostFeedVideoGridRow,
-  PostFeedVideoGridRowPlaceholder,
-} from '#/components/feeds/PostFeedVideoGridRow'
-import {TrendingInterstitial} from '#/components/interstitials/Trending'
-import {TrendingVideos as TrendingVideosInterstitial} from '#/components/interstitials/TrendingVideos'
-import {DiscoverFallbackHeader} from './DiscoverFallbackHeader'
-import {FeedShutdownMsg} from './FeedShutdownMsg'
-import {PostFeed as PostFeedFallback} from './PostFeed'
-import {PostFeedErrorMessage} from './PostFeedErrorMessage'
-import {PostFeedItem} from './PostFeedItem'
-import { PostFeedItemPartial } from './PostFeedItemRedDwarf'
-import {ShowLessFollowup} from './ShowLessFollowup'
-import {ViewFullThread} from './ViewFullThread'
+import {useTheme} from '#/alf'
+import * as Layout from '#/components/Layout'
+import {EmptyState} from '../util/EmptyState'
+import {PostContent, PostFeedItemPartial} from './PostFeedItemRedDwarf'
 
 export function PostFeedItemATURILoader({
   atUri,
@@ -113,272 +53,8 @@ export function PostFeedItemATURILoader({
   feedviewpost?: boolean
   repostedby?: string
 }) {
-  console.log('atUri', atUri)
-  //const { get, set } = usePersistentStore();
-  //const [record, setRecord] = React.useState<any>(null);
-  //const [links, setLinks] = React.useState<any>(null);
-  //const [error, setError] = React.useState<string | null>(null);
-  //const [cacheTime, setCacheTime] = React.useState<number | null>(null);
-  //const [resolved, setResolved] = React.useState<any>(null); // { did, pdsUrl, bskyPds, handle }
-  //const [opProfile, setOpProfile] = React.useState<any>(null);
-  // const [opProfileCacheTime, setOpProfileCacheTime] = React.useState<
-  //   number | null
-  // >(null);
-  //const router = useRouter();
-
-  const parsed = React.useMemo(() => parseAtUri(atUri), [atUri])
-  const did = parsed?.did
-  const rkey = parsed?.rkey
-  console.log('did', did)
-  console.log('rkey', rkey)
-
-  // React.useEffect(() => {
-  //   const checkCache = async () => {
-  //     const postUri = atUri;
-  //     const cacheKey = `record:${postUri}`;
-  //     const cached = await get(cacheKey);
-  //     const now = Date.now();
-  //     console.log(
-  //       "UniversalPostRenderer checking cache for",
-  //       cacheKey,
-  //       "cached:",
-  //       !!cached,
-  //     );
-  //     if (
-  //       cached &&
-  //       cached.value &&
-  //       cached.time &&
-  //       now - cached.time < CACHE_TIMEOUT
-  //     ) {
-  //       try {
-  //         console.log("UniversalPostRenderer found cached data for", cacheKey);
-  //         setRecord(JSON.parse(cached.value));
-  //       } catch {
-  //         setRecord(null);
-  //       }
-  //     }
-  //   };
-  //   checkCache();
-  // }, [atUri, get]);
-
-  const {
-    data: postQuery,
-    // isLoading: isPostLoading,
-    // isError: isPostError,
-  } = useQueryPost(atUri)
-  //const record = postQuery?.value;
-
-  // React.useEffect(() => {
-  //   if (!did || record) return;
-  //   (async () => {
-  //     try {
-  //       const resolvedData = await cachedResolveIdentity({
-  //         didOrHandle: did,
-  //         get,
-  //         set,
-  //       });
-  //       setResolved(resolvedData);
-  //     } catch (e: any) {
-  //       //setError("Failed to resolve handle/did: " + e?.message);
-  //     }
-  //   })();
-  // }, [did, get, set, record]);
-
-  const {data: resolved} = useQueryIdentity(did || '')
-
-  // React.useEffect(() => {
-  //   if (!resolved || !resolved.pdsUrl || !resolved.did || !rkey || record)
-  //     return;
-  //   let ignore = false;
-  //   (async () => {
-  //     try {
-  //       const data = await cachedGetRecord({
-  //         atUri,
-  //         get,
-  //         set,
-  //       });
-  //       if (!ignore) setRecord(data);
-  //     } catch (e: any) {
-  //       //if (!ignore) setError("Failed to fetch base record: " + e?.message);
-  //     }
-  //   })();
-  //   return () => {
-  //     ignore = true;
-  //   };
-  // }, [resolved, rkey, atUri, record]);
-
-  // React.useEffect(() => {
-  //   if (!resolved || !resolved.did || !rkey) return;
-  //   const fetchLinks = async () => {
-  //     const postUri = atUri;
-  //     const cacheKey = `constellation:${postUri}`;
-  //     const cached = await get(cacheKey);
-  //     const now = Date.now();
-  //     if (
-  //       cached &&
-  //       cached.value &&
-  //       cached.time &&
-  //       now - cached.time < CACHE_TIMEOUT
-  //     ) {
-  //       try {
-  //         const data = JSON.parse(cached.value);
-  //         setLinks(data);
-  //         if (onConstellation) onConstellation(data);
-  //       } catch {
-  //         setLinks(null);
-  //       }
-  //       //setCacheTime(cached.time);
-  //       return;
-  //     }
-  //     try {
-  //       const url = `https://constellation.microcosm.blue/links/all?target=${encodeURIComponent(
-  //         atUri,
-  //       )}`;
-  //       const res = await fetch(url);
-  //       if (!res.ok) throw new Error("Failed to fetch constellation links");
-  //       const data = await res.json();
-  //       setLinks(data);
-  //       //setCacheTime(now);
-  //       set(cacheKey, JSON.stringify(data));
-  //       if (onConstellation) onConstellation(data);
-  //     } catch (e: any) {
-  //       //setError("Failed to fetch constellation links: " + e?.message);
-  //     }
-  //   };
-  //   fetchLinks();
-  // }, [resolved, rkey, get, set, atUri, onConstellation]);
-
-  const {data: links} = useQueryConstellation({
-    method: '/links/all',
-    target: atUri,
-  })
-
-  // React.useEffect(() => {
-  //   if (!record || !resolved || !resolved.did) return;
-  //   const fetchOpProfile = async () => {
-  //     const opDid = resolved.did;
-  //     const postUri = atUri;
-  //     const cacheKey = `profile:${postUri}`;
-  //     const cached = await get(cacheKey);
-  //     const now = Date.now();
-  //     if (
-  //       cached &&
-  //       cached.value &&
-  //       cached.time &&
-  //       now - cached.time < CACHE_TIMEOUT
-  //     ) {
-  //       try {
-  //         setOpProfile(JSON.parse(cached.value));
-  //       } catch {
-  //         setOpProfile(null);
-  //       }
-  //       //setOpProfileCacheTime(cached.time);
-  //       return;
-  //     }
-  //     try {
-  //       let opResolvedRaw = await get(`handleDid:${opDid}`);
-  //       let opResolved: any = null;
-  //       if (
-  //         opResolvedRaw &&
-  //         opResolvedRaw.value &&
-  //         opResolvedRaw.time &&
-  //         now - opResolvedRaw.time < HANDLE_DID_CACHE_TIMEOUT
-  //       ) {
-  //         try {
-  //           opResolved = JSON.parse(opResolvedRaw.value);
-  //         } catch {
-  //           opResolved = null;
-  //         }
-  //       } else {
-  //         const url = `https://free-fly-24.deno.dev/?did=${encodeURIComponent(
-  //           opDid,
-  //         )}`;
-  //         const res = await fetch(url);
-  //         if (!res.ok) throw new Error("Failed to resolve OP did");
-  //         opResolved = await res.json();
-  //         set(`handleDid:${opDid}`, JSON.stringify(opResolved));
-  //       }
-  //       if (!opResolved || !opResolved.pdsUrl)
-  //         throw new Error("OP did resolution failed or missing pdsUrl");
-  //       const profileUrl = `${
-  //         opResolved.pdsUrl
-  //       }/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(
-  //         opDid,
-  //       )}&collection=app.bsky.actor.profile&rkey=self`;
-  //       const profileRes = await fetch(profileUrl);
-  //       if (!profileRes.ok) throw new Error("Failed to fetch OP profile");
-  //       const profileData = await profileRes.json();
-  //       setOpProfile(profileData);
-  //       //setOpProfileCacheTime(now);
-  //       set(cacheKey, JSON.stringify(profileData));
-  //     } catch (e: any) {
-  //       //setError("Failed to fetch OP profile: " + e?.message);
-  //     }
-  //   };
-  //   fetchOpProfile();
-  // }, [record, get, set, rkey, resolved, atUri]);
-
-  const {data: opProfile} = useQueryProfile(
-    resolved ? `at://${resolved?.did}/app.bsky.actor.profile/self` : undefined,
-  )
-
-  // const displayName =
-  //   opProfile?.value?.displayName || resolved?.handle || resolved?.did;
-  // const handle = resolved?.handle ? `@${resolved.handle}` : resolved?.did;
-
-  // const postText = record?.value?.text || "";
-  // const createdAt = record?.value?.createdAt
-  //   ? new Date(record.value.createdAt)
-  //   : null;
-  // const langTags = record?.value?.langs || [];
-
-  //const [likes, setLikes] = React.useState<number | null>(null)
-  //const [reposts, setReposts] = React.useState<number | null>(null)
-  //const [replies, setReplies] = React.useState<number | null>(null)
-
-  // React.useEffect(() => {
-  //   console.log(JSON.stringify(links, null, 2))
-  //   setLikes(
-  //     links
-  //       ? links?.links?.['app.bsky.feed.like']?.['.subject.uri']?.records || 0
-  //       : null,
-  //   )
-  //   setReposts(
-  //     links
-  //       ? links?.links?.['app.bsky.feed.repost']?.['.subject.uri']?.records || 0
-  //       : null,
-  //   )
-  //   setReplies(
-  //     links
-  //       ? links?.links?.['app.bsky.feed.post']?.['.reply.parent.uri']
-  //           ?.records || 0
-  //       : null,
-  //   )
-  // }, [links])
-  const likes = useMemo(
-    () =>
-      links
-        ? links?.links?.['app.bsky.feed.like']?.['.subject.uri']?.records || 0
-        : null,
-    [links],
-  )
-
-  const reposts = useMemo(
-    () =>
-      links
-        ? links?.links?.['app.bsky.feed.repost']?.['.subject.uri']?.records || 0
-        : null,
-    [links],
-  )
-
-  const replies = useMemo(
-    () =>
-      links
-        ? links?.links?.['app.bsky.feed.post']?.['.reply.parent.uri']
-            ?.records || 0
-        : null,
-    [links],
-  )
+  const {postQuery, opProfile, resolved, likes, reposts, replies} =
+    useATURILoader(atUri)
 
   // const navigateToProfile = (e: React.MouseEvent) => {
   //   e.stopPropagation();
@@ -389,6 +65,8 @@ export function PostFeedItemATURILoader({
   //     });
   //   }
   // };
+  if (!postQuery) return <PostLoadingPlaceholder />
+
   if (!postQuery?.value) {
     // deleted post more often than a non-resolvable post
     return <></>
@@ -443,219 +121,48 @@ export function PostFeedItemRawRecordShim({
   feedviewpost?: boolean
   repostedby?: string
 }) {
-  console.log(`received aturi: ${aturi} of post content: ${postRecord}`)
-  // TODO change to bsky's navigation system
-  //const navigate = useNavigate();
-  // const navigate = ()=>{};
-
-  //const { get, set } = usePersistentStore();
-
-  // const [hydratedEmbed, setHydratedEmbed] = useState<any>(undefined);
-
-  // useEffect(() => {
-  //   const run = async () => {
-  //     if (!postRecord?.value?.embed) return;
-  //     const embed = postRecord?.value?.embed;
-  //     if (!embed || !embed.$type) {
-  //       setHydratedEmbed(undefined);
-  //       return;
-  //     }
-
-  //     try {
-  //       let result: any;
-
-  //       if (embed?.$type === "app.bsky.embed.recordWithMedia") {
-  //         const mediaEmbed = embed.media;
-
-  //         let hydratedMedia;
-  //         if (mediaEmbed?.$type === "app.bsky.embed.images") {
-  //           hydratedMedia = hydrateEmbedImages(mediaEmbed, resolved?.did);
-  //         } else if (mediaEmbed?.$type === "app.bsky.embed.external") {
-  //           hydratedMedia = hydrateEmbedExternal(mediaEmbed, resolved?.did);
-  //         } else if (mediaEmbed?.$type === "app.bsky.embed.video") {
-  //           hydratedMedia = hydrateEmbedVideo(mediaEmbed, resolved?.did);
-  //         } else {
-  //           throw new Error("idiot");
-  //         }
-  //         if (!hydratedMedia) throw new Error("idiot");
-
-  //         // hydrate the outer recordWithMedia now using the hydrated media
-  //         result = await hydrateEmbedRecordWithMedia(
-  //           embed,
-  //           resolved?.did,
-  //           hydratedMedia,
-  //           get,
-  //           set,
-  //         );
-  //       } else {
-  //         const hydrated =
-  //           embed?.$type === "app.bsky.embed.images"
-  //             ? hydrateEmbedImages(embed, resolved?.did)
-  //             : embed?.$type === "app.bsky.embed.external"
-  //               ? hydrateEmbedExternal(embed, resolved?.did)
-  //               : embed?.$type === "app.bsky.embed.video"
-  //                 ? hydrateEmbedVideo(embed, resolved?.did)
-  //                 : embed?.$type === "app.bsky.embed.record"
-  //                   ? hydrateEmbedRecord(embed, resolved?.did, get, set)
-  //                   : undefined;
-
-  //         result = hydrated instanceof Promise ? await hydrated : hydrated;
-  //       }
-
-  //       console.log(
-  //         String(result) + " hydrateEmbedRecordWithMedia hey hyeh ye",
-  //       );
-  //       setHydratedEmbed(result);
-  //     } catch (e) {
-  //       console.error("Error hydrating embed", e);
-  //       setHydratedEmbed(undefined);
-  //     }
-  //   };
-
-  //   run();
-  // }, [postRecord, resolved?.did]);
-
-  // const {
-  //   data: hydratedEmbed,
-  //   //isLoading: isEmbedLoading,
-  //   //error: embedError,
-  // } = useHydratedEmbed(postRecord?.value?.embed, resolved?.did)
-
-  // --- START DEBUGGING CODE ---
-
-  // const prevDeps = useRef({
-  //   postRecordValue: postRecord?.value,
-  //   hydratedEmbed: hydratedEmbed,
-  // })
-
-  // useEffect(() => {
-  //   if (prevDeps.current.postRecordValue !== postRecord?.value) {
-  //     console.log(
-  //       `[${aturi}] Re-render caused by: postRecord.value reference changed`,
-  //     )
-  //   }
-  //   if (prevDeps.current.hydratedEmbed !== hydratedEmbed) {
-  //     console.log(
-  //       `[${aturi}] Re-render caused by: hydratedEmbed reference changed`,
-  //     )
-  //   }
-
-  //   prevDeps.current = {
-  //     postRecordValue: postRecord?.value,
-  //     hydratedEmbed: hydratedEmbed,
-  //   }
-  // })
-
-  // --- END DEBUGGING CODE ---
-
-  // const parsedaturi = parseAtUri(aturi);
-
-  // eslint-disable-next-line dot-notation
-  const link = profileRecord?.value?.avatar?.ref?.['$link']
-  const avatarUrl = link
-    ? `https://cdn.bsky.app/img/avatar/plain/${resolved?.did}/${link}@jpeg`
-    : null
-
-  const fakepostforprofile = React.useMemo<AppBskyFeedDefs.PostView>(() => {
-    console.log(`[${aturi}] Re-creating fakepost object`)
-    return {
-      $type: 'app.bsky.feed.defs#postView',
-      uri: aturi,
-      cid: postRecord?.cid || '',
-      author: {
-        did: resolved?.did || '',
-        handle: resolved?.handle || '',
-        displayName: profileRecord?.value?.displayName || '',
-        avatar: avatarUrl || '',
-        viewer: undefined,
-        labels: profileRecord?.labels || undefined,
-        verification: undefined,
-      },
-      record: postRecord?.value || {},
-      embed: undefined,
-      replyCount: repliesCount ?? 0,
-      repostCount: repostsCount ?? 0,
-      likeCount: likesCount ?? 0,
-      quoteCount: 0,
-      indexedAt: postRecord?.value?.createdAt || '',
-      viewer: undefined,
-      labels: postRecord?.labels || undefined,
-      threadgate: undefined,
-    }
-  }, [
+  const {
+    moderation,
+    fakepost: fakepostforprofile,
+    feedviewpostreplydid,
+  } = useRawRecordShim({
+    postRecord,
+    profileRecord,
+    resolved,
     aturi,
-    postRecord?.cid,
-    postRecord?.value,
-    postRecord?.labels,
-    resolved?.did,
-    resolved?.handle,
-    profileRecord?.value?.displayName,
-    profileRecord?.labels,
-    avatarUrl,
-    repliesCount,
-    repostsCount,
     likesCount,
-  ])
+    repostsCount,
+    repliesCount,
+  })
 
-  //const [feedviewpostreplyhandle, setFeedviewpostreplyhandle] = useState<string | undefined>(undefined);
-
-  // useEffect(() => {
-  //   if(!feedviewpost) return;
-  //   let cancelled = false;
-
-  //   const run = async () => {
-  //     const thereply = (fakepost?.record as AppBskyFeedPost.Record)?.reply?.parent?.uri;
-  //     const feedviewpostreplydid = thereply ? new AtUri(thereply).host : undefined;
-
-  //     if (feedviewpostreplydid) {
-  //       const opi = await cachedResolveIdentity({
-  //         didOrHandle: feedviewpostreplydid,
-  //         get,
-  //         set,
-  //       });
-
-  //       if (!cancelled) {
-  //         setFeedviewpostreplyhandle(opi?.handle);
-  //       }
-  //     }
-  //   };
-
-  //   run();
-
-  //   return () => {
-  //     cancelled = true;
-  //   };
-  // }, [fakepost, get, set]);
-  const thereply = (fakepostforprofile?.record as AppBskyFeedPost.Record)?.reply?.parent
-    ?.uri
-  const feedviewpostreplydid = thereply ? new AtUri(thereply).host : undefined
-  // const replyhookvalue = useQueryIdentity(
-  //   feedviewpost ? feedviewpostreplydid : undefined
-  // );
-  // const feedviewpostreplyhandle = replyhookvalue?.data?.handle;
-
-  // const aturirepostbydid = repostedby ? new AtUri(repostedby).host : undefined
-  // const repostedbyhookvalue = useQueryIdentity(
-  //   repostedby ? aturirepostbydid : undefined
-  // );
-  // const feedviewpostrepostedbyhandle = repostedbyhookvalue?.data?.handle;
-
-  // TODO: this is a shim, please implement real moderation
-  const moderation = new ModerationDecision()
-
+  //const randomBool = Math.random() < 0.5;
   if (!profileRecord) {
+    const richText = new RichText({
+      text: postRecord?.value.text,
+      facets: postRecord?.value.facets,
+    })
     return (
-      <View
-        style={{
-          minHeight: 120,
-          backgroundColor: 'red',
-          paddingBottom: 8,
-          paddingLeft: 2,
-          paddingRight: 2,
-        }}>
-        <Text style={{color: 'white'}}>Loading profile content</Text>
-        <PostLoadingPlaceholder />
-      </View>
+      // <View
+      //   style={{
+      //     minHeight: 120,
+      //     backgroundColor: 'red',
+      //     paddingBottom: 8,
+      //     paddingLeft: 2,
+      //     paddingRight: 2,
+      //   }}>
+      //   <Text style={{color: 'white'}}>Loading profile content</Text>
+      <PostLoadingPlaceholder>
+        <PostContent
+          moderation={moderation}
+          richText={richText}
+          postEmbed={undefined}
+          postAuthor={undefined}
+          onOpenEmbed={() => {}}
+          post={fakepostforprofile}
+          threadgateRecord={undefined}
+        />
+      </PostLoadingPlaceholder>
+      //</View>
     )
   }
   // if (postRecord?.value?.embed && !hydratedEmbed) {
@@ -855,7 +362,7 @@ export function getItemsForFeedback(feedRow: FeedRow): {
 
 // DISABLED need to check if this is causing random feed refreshes -prf
 // const REFRESH_AFTER = STALE.HOURS.ONE
-const CHECK_LATEST_AFTER = STALE.SECONDS.THIRTY
+// const CHECK_LATEST_AFTER = STALE.SECONDS.THIRTY
 // export type FeedDescriptor =
 //   | 'following'
 //   | `author|${ActorDid}|${AuthorFilter}`
@@ -866,26 +373,26 @@ const CHECK_LATEST_AFTER = STALE.SECONDS.THIRTY
 //   | 'demo'
 let PostFeed = ({
   feed,
-  feedParams,
-  ignoreFilterFor,
-  style,
+  //feedParams,
+  //ignoreFilterFor,
+  //style,
   enabled,
   pollInterval,
-  disablePoll,
+  //disablePoll,
   scrollElRef,
-  onScrolledDownChange,
-  onHasNew,
-  renderEmptyState,
-  renderEndOfFeed,
-  testID,
-  headerOffset = 0,
-  progressViewOffset,
-  desktopFixedHeightOffset,
-  ListHeaderComponent,
-  extraData,
-  savedFeedConfig,
-  initialNumToRender: initialNumToRenderOverride,
-  isVideoFeed = false,
+  //onScrolledDownChange,
+  //onHasNew,
+  //renderEmptyState,
+  //renderEndOfFeed,
+  //testID,
+  //headerOffset = 0,
+  //progressViewOffset,
+  //desktopFixedHeightOffset,
+  //ListHeaderComponent,
+  //extraData,
+  //savedFeedConfig,
+  //initialNumToRender: initialNumToRenderOverride,
+  //isVideoFeed = false,
 }: {
   feed: FeedDescriptor
   feedParams?: FeedParams
@@ -910,16 +417,16 @@ let PostFeed = ({
   isVideoFeed?: boolean
 }): React.ReactNode => {
   const {_} = useLingui()
-  const queryClient = useQueryClient()
-  const {currentAccount, hasSession} = useSession()
-  const initialNumToRender = useInitialNumToRender()
-  const feedFeedback = useFeedFeedbackContext()
-  const [isPTRing, setIsPTRing] = useState(false)
-  const lastFetchRef = useRef<number>(Date.now())
-  const [feedType, feedUriOrActorDid, feedTab] = feed.split('|')
-  const {gtMobile} = useBreakpoints()
-  const {rightNavVisible} = useLayoutBreakpoints()
-  const areVideoFeedsEnabled = isNative
+  //const queryClient = useQueryClient()
+  //const {currentAccount, hasSession} = useSession()
+  //const initialNumToRender = useInitialNumToRender()
+  //const feedFeedback = useFeedFeedbackContext()
+  //const [isPTRing, setIsPTRing] = useState(false)
+  //const lastFetchRef = useRef<number>(Date.now())
+  const [feedType, _feedUriOrActorDid, _feedTab] = feed.split('|')
+  //const {gtMobile} = useBreakpoints()
+  //const {rightNavVisible} = useLayoutBreakpoints()
+  //const areVideoFeedsEnabled = isNative
 
   // TODO pass prop
   // const [hasPressedShowLessUris, setHasPressedShowLessUris] = useState(
@@ -935,8 +442,11 @@ let PostFeed = ({
   //   },
   //   [],
   // )
+  const renderPostsEmpty = useCallback(() => {
+    return <EmptyState icon="hashtag" message={_(msg`This feed is empty.`)} />
+  }, [_])
 
-  const feedCacheKey = feedParams?.feedCacheKey
+  //const feedCacheKey = feedParams?.feedCacheKey
   // const opts = useMemo(
   //   () => ({enabled, ignoreFilterFor}),
   //   [enabled, ignoreFilterFor],
@@ -947,17 +457,23 @@ let PostFeed = ({
   if (feedType === 'feedgen' || true) {
     const [_, uri] = feed.split('|')
     // const [ownerDid] = safeParseFeedgenUri(uri)
-    return <PostFeedCustomFeed feed={uri} scrollElRef={scrollElRef} />
+    return (
+      <PostFeedCustomFeed
+        feed={uri}
+        scrollElRef={scrollElRef}
+        pollInterval={pollInterval}
+        renderEmptyState={renderPostsEmpty}
+      />
+    )
   }
 }
-
 
 PostFeed = memo(PostFeed)
 export {PostFeed}
 
-const styles = StyleSheet.create({
-  feedFooter: {paddingTop: 20},
-})
+// const styles = StyleSheet.create({
+//   feedFooter: {paddingTop: 20},
+// })
 
 export function isThreadParentAt<T>(arr: Array<T>, i: number) {
   if (arr.length === 1) {
@@ -975,14 +491,56 @@ export function isThreadChildAt<T>(arr: Array<T>, i: number) {
 
 function PostFeedCustomFeed({
   feed,
+  //feedParams,
+  //ignoreFilterFor,
+  //style,
+  enabled,
+  pollInterval,
+  disablePoll,
   scrollElRef,
+  //onScrolledDownChange,
+  onHasNew,
+  //renderEmptyState,
+  //renderEndOfFeed,
+  //testID,
+  //headerOffset = 0,
+  //progressViewOffset,
+  //desktopFixedHeightOffset,
+  //ListHeaderComponent,
+  //extraData,
+  //savedFeedConfig,
+  //initialNumToRender: initialNumToRenderOverride,
+  //isVideoFeed = false,
 }: {
-  feed: string
+  feed: string //FeedDescriptor
+  feedParams?: FeedParams
+  ignoreFilterFor?: string
+  style?: StyleProp<ViewStyle>
+  enabled?: boolean
+  pollInterval?: number
+  disablePoll?: boolean
   scrollElRef?: ListRef
+  onHasNew?: (v: boolean) => void
+  onScrolledDownChange?: (isScrolledDown: boolean) => void
+  renderEmptyState: () => JSX.Element
+  renderEndOfFeed?: () => JSX.Element
+  testID?: string
+  headerOffset?: number
+  progressViewOffset?: number
+  desktopFixedHeightOffset?: number
+  ListHeaderComponent?: () => JSX.Element
+  extraData?: any
+  savedFeedConfig?: AppBskyActorDefs.SavedFeed
+  initialNumToRender?: number
+  isVideoFeed?: boolean
 }) {
   //const { agent, authed } = useAuth();
   const agent = useAgent()
-
+  const t = useTheme()
+  const queryClient = useQueryClient()
+  const {currentAccount} = useSession()
+  const [isPTRing, setIsPTRing] = useState(false)
+  const [_lastFetchedAt, setLastFetchedAt] = useState<any>()
   // const identityresultmaybe = useQueryIdentity(agent?.did);
   // const identity = identityresultmaybe?.data;
   // const feedGenGetRecordQuery = useQueryArbitrary(feedUri);
@@ -1001,7 +559,7 @@ function PostFeedCustomFeed({
     fetchNextPage,
     isFetchingNextPage,
     refetch,
-    isRefetching,
+    //isRefetching,
   } = useInfiniteQueryFeedSkeleton({
     feedUri: feed,
     agent: agent ?? undefined,
@@ -1010,8 +568,9 @@ function PostFeedCustomFeed({
     feedServiceDid: feedServiceDid,
   })
 
-
-  const [isPTRing, setIsPTRing] = useState(false)
+  useEffect(() => {
+    setLastFetchedAt(true)
+  }, [])
 
   const onRefresh = useCallback(async () => {
     setIsPTRing(true)
@@ -1024,6 +583,113 @@ function PostFeedCustomFeed({
     setIsPTRing(false)
   }, [refetch, setIsPTRing])
 
+  /*
+  // const lastFetchedAt = data?.pages[0].fetchedAt
+  if (lastFetchedAt) {
+    lastFetchRef.current = lastFetchedAt
+  }
+  const isEmpty = useMemo(
+    () => !isFetching && !data?.pages?.some(page => page.feed.length),
+    [isFetching, data],
+  )*/
+
+  const checkForNew = useNonReactiveCallback(async () => {
+    if (
+      !data?.pages[0] ||
+      /*isFetching ||*/ !onHasNew ||
+      !enabled ||
+      disablePoll
+    ) {
+      return
+    }
+
+    // Discover always has fresh content
+    if (feed === DISCOVER_FEED_URI) {
+      return onHasNew(true)
+    }
+
+    try {
+      onHasNew(true)
+      // TODO we should probably just make the red dwarf useQueries be more like
+      // the bsky ones instead of making more custom logic
+      // async peekLatest(): Promise<AppBskyFeedDefs.FeedViewPost> {
+      //     const contentLangs = getContentLanguages().join(',')
+      //     const res = await this.agent.app.bsky.feed.getFeed(
+      //       {
+      //         ...this.params,
+      //         limit: 1,
+      //       },
+      //       {headers: {'Accept-Language': contentLangs}},
+      //     )
+      //     return res.data.feed[0]
+      //   }
+      // if (await pollLatest(data.pages[0])) {
+      //   if (isEmpty) {
+      //     refetch()
+      //   } else {
+      //     onHasNew(true)
+      //   }
+      // }
+    } catch (e) {
+      logger.error('Poll latest failed', {feed, message: String(e)})
+    }
+  })
+
+  const myDid = currentAccount?.did || ''
+  const onPostCreated = useCallback(() => {
+    // NOTE
+    // only invalidate if there's 1 page
+    // more than 1 page can trigger some UI freakouts on iOS and android
+    // -prf
+    if (
+      data?.pages.length === 1 &&
+      (feed === 'following' ||
+        feed === `author|${myDid}|posts_and_author_threads`)
+    ) {
+      queryClient.invalidateQueries({
+        queryKey: [
+          'feedSkeleton',
+          feed,
+          {isAuthed: !!agent?.did, did: agent?.did},
+        ] as const,
+      })
+    }
+  }, [data?.pages.length, feed, myDid, queryClient, agent?.did])
+  useEffect(() => {
+    return listenPostCreated(onPostCreated)
+  }, [onPostCreated])
+
+  // useEffect(() => {
+  //   if (enabled && !disablePoll) {
+  //     const timeSinceFirstLoad = Date.now() - lastFetchRef.current
+  //     if (isEmpty || timeSinceFirstLoad > CHECK_LATEST_AFTER) {
+  //       // check for new on enable (aka on focus)
+  //       checkForNew()
+  //     }
+  //   }
+  // }, [enabled, isEmpty, disablePoll, checkForNew])
+
+  useEffect(() => {
+    let cleanup1: () => void | undefined, cleanup2: () => void | undefined
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      // check for new on app foreground
+      if (nextAppState === 'active') {
+        checkForNew()
+      }
+    })
+    cleanup1 = () => subscription.remove()
+    if (pollInterval) {
+      // check for new on interval
+      const i = setInterval(() => {
+        checkForNew()
+      }, pollInterval)
+      cleanup2 = () => clearInterval(i)
+    }
+    return () => {
+      cleanup1?.()
+      cleanup2?.()
+    }
+  }, [pollInterval, checkForNew])
 
   //const { ref, inView } = useInView();
 
@@ -1035,20 +701,31 @@ function PostFeedCustomFeed({
 
   if (isLoading) {
     return (
-      <Text
-      //className="p-4 text-center text-gray-500"
-      >
-        Loading feed...
-      </Text>
+      <Layout.Center>
+        <PostFeedLoadingPlaceholder />
+      </Layout.Center>
+      // <Text
+      // //className="p-4 text-center text-gray-500"
+      // >
+      //   Loading feed...
+      // </Text>
     )
   }
 
   if (isError) {
     return (
-      <Text //className="p-4 text-center text-red-500"
-      >
-        Error: {error.message}
-      </Text>
+      <Layout.Center>
+        <Text
+          style={{
+            backgroundColor: t.atoms.bg_contrast_100.backgroundColor,
+            color: t.atoms.text_contrast_high.color,
+            paddingVertical: 10,
+            paddingHorizontal: 8,
+          }} //className="p-4 text-center text-red-500"
+        >
+          Error: {error.message}
+        </Text>
+      </Layout.Center>
     )
   }
 
@@ -1059,11 +736,18 @@ function PostFeedCustomFeed({
 
   if (!allPosts || typeof allPosts !== 'object' || allPosts.length === 0) {
     return (
-      <Text
-      //className="p-4 text-center text-gray-500"
-      >
-        No posts in this feed.
-      </Text>
+      <Layout.Center>
+        <Text
+          style={{
+            backgroundColor: t.atoms.bg_contrast_100.backgroundColor,
+            color: t.atoms.text_contrast_high.color,
+            paddingVertical: 10,
+            paddingHorizontal: 8,
+          }} //className="p-4 text-center text-red-500"
+        >
+          No posts in this feed.
+        </Text>
+      </Layout.Center>
     )
   }
 
@@ -1076,15 +760,14 @@ function PostFeedCustomFeed({
       fetchNextPage={fetchNextPage}
       isPTRing={isPTRing}
       onRefresh={onRefresh}
-
     />
   )
 }
 
 function FeedList({
   allPosts,
-  hasNextPage,
-  isFetchingNextPage,
+  //hasNextPage,
+  //isFetchingNextPage,
   fetchNextPage,
   scrollElRef,
   isPTRing,
@@ -1098,7 +781,6 @@ function FeedList({
   isPTRing?: boolean
   onRefresh: () => void
 }) {
-
   const renderItem = ({item, index}: {item: any; index: number}) => {
     if (!item) return null
 
@@ -1148,26 +830,26 @@ function FeedList({
   )
 }
 
-const FeedFooter = ({
-  isFetchingNextPage,
-  hasNextPage,
-  fetchNextPage,
-}: {
-  isFetchingNextPage: boolean
-  hasNextPage: boolean
-  fetchNextPage: any
-}) => {
-  if (isFetchingNextPage) {
-    return <Text>Loading more...</Text>
-  }
-  if (hasNextPage) {
-    return (
-      <Pressable accessibilityRole="button" onPress={fetchNextPage}>
-        <Text>Load More Posts</Text>
-      </Pressable>
-    )
-  }
-  return <Text>End of feed.</Text>
-}
+// const FeedFooter = ({
+//   isFetchingNextPage,
+//   hasNextPage,
+//   fetchNextPage,
+// }: {
+//   isFetchingNextPage: boolean
+//   hasNextPage: boolean
+//   fetchNextPage: any
+// }) => {
+//   if (isFetchingNextPage) {
+//     return <Text>Loading more...</Text>
+//   }
+//   if (hasNextPage) {
+//     return (
+//       <Pressable accessibilityRole="button" onPress={fetchNextPage}>
+//         <Text>Load More Posts</Text>
+//       </Pressable>
+//     )
+//   }
+//   return <Text>End of feed.</Text>
+// }
 
-function PostFeedAuthorFeed({}) {}
+// function PostFeedAuthorFeed({}) {}

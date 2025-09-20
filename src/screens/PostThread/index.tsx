@@ -16,16 +16,16 @@ import {List, type ListMethods} from '#/view/com/util/List'
 import {HeaderDropdown} from '#/screens/PostThread/components/HeaderDropdown'
 import {ThreadComposePrompt} from '#/screens/PostThread/components/ThreadComposePrompt'
 import {ThreadError} from '#/screens/PostThread/components/ThreadError'
+import {ThreadItemAnchorNoUnauthenticated} from '#/screens/PostThread/components/ThreadItemAnchorNoUnauthenticated'
 import {
   ThreadItemAnchor,
   ThreadItemAnchorSkeleton,
-} from '#/screens/PostThread/components/ThreadItemAnchor'
-import {ThreadItemAnchorNoUnauthenticated} from '#/screens/PostThread/components/ThreadItemAnchorNoUnauthenticated'
+} from '#/screens/PostThread/components/ThreadItemAnchorRedDwarf'
+import {ThreadItemPostNoUnauthenticated} from '#/screens/PostThread/components/ThreadItemPostNoUnauthenticated'
 import {
   ThreadItemPost,
   ThreadItemPostSkeleton,
-} from '#/screens/PostThread/components/ThreadItemPost'
-import {ThreadItemPostNoUnauthenticated} from '#/screens/PostThread/components/ThreadItemPostNoUnauthenticated'
+} from '#/screens/PostThread/components/ThreadItemPostRedDwarf'
 import {ThreadItemPostTombstone} from '#/screens/PostThread/components/ThreadItemPostTombstone'
 import {ThreadItemReadMore} from '#/screens/PostThread/components/ThreadItemReadMore'
 import {ThreadItemReadMoreUp} from '#/screens/PostThread/components/ThreadItemReadMoreUp'
@@ -428,6 +428,7 @@ export function PostThread({uri}: {uri: string}) {
           } else {
             return (
               <ThreadItemPost
+                index={index}
                 item={item}
                 threadgateRecord={thread.data.threadgate?.record ?? undefined}
                 overrides={{

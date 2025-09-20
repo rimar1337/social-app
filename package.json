@@ -239,6 +239,7 @@
     "@sentry/webpack-plugin": "^3.2.2",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.2.0",
+    "@types/culori": "^4.0.1",
     "@types/jest": "^29.4.0",
     "@types/lodash.chunk": "^4.2.7",
     "@types/lodash.debounce": "^4.0.7",

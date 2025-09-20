@@ -61,7 +61,7 @@ export function createThemes({
   dark: Theme
   dim: Theme
 } {
-  const hueShift = 470
+  const hueShift = 126
   function changeHue(color: string) {
     const lchHue =
       ((hueShift || 360) < 0 ? -1 * (hueShift || 360) : hueShift || 360) % 360

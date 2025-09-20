@@ -15,7 +15,14 @@ import {PUBLIC_BSKY_SERVICE} from './constants'
 
 // any query keys in this array will be persisted to AsyncStorage
 export const labelersDetailedInfoQueryKeyRoot = 'labelers-detailed-info'
-const STORED_CACHE_QUERY_KEY_ROOTS = [labelersDetailedInfoQueryKeyRoot, "constellation","arbitrary","identity","post","profile"]
+const STORED_CACHE_QUERY_KEY_ROOTS = [
+  labelersDetailedInfoQueryKeyRoot,
+  'reddwarf_constellation',
+  'reddwarf_arbitrary',
+  'reddwarf_identity',
+  'reddwarf_post',
+  'reddwarf_profile',
+]
 
 async function checkIsOnline(): Promise<boolean> {
   try {

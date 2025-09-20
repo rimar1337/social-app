@@ -45,8 +45,10 @@ export function LoadingPlaceholder({
 
 export function PostLoadingPlaceholder({
   style,
+  children,
 }: {
   style?: StyleProp<ViewStyle>
+  children?: React.ReactNode
 }) {
   const t = useTheme_NEW()
   const pal = usePalette('default')
@@ -56,18 +58,36 @@ export function PostLoadingPlaceholder({
         width={42}
         height={42}
         style={[
-          styles.avatar,
           {
-            position: 'relative',
-            top: -6,
+            borderRadius: 999,
+            marginRight: 8,
+            marginLeft: 8,
           },
         ]}
       />
       <View style={[s.flex1]}>
         <LoadingPlaceholder width={100} height={6} style={{marginBottom: 10}} />
-        <LoadingPlaceholder width="95%" height={6} style={{marginBottom: 8}} />
-        <LoadingPlaceholder width="95%" height={6} style={{marginBottom: 8}} />
-        <LoadingPlaceholder width="80%" height={6} style={{marginBottom: 11}} />
+        {children ? (
+          children
+        ) : (
+          <>
+            <LoadingPlaceholder
+              width="95%"
+              height={6}
+              style={{marginBottom: 8}}
+            />
+            <LoadingPlaceholder
+              width="95%"
+              height={6}
+              style={{marginBottom: 8}}
+            />
+            <LoadingPlaceholder
+              width="80%"
+              height={6}
+              style={{marginBottom: 11}}
+            />
+          </>
+        )}
         <View style={styles.postCtrls}>
           <View style={[styles.postCtrl, {marginLeft: -6}]}>
             <View style={styles.postBtn}>
@@ -326,8 +346,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingHorizontal: 10,
-    paddingTop: 20,
-    paddingBottom: 5,
+    paddingTop: 10,
+    paddingBottom: 8,
     paddingRight: 15,
   },
   postCtrls: {
