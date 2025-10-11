@@ -18,6 +18,7 @@ import {
   type FeedPostSliceItem,
 } from '#/state/queries/post-feed'
 import {useATURILoader, useRawRecordShim} from '#/state/queries/redDwarf/shims'
+import {useInfiniteQueryAuthorFeed} from '#/state/queries/redDwarf/useQuery'
 import {
   useInfiniteQueryFeedSkeleton,
   useQueryArbitrary,
@@ -454,6 +455,17 @@ let PostFeed = ({
   if (!enabled) {
     return <></>
   }
+  if (feedType === 'author') {
+    const [_, did] = feed.split('|')
+    return (
+      <PostFeedAuthorFeed
+        did={did}
+        scrollElRef={scrollElRef}
+        pollInterval={pollInterval}
+        renderEmptyState={renderPostsEmpty}
+      />
+    )
+  }
   if (feedType === 'feedgen' || true) {
     const [_, uri] = feed.split('|')
     // const [ownerDid] = safeParseFeedgenUri(uri)
@@ -749,6 +761,147 @@ function PostFeedCustomFeed({
         </Text>
       </Layout.Center>
     )
+  }
+
+  return (
+    <FeedList
+      allPosts={allPosts}
+      scrollElRef={scrollElRef}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      fetchNextPage={fetchNextPage}
+      isPTRing={isPTRing}
+      onRefresh={onRefresh}
+    />
+  )
+}
+
+function PostFeedAuthorFeed({
+  did,
+  onHasNew,
+  enabled,
+  disablePoll,
+  scrollElRef,
+  pollInterval,
+  renderEmptyState,
+}: {
+  did: string
+  onHasNew?: (v: boolean) => void
+  enabled?: boolean
+  disablePoll?: boolean
+  scrollElRef?: ListRef
+  pollInterval?: number
+  renderEmptyState: () => JSX.Element
+}) {
+  const identityresultmaybe = useQueryIdentity(did)
+  const identity = identityresultmaybe?.data
+  const pdsUrl = identity?.pds
+  const [isPTRing, setIsPTRing] = useState(false)
+
+  const queryClient = useQueryClient()
+  const t = useTheme()
+
+  const {
+    data,
+    error,
+    isLoading,
+    isError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQueryAuthorFeed(did, pdsUrl)
+
+  const allPosts =
+    data?.pages.flatMap(page => {
+      if (page)
+        return page.records.map(r => ({
+          post: r.uri,
+          record: r.value,
+          // We're caching the record under the same query key as getRecord
+          // This ensures consistency with the rest of the system
+        }))
+    }) ?? []
+
+  const onRefresh = useCallback(async () => {
+    setIsPTRing(true)
+    try {
+      await refetch()
+    } catch (err) {
+      logger.error('Failed to refresh author feed', {message: err})
+    }
+    setIsPTRing(false)
+  }, [refetch, setIsPTRing])
+
+  const checkForNew = useNonReactiveCallback(async () => {
+    if (!data?.pages[0] || !onHasNew || !enabled || disablePoll) {
+      return
+    }
+
+    try {
+      onHasNew(true)
+    } catch (e) {
+      logger.error('Poll latest failed', {did, message: String(e)})
+    }
+  })
+
+  useEffect(() => {
+    let cleanup1: () => void | undefined, cleanup2: () => void | undefined
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active') {
+        checkForNew()
+      }
+    })
+    cleanup1 = () => subscription.remove()
+    if (pollInterval) {
+      const i = setInterval(() => {
+        checkForNew()
+      }, pollInterval)
+      cleanup2 = () => clearInterval(i)
+    }
+    return () => {
+      cleanup1?.()
+      cleanup2?.()
+    }
+  }, [pollInterval, checkForNew])
+
+  const onPostCreated = useCallback(() => {
+    if (data?.pages.length === 1) {
+      queryClient.invalidateQueries({
+        queryKey: ['reddwarf_authorFeed', did] as const,
+      })
+    }
+  }, [data?.pages.length, did, queryClient])
+  useEffect(() => {
+    return listenPostCreated(onPostCreated)
+  }, [onPostCreated])
+
+  if (isLoading) {
+    return (
+      <Layout.Center>
+        <PostFeedLoadingPlaceholder />
+      </Layout.Center>
+    )
+  }
+
+  if (isError) {
+    return (
+      <Layout.Center>
+        <Text
+          style={{
+            backgroundColor: t.atoms.bg_contrast_100.backgroundColor,
+            color: t.atoms.text_contrast_high.color,
+            paddingVertical: 10,
+            paddingHorizontal: 8,
+          }}>
+          Error: {error.message}
+        </Text>
+      </Layout.Center>
+    )
+  }
+
+  if (!allPosts || allPosts.length === 0) {
+    return renderEmptyState()
   }
 
   return (

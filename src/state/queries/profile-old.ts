@@ -41,7 +41,6 @@ import {
 import {RQKEY_ROOT as RQKEY_LIST_CONVOS} from './messages/list-conversations'
 import {RQKEY as RQKEY_MY_BLOCKED} from './my-blocked-accounts'
 import {RQKEY as RQKEY_MY_MUTED} from './my-muted-accounts'
-import {useQueryIdentity} from './redDwarf/useQuery'
 
 export * from '#/state/queries/unstable-profile-cache'
 /**
@@ -65,10 +64,9 @@ export function useProfileQuery({
   did: string | undefined
   staleTime?: number
 }) {
+  const agent = useAgent()
   const {getUnstableProfile} = useUnstableProfileViewCache()
-  const identityQuery = useQueryIdentity(did)
-
-  return useQuery<AppBskyActorDefs.ProfileViewDetailed | undefined>({
+  return useQuery<AppBskyActorDefs.ProfileViewDetailed>({
     // WARNING
     // this staleTime is load-bearing
     // if you remove it, the UI infinite-loops
@@ -77,48 +75,8 @@ export function useProfileQuery({
     refetchOnWindowFocus: true,
     queryKey: RQKEY(did ?? ''),
     queryFn: async () => {
-      if (!did) return undefined
-      const res = await fetch(
-        `https://slingshot.microcosm.blue/xrpc/com.bad-example.repo.getUriRecord?at_uri=at://${did}/app.bsky.actor.profile/self`,
-      )
-      if (!res.ok) throw new Error('Failed to fetch profile')
-      try {
-        const data = await res.json()
-
-        // Use handle from identity query if available, otherwise fall back to profile data
-        const handle = identityQuery.data?.handle || data.value.handle || ''
-
-        return {
-          did: data.uri.split('/')[2],
-          handle,
-          displayName: data.value.displayName || '',
-          description: data.value.description || '',
-          avatar:
-            data.value.avatar?.ref &&
-            typeof data.value.avatar.ref === 'object' &&
-            data.value.avatar.ref.$link
-              ? `https://cdn.bsky.app/img/avatar/plain/${data.uri.split('/')[2]}/${data.value.avatar.ref.$link}@jpeg`
-              : undefined,
-          banner:
-            data.value.banner?.ref &&
-            typeof data.value.banner.ref === 'object' &&
-            data.value.banner.ref.$link
-              ? `https://cdn.bsky.app/img/banner/plain/${data.uri.split('/')[2]}/${data.value.banner.ref.$link}@jpeg`
-              : undefined,
-          indexedAt: data.value.indexedAt || new Date().toISOString(),
-          viewer: {
-            following: data.value.following || undefined,
-            blockedBy: false,
-            blocked: false,
-            muted: false,
-          },
-          followersCount: -1,
-          followsCount: -1,
-          postsCount: -1,
-        } as AppBskyActorDefs.ProfileViewDetailed
-      } catch (_e) {
-        return undefined
-      }
+      const res = await agent.getProfile({actor: did ?? ''})
+      return res.data
     },
     placeholderData: () => {
       if (!did) return
@@ -135,53 +93,20 @@ export function useProfilesQuery({
   handles: string[]
   maintainData?: boolean
 }) {
+  const agent = useAgent()
   return useQuery({
     staleTime: STALE.MINUTES.FIVE,
     queryKey: profilesQueryKey(handles),
     queryFn: async () => {
-      if (!handles.length) return {profiles: []}
-      const responses = await Promise.all(
-        handles.map(handle =>
-          fetch(
-            `https://slingshot.microcosm.blue/xrpc/com.bad-example.repo.getUriRecord?at_uri=at://${handle}/app.bsky.actor.profile/self`,
-          ).then(res => res.json()),
-        ),
-      )
-      const profiles = responses.filter(Boolean).map(data => ({
-        did: data.uri.split('/')[2],
-        handle: data.value.handle || '',
-        displayName: data.value.displayName || '',
-        description: data.value.description || '',
-        avatar:
-          data.value.avatar?.ref &&
-          typeof data.value.avatar.ref === 'object' &&
-          data.value.avatar.ref.$link
-            ? `https://cdn.bsky.app/img/avatar/plain/${data.uri.split('/')[2]}/${data.value.avatar.ref.$link}@jpeg`
-            : undefined,
-        banner:
-          data.value.banner?.ref &&
-          typeof data.value.banner.ref === 'object' &&
-          data.value.banner.ref.$link
-            ? `https://cdn.bsky.app/img/banner/plain/${data.uri.split('/')[2]}/${data.value.banner.ref.$link}@jpeg`
-            : undefined,
-        indexedAt: data.value.indexedAt || new Date().toISOString(),
-        viewer: {
-          following: data.value.following || undefined,
-          blockedBy: false,
-          blocked: false,
-          muted: false,
-        },
-        followersCount: -1,
-        followsCount: -1,
-        postsCount: -1,
-      }))
-      return {profiles}
+      const res = await agent.getProfiles({actors: handles})
+      return res.data
     },
     placeholderData: maintainData ? keepPreviousData : undefined,
   })
 }
 
 export function usePrefetchProfileQuery() {
+  const agent = useAgent()
   const queryClient = useQueryClient()
   const prefetchProfileQuery = useCallback(
     async (did: string) => {
@@ -189,38 +114,12 @@ export function usePrefetchProfileQuery() {
         staleTime: STALE.SECONDS.THIRTY,
         queryKey: RQKEY(did),
         queryFn: async () => {
-          const res = await fetch(
-            `https://slingshot.microcosm.blue/xrpc/com.bad-example.repo.getUriRecord?at_uri=at://${did}/app.bsky.actor.profile/self`,
-          )
-          if (!res.ok) throw new Error('Failed to fetch profile')
-          try {
-            const data = await res.json()
-            return {
-              did: data.uri.split('/')[2],
-              handle: data.value.handle || '',
-              displayName: data.value.displayName || '',
-              description: data.value.description || '',
-              avatar: data.value.avatar
-                ? {$type: 'blob', ref: data.value.avatar}
-                : undefined,
-              banner: data.value.banner
-                ? {$type: 'blob', ref: data.value.banner}
-                : undefined,
-              indexedAt: data.value.indexedAt || new Date().toISOString(),
-              viewer: {
-                following: data.value.following || undefined,
-                blockedBy: false,
-                blocked: false,
-                muted: false,
-              },
-            } as AppBskyActorDefs.ProfileViewDetailed
-          } catch (_e) {
-            return undefined
-          }
+          const res = await agent.getProfile({actor: did || ''})
+          return res.data
         },
       })
     },
-    [queryClient],
+    [queryClient, agent],
   )
   return prefetchProfileQuery
 }
