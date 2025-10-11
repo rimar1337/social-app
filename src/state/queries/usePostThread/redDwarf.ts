@@ -201,7 +201,7 @@ function makeThreadItem(node: IRNode, depth: number): ThreadItemV2 {
     repostCount: 0,
     likeCount: 0,
     quoteCount: 0,
-    indexedAt: new Date().toISOString(),
+    indexedAt: node.data.value.createdAt || new Date().toISOString(),
     viewer: undefined,
     labels: undefined,
     threadgate: undefined,
