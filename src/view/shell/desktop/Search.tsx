@@ -107,7 +107,7 @@ export function DesktopSearch() {
   }, [])
 
   return (
-    <View style={[styles.container, pal.view]}>
+    <View style={[styles.container]}>
       <SearchInput
         value={query}
         onChangeText={onChangeText}

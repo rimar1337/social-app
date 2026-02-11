@@ -109,19 +109,13 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
           </>
         )}
         <InlineLinkText
-          to="https://witchsky.app/about/privacy"
-          label={_(msg`Privacy`)}>
-          {_(msg`Privacy`)}
+          label={_(msg`AppView Code`)}
+          to={'https://tangled.org/whey.party/red-dwarf-server'}>
+          {_(msg`AppView Code`)}
         </InlineLinkText>
         {' • '}
-        <InlineLinkText
-          to="https://witchsky.app/about/tos"
-          label={_(msg`Terms`)}>
-          {_(msg`Terms`)}
-        </InlineLinkText>
-        {' • '}
-        <InlineLinkText label={_(msg`Code`)} to={HELP_DESK_URL}>
-          {_(msg`Code`)}
+        <InlineLinkText label={_(msg`Client Code`)} to={HELP_DESK_URL}>
+          {_(msg`Client Code`)}
         </InlineLinkText>
       </Text>
 

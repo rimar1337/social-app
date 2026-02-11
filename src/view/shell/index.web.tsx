@@ -15,7 +15,7 @@ import {useCloseAllActiveElements} from '#/state/util'
 import {Lightbox} from '#/view/com/lightbox/Lightbox'
 import {ModalsContainer} from '#/view/com/modals/Modal'
 import {ErrorBoundary} from '#/view/com/util/ErrorBoundary'
-import {atoms as a, select, useTheme} from '#/alf'
+import {atoms as a, select, useAlf, useTheme} from '#/alf'
 import {AgeAssuranceRedirectDialog} from '#/components/ageAssurance/AgeAssuranceRedirectDialog'
 import {BlockedGeoOverlay} from '#/components/BlockedGeoOverlay'
 import {EmailDialog} from '#/components/dialogs/EmailDialog'
@@ -35,6 +35,7 @@ import {DrawerContent} from './Drawer'
 
 function ShellInner() {
   const t = useTheme()
+  const alf = useAlf()
   const isDrawerOpen = useIsDrawerOpen()
   const setDrawerOpen = useSetDrawerOpen()
   const {isDesktop} = useWebMediaQueries()
@@ -51,10 +52,48 @@ function ShellInner() {
     rootElement.className = `html`
     rootElement.style.setProperty(
       'background',
-      `${t.atoms.bg.backgroundColor}`,
+      `${t.name === 'dim' ? alf.themes.dark.atoms.bg.backgroundColor : t.name === 'light' ? t.palette.contrast_50 : t.atoms.bg.backgroundColor}`,
       'important',
     )
-  }, [t.atoms.bg.backgroundColor, t.name])
+  }, [
+    alf.themes.dark.atoms.bg.backgroundColor,
+    t.atoms.bg.backgroundColor,
+    t.name,
+    t.palette.contrast_50,
+  ])
+
+  useLayoutEffect(() => {
+    const bg =
+      t.name === 'dim'
+        ? alf.themes.dark.atoms.bg.backgroundColor
+        : t.name === 'light'
+          ? t.palette.contrast_50
+          : t.atoms.bg.backgroundColor
+
+    const selector = 'main > div > *'
+
+    // create or reuse style tag
+    let styleTag = document.getElementById(
+      'dynamic-bg-style',
+    ) as HTMLStyleElement | null
+    if (!styleTag) {
+      styleTag = document.createElement('style')
+      styleTag.id = 'dynamic-bg-style'
+      document.head.appendChild(styleTag)
+    }
+
+    // update CSS
+    styleTag.textContent = `
+      ${selector} {
+        background: ${bg} !important;
+      }
+    `
+  }, [
+    alf.themes.dark.atoms.bg.backgroundColor,
+    t.atoms.bg.backgroundColor,
+    t.name,
+    t.palette.contrast_50,
+  ])
 
   useLayoutEffect(() => {
     const color = t.palette.primary_500
@@ -171,10 +210,9 @@ function ShellInner() {
 }
 
 export function Shell() {
-  const t = useTheme()
   const {status: geolocation} = useGeolocationStatus()
   return (
-    <View style={[a.util_screen_outer, t.atoms.bg]}>
+    <View style={[a.util_screen_outer]}>
       {geolocation?.isAgeBlockedGeo ? (
         <BlockedGeoOverlay />
       ) : (

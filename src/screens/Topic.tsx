@@ -46,7 +46,7 @@ export default function TopicScreen({
   }, [topic])
 
   const onShare = React.useCallback(() => {
-    const url = new URL('https://witchsky.app')
+    const url = new URL('https://new.reddwarf.app')
     url.pathname = `/topic/${topic}`
     shareUrl(url.toString())
   }, [topic])

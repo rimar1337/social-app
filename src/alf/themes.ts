@@ -977,7 +977,7 @@ export const kittyscheme = {
   dim: KITTY_THEMES.dim,
 }
 
-const REDDWARF_TAILWIND_ATOMS = {
+export const REDDWARF_TAILWIND_ATOMS = {
   color_gray_25: '#fffbf9',
   color_gray_50: '#fff7f5',
   color_gray_100: '#fff0ee',

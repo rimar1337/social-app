@@ -41,9 +41,9 @@ export function createPublicAgent() {
   configureModerationForGuest() // Side effect but only relevant for tests
 
   const agent = new BskyAppAgent({service: PUBLIC_BSKY_SERVICE})
-  const proxyDid =
+  const _proxyDid =
     readCustomAppViewDidUri() || BLUESKY_PROXY_HEADER.get() || APPVIEW_DID_PROXY
-  agent.configureProxy(proxyDid)
+  agent.configureProxy('did:web:server.reddwarf.app#bsky_appview')
   return agent
 }
 
@@ -83,7 +83,7 @@ export async function createAgentAndResume(
 
   const proxyDid =
     readCustomAppViewDidUri() || BLUESKY_PROXY_HEADER.get() || APPVIEW_DID_PROXY
-  agent.configureProxy(proxyDid)
+  agent.configureProxy(proxyDid as any)
 
   return agent.prepare(gates, moderation, onSessionChange)
 }
@@ -120,7 +120,7 @@ export async function createAgentAndLogin(
 
   const proxyDid =
     readCustomAppViewDidUri() || BLUESKY_PROXY_HEADER.get() || APPVIEW_DID_PROXY
-  agent.configureProxy(proxyDid)
+  agent.configureProxy(proxyDid as any)
 
   return agent.prepare(gates, moderation, onSessionChange)
 }
@@ -211,7 +211,7 @@ export async function createAgentAndCreateAccount(
 
   const proxyDid =
     readCustomAppViewDidUri() || BLUESKY_PROXY_HEADER.get() || APPVIEW_DID_PROXY
-  agent.configureProxy(proxyDid)
+  agent.configureProxy(proxyDid as any)
 
   return agent.prepare(gates, moderation, onSessionChange)
 }
@@ -316,7 +316,7 @@ class BskyAppAgent extends BskyAgent {
     })
     const proxyDid = readCustomAppViewDidUri() || APPVIEW_DID_PROXY
     if (proxyDid) {
-      this.configureProxy(proxyDid)
+      this.configureProxy(proxyDid as any)
     }
   }
 

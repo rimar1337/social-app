@@ -32,6 +32,8 @@ import {useCloseAllActiveElements} from '#/state/util'
 import {LoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {PressableWithHover} from '#/view/com/util/PressableWithHover'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
+import {Logo} from '#/view/icons/Logo'
+import {Logotype} from '#/view/icons/Logotype'
 import {NavSignupCard} from '#/view/shell/NavSignupCard'
 import {atoms as a, tokens, useLayoutBreakpoints, useTheme, web} from '#/alf'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
@@ -72,15 +74,16 @@ import {
   UserCircle_Stroke2_Corner0_Rounded as UserCircle,
 } from '#/components/icons/UserCircle'
 import {CENTER_COLUMN_OFFSET} from '#/components/Layout'
+import {Link} from '#/components/Link'
 import * as Menu from '#/components/Menu'
 import * as Prompt from '#/components/Prompt'
 import {Text} from '#/components/Typography'
 import {PlatformInfo} from '../../../../modules/expo-bluesky-swiss-army'
 import {router} from '../../../routes'
 
-const NAV_ICON_WIDTH = 28
+const NAV_ICON_WIDTH = 24
 
-function ProfileCard() {
+function ProfileCard({alwaysShow}: {alwaysShow?: boolean}) {
   const {currentAccount, accounts} = useSession()
   const {logoutEveryAccount} = useSessionApi()
   const {isLoading, data} = useProfilesQuery({
@@ -112,7 +115,8 @@ function ProfileCard() {
         <Menu.Root>
           <Menu.Trigger label={_(msg`Switch accounts`)}>
             {({props, state, control}) => {
-              const active = state.hovered || state.focused || control.isOpen
+              const hover = state.hovered || state.focused || control.isOpen
+              const active = hover || alwaysShow
               return (
                 <Button
                   label={props.accessibilityLabel}
@@ -120,7 +124,7 @@ function ProfileCard() {
                   style={[
                     a.w_full,
                     a.transition_color,
-                    active ? t.atoms.bg_contrast_25 : a.transition_delay_50ms,
+                    hover ? t.atoms.bg_contrast_25 : a.transition_delay_50ms,
                     enableSquareButtons ? a.rounded_sm : a.rounded_full,
                     a.justify_between,
                     a.align_center,
@@ -422,11 +426,16 @@ function NavItem({count, hasNew, href, icon, iconFilled, label}: NavItemProps) {
       style={[
         a.flex_row,
         a.align_center,
-        a.p_md,
-        a.rounded_sm,
-        a.gap_sm,
+        a.px_lg,
+        a.py_md,
+        a.rounded_full,
+        a.gap_lg,
         a.outline_inset_1,
         a.transition_color,
+        isCurrent &&
+          (t.scheme === 'dark'
+            ? t.atoms.bg_contrast_50
+            : t.atoms.bg_contrast_100),
       ]}
       hoverStyle={t.atoms.bg_contrast_25}
       // @ts-expect-error the function signature differs on web -prf
@@ -517,7 +526,7 @@ function NavItem({count, hasNew, href, icon, iconFilled, label}: NavItemProps) {
         ) : null}
       </View>
       {!leftNavMinimal && (
-        <Text style={[a.text_xl, isCurrent ? a.font_bold : a.font_normal]}>
+        <Text style={[a.text_lg, isCurrent ? a.font_bold : a.font_normal]}>
           {label}
         </Text>
       )}
@@ -577,18 +586,18 @@ function ComposeBtn() {
   }
 
   return (
-    <View style={[a.flex_row, a.pl_md, a.pt_xl]}>
+    <View style={[a.flex_row, a.mx_auto, a.pt_xl]}>
       <Button
         disabled={isFetchingHandle}
         label={_(msg`Compose new post`)}
         onPress={onPressCompose}
         size="large"
-        variant="solid"
+        variant="outline"
         color="primary"
         style={enableSquareButtons ? [a.rounded_sm] : [a.rounded_full]}>
         <ButtonIcon icon={EditBig} position="left" />
         <ButtonText>
-          <Trans context="action">New Skeet</Trans>
+          <Trans context="action">Post</Trans>
         </ButtonText>
       </Button>
     </View>
@@ -623,6 +632,7 @@ function ChatNavItem() {
 export function DesktopLeftNav() {
   const {hasSession, currentAccount} = useSession()
   const pal = usePalette('default')
+  const t = useTheme()
   const {_} = useLingui()
   const {isDesktop} = useWebMediaQueries()
   const {leftNavMinimal, centerColumnOffset} = useLayoutBreakpoints()
@@ -641,6 +651,11 @@ export function DesktopLeftNav() {
         a.px_xl,
         styles.leftNav,
         leftNavMinimal && styles.leftNavMinimal,
+        // @ts-expect-error web only
+        !leftNavMinimal && {
+          display: 'flex',
+          height: '100vh',
+        },
         {
           transform: [
             {
@@ -653,7 +668,23 @@ export function DesktopLeftNav() {
         },
       ]}>
       {hasSession ? (
-        <ProfileCard />
+        <>
+          <Link
+            to="/"
+            label="Red Dwarf - Home"
+            style={{
+              paddingHorizontal: 4,
+              paddingTop: leftNavMinimal ? 12 : 6,
+              paddingBottom: 12,
+              gap: 12,
+              marginBottom: 4,
+            }}>
+            <Logo width={32} />
+            {!leftNavMinimal && (
+              <Logotype width={78} fill={t.atoms.text.color} bolder />
+            )}
+          </Link>
+        </>
       ) : !leftNavMinimal ? (
         <View style={[a.pt_xl]}>
           <NavSignupCard />
@@ -816,6 +847,8 @@ export function DesktopLeftNav() {
           />
 
           <ComposeBtn />
+          <View style={{flex: 1}} />
+          <ProfileCard alwaysShow />
         </>
       )}
     </View>

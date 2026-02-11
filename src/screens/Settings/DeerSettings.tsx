@@ -254,7 +254,7 @@ function CustomAppViewDidDialog({
             }}
             placeholder={
               APPVIEW_DID_PROXY?.substring(0, APPVIEW_DID_PROXY.indexOf('#')) ||
-              `did:web:api.bsky.app`
+              `did:web:server.reddwarf.app`
             }
             placeholderTextColor={pal.colors.textLight}
             onSubmitEditing={submit}

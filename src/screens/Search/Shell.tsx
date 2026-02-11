@@ -523,7 +523,7 @@ let SearchScreenInner = ({
             style={t.atoms.text_contrast_medium as StyleProp<ViewStyle>}
           />
           <Text style={[t.atoms.text_contrast_medium, a.text_md]}>
-            <Trans>Find skeets, users, and feeds on Witchsky</Trans>
+            <Trans>Find skeets, users, and feeds on Red Dwarf</Trans>
           </Text>
         </View>
       </View>

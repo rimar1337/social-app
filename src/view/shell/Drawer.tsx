@@ -705,13 +705,13 @@ function MenuItem({icon, label, count, bold, onPress}: MenuItemProps) {
 }
 
 function ExtraLinks() {
-  const {_} = useLingui()
+  //const {_} = useLingui()
   const t = useTheme()
   const kawaii = useKawaiiMode()
 
   return (
     <View style={[a.flex_col, a.gap_md, a.flex_wrap]}>
-      <InlineLinkText
+      {/* <InlineLinkText
         style={[a.text_md]}
         label={_(msg`Terms of Service`)}
         to="https://witchsky.app/about/tos">
@@ -722,7 +722,7 @@ function ExtraLinks() {
         to="https://witchsky.app/about/privacy"
         label={_(msg`Privacy Policy`)}>
         <Trans>Privacy Policy</Trans>
-      </InlineLinkText>
+      </InlineLinkText> */}
       {kawaii && (
         <Text style={t.atoms.text_contrast_medium}>
           <Trans>

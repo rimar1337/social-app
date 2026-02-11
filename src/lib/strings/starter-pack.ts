@@ -66,7 +66,7 @@ export function createStarterPackGooglePlayUri(
   rkey: string,
 ): string | null {
   if (!name || !rkey) return null
-  return `https://play.google.com/store/apps/details?id=app.witchsky&referrer=utm_source%3Dbluesky%26utm_medium%3Dstarterpack%26utm_content%3Dstarterpack_${name}_${rkey}`
+  return `https://play.google.com/store/apps/details?id=app.reddwarf&referrer=utm_source%3Dbluesky%26utm_medium%3Dstarterpack%26utm_content%3Dstarterpack_${name}_${rkey}`
 }
 
 export function httpStarterPackUriToAtUri(httpUri?: string): string | null {

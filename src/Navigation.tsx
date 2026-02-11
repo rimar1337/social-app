@@ -659,11 +659,13 @@ function TabsNavigator() {
   )
 }
 
-function screenOptions(t: Theme) {
+function screenOptions(_: Theme) {
   return {
     fullScreenGestureEnabled: true,
     headerShown: false,
-    contentStyle: t.atoms.bg,
+    contentStyle: {
+      backgroundColor: '#00000000',
+    },
   } as const
 }
 
@@ -958,7 +960,11 @@ function RoutesContainer({children}: React.PropsWithChildren<{}>) {
 
   function onReady() {
     prevLoggedRouteName.current = getCurrentRouteName()
-    if (currentAccount && shouldRequestEmailConfirmation(currentAccount) && !disableVerifyEmailReminder) {
+    if (
+      currentAccount &&
+      shouldRequestEmailConfirmation(currentAccount) &&
+      !disableVerifyEmailReminder
+    ) {
       emailDialogControl.open({
         id: EmailDialogScreenID.VerificationReminder,
       })

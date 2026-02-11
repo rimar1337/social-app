@@ -70,7 +70,7 @@ export function NotificationSettingsScreen({}: Props) {
             [
               {
                 key: 'android.provider.extra.APP_PACKAGE',
-                value: 'app.witchsky',
+                value: 'app.reddwarf',
               },
             ],
           )

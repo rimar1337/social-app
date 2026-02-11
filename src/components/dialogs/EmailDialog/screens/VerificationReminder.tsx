@@ -69,7 +69,7 @@ export function VerificationReminder({
         <Text style={[a.text_sm, a.leading_snug, t.atoms.text_contrast_medium]}>
           <Trans>
             Your email has not yet been verified. Please verify your email in
-            order to enjoy all the features of Witchsky.
+            order to enjoy all the features of Red Dwarf.
           </Trans>
         </Text>
       </View>

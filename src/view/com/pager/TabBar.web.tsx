@@ -177,6 +177,8 @@ const desktopStyles = StyleSheet.create({
     transform: 'translateX(-50%)',
     minWidth: 45,
     width: '100%',
+    borderTopLeftRadius: 99999,
+    borderTopRightRadius: 99999,
   },
   outerBottomBorder: {
     position: 'absolute',
@@ -220,6 +222,8 @@ const mobileStyles = StyleSheet.create({
     transform: 'translateX(-50%)',
     minWidth: 45,
     width: '100%',
+    borderTopLeftRadius: 99999,
+    borderTopRightRadius: 99999,
   },
   outerBottomBorder: {
     position: 'absolute',

@@ -364,6 +364,8 @@ export function TabBar({
                   right: 0,
                   borderBottomWidth: 2,
                   borderColor: t.palette.primary_500,
+                  borderTopLeftRadius: 99999,
+                  borderTopRightRadius: 99999,
                 },
               ]}
             />

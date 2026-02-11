@@ -43,7 +43,7 @@ function HomeHeaderLayoutDesktopAndTablet({
 
   return (
     <>
-      {hasSession && (
+      {hasSession && false && (
         <Layout.Center>
           <View
             style={[a.flex_row, a.align_center, gutters, a.pt_md, t.atoms.bg]}>

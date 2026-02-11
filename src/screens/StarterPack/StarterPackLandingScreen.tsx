@@ -362,7 +362,7 @@ function LandingScreenLoaded({
       {isWeb && (
         <meta
           name="apple-itunes-app"
-          content="app-id=app.witchsky, app-clip-bundle-id=app.witchsky.AppClip, app-clip-display=card"
+          content="app-id=app.reddwarf, app-clip-bundle-id=app.reddwarf.AppClip, app-clip-display=card"
         />
       )}
     </View>

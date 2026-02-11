@@ -11,31 +11,33 @@ import type React from 'react'
 
 import {isNative} from '#/platform/detection'
 import {listenNetworkConfirmed, listenNetworkLost} from '#/state/events'
-import {PUBLIC_BSKY_SERVICE} from './constants'
+//import {PUBLIC_BSKY_SERVICE} from './constants'
 
 // any query keys in this array will be persisted to AsyncStorage
 export const labelersDetailedInfoQueryKeyRoot = 'labelers-detailed-info'
 const STORED_CACHE_QUERY_KEY_ROOTS = [labelersDetailedInfoQueryKeyRoot]
 
 async function checkIsOnline(): Promise<boolean> {
-  try {
-    const controller = new AbortController()
-    setTimeout(() => {
-      controller.abort()
-    }, 15e3)
-    const res = await fetch(`${PUBLIC_BSKY_SERVICE}/xrpc/_health`, {
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-    const json = await res.json()
-    if (json.version) {
-      return true
-    } else {
-      return false
-    }
-  } catch (e) {
-    return false
-  }
+  return true
+  // todo: implement _health on rdcs
+  // try {
+  //   const controller = new AbortController()
+  //   setTimeout(() => {
+  //     controller.abort()
+  //   }, 15e3)
+  //   const res = await fetch(`${PUBLIC_BSKY_SERVICE}/xrpc/_health`, {
+  //     cache: 'no-store',
+  //     signal: controller.signal,
+  //   })
+  //   const json = await res.json()
+  //   if (json.version) {
+  //     return true
+  //   } else {
+  //     return false
+  //   }
+  // } catch (e) {
+  //   return false
+  // }
 }
 
 let receivedNetworkLost = false

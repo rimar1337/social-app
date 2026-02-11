@@ -110,9 +110,9 @@ export function WelcomeModal({control}: WelcomeModalProps) {
                       a.text_2xl,
                       a.font_semi_bold,
                       a.user_select_none,
-                      {color: '#ff9696ff', letterSpacing: -0.5},
+                      {color: '#FF4242ff', letterSpacing: -0.5},
                     ]}>
-                    Witchsky
+                    Red Dwarf
                   </Text>
                 </View>
               </View>
@@ -141,11 +141,11 @@ export function WelcomeModal({control}: WelcomeModalProps) {
                       letterSpacing: -0.5,
                     }),
                   ]}>
-                  <Trans>Real talk.</Trans>
+                  <Trans>Be indie.</Trans>
                   {'\n'}
-                  <Trans>Real creatures.</Trans>
+                  <Trans>Stay connected.</Trans>
                   {'\n'}
-                  <Trans>Social media if it was good.</Trans>
+                  <Trans>Built small. Built strong.</Trans>
                 </Text>
               </View>
               <View style={[a.gap_md, a.align_center]}>
@@ -157,7 +157,7 @@ export function WelcomeModal({control}: WelcomeModalProps) {
                     color="primary"
                     style={{
                       width: 200,
-                      backgroundColor: '#BB6868',
+                      backgroundColor: '#c14c42',
                     }}>
                     <ButtonText>
                       <Trans>Create account</Trans>

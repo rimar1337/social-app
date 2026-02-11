@@ -5,7 +5,7 @@ import {msg, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
 import {useHaptics} from '#/lib/haptics'
-import {useKawaiiMode} from '#/state/preferences/kawaii'
+//import {useKawaiiMode} from '#/state/preferences/kawaii'
 import {ErrorBoundary} from '#/view/com/util/ErrorBoundary'
 import {CenteredView} from '#/view/com/util/Views'
 import {Logo} from '#/view/icons/Logo'
@@ -27,7 +27,7 @@ export const SplashScreen = ({
 
   const playHaptic = useHaptics()
   const insets = useSafeAreaInsets()
-  const kawaii = useKawaiiMode()
+  //const kawaii = useKawaiiMode()
 
   return (
     <CenteredView style={[a.h_full, a.flex_1]}>
@@ -37,9 +37,9 @@ export const SplashScreen = ({
         style={[a.flex_1]}>
         <ErrorBoundary>
           <View style={[a.flex_1, a.justify_center, a.align_center]}>
-            <Logo width={kawaii ? 164 : 92} fill="sky" />
+            <Logo width={92} fill="sky" />
 
-            {!kawaii && (
+            {true && (
               <View style={[a.pb_sm, a.pt_5xl]}>
                 <Logotype width={161} fill={t.atoms.text.color} />
               </View>
@@ -52,7 +52,7 @@ export const SplashScreen = ({
                 t.atoms.text_contrast_medium,
                 a.text_center,
               ]}>
-              <Trans>Skeet yo stuff! 🗣️</Trans>
+              <Trans>Be indie!</Trans>
             </Text>
           </View>
 

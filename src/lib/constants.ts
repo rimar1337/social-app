@@ -10,7 +10,7 @@ export const STAGING_SERVICE = 'https://staging.bsky.dev'
 export const BSKY_SERVICE = 'https://bsky.social'
 export const BSKY_SERVICE_DID = 'did:web:bsky.social'
 export const PUBLIC_BSKY_SERVICE =
-  ENV_PUBLIC_BSKY_SERVICE || 'https://public.api.bsky.app'
+  ENV_PUBLIC_BSKY_SERVICE || 'https://server.reddwarf.app' //'https://public.api.bsky.app'
 export const DEFAULT_SERVICE = BSKY_SERVICE
 export const HELP_DESK_URL = `https://tangled.org/jollywhoppers.com/witchsky.app/`
 export const EMBED_SERVICE = 'https://embed.bsky.app'
@@ -200,9 +200,9 @@ export const urls = {
   },
 }
 
-export const PUBLIC_APPVIEW = 'https://api.bsky.app'
-export const PUBLIC_APPVIEW_DID = 'did:web:api.bsky.app'
-export const PUBLIC_STAGING_APPVIEW_DID = 'did:web:api.staging.bsky.dev'
+export const PUBLIC_APPVIEW = 'https://server.reddwarf.app'
+export const PUBLIC_APPVIEW_DID = 'did:web:server.reddwarf.app'
+export const PUBLIC_STAGING_APPVIEW_DID = 'did:web:server.reddwarf.app'
 
 export const DEV_ENV_APPVIEW = `http://localhost:2584` // always the same
 

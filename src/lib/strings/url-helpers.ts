@@ -7,8 +7,10 @@ import {isInvalidHandle} from '#/lib/strings/handles'
 import {startUriToStarterPackUri} from '#/lib/strings/starter-pack'
 import {logger} from '#/logger'
 
-export const BSKY_APP_HOST = 'https://witchsky.app'
+export const BSKY_APP_HOST = 'https://new.reddwarf.app'
 const BSKY_TRUSTED_HOSTS = [
+  'new\\.reddwarf\\.app',
+  'reddwarf\\.app',
   'witchsky\\.app',
   'witchsky\\.app',
   'bsky\\.app',
@@ -81,7 +83,7 @@ export function toShortUrl(url: string): string {
 
 export function toShareUrl(url: string): string {
   if (!url.startsWith('https')) {
-    const urlp = new URL('https://witchsky.app')
+    const urlp = new URL('https://new.reddwarf.app')
     urlp.pathname = url
     url = urlp.toString()
   }
@@ -108,7 +110,9 @@ export function isBskyAppUrl(url: string): boolean {
     (url.startsWith('https://deer.social/') &&
       !url.startsWith('https://deer.social/about')) ||
     (url.startsWith('https://witchsky.app/') &&
-      !url.startsWith('https://witchsky.app/about'))
+      !url.startsWith('https://witchsky.app/about')) ||
+    (url.startsWith('https://new.reddwarf.app/') &&
+      !url.startsWith('https://new.reddwarf.app/about'))
   )
 }
 

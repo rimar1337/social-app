@@ -18,7 +18,7 @@ type SetContext = {
 const stateContext = React.createContext<StateContext>({
   colorMode: 'system',
   darkTheme: 'dark',
-  colorScheme: 'witchsky',
+  colorScheme: 'reddwarf',
   hue: 0,
 })
 stateContext.displayName = 'ColorModeStateContext'

@@ -5,7 +5,7 @@ import {msg, Trans} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
-import {useKawaiiMode} from '#/state/preferences/kawaii'
+//import {useKawaiiMode} from '#/state/preferences/kawaii'
 import {ErrorBoundary} from '#/view/com/util/ErrorBoundary'
 import {Logo} from '#/view/icons/Logo'
 import {Logotype} from '#/view/icons/Logotype'
@@ -18,7 +18,7 @@ import {AppLanguageDropdown} from '#/components/AppLanguageDropdown'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
 import {InlineLinkText} from '#/components/Link'
-import {Text} from '#/components/Typography'
+//import {Text} from '#/components/Typography'
 
 export const SplashScreen = ({
   onDismiss,
@@ -45,7 +45,7 @@ export const SplashScreen = ({
     }
   }, [])
 
-  const kawaii = useKawaiiMode()
+  //const kawaii = useKawaiiMode()
 
   return (
     <>
@@ -86,22 +86,22 @@ export const SplashScreen = ({
           ]}>
           <ErrorBoundary>
             <View style={[a.justify_center, a.align_center]}>
-              <Logo width={kawaii ? 300 : 92} fill="sky" />
+              <Logo width={92} fill="sky" />
 
-              {!kawaii && (
+              {true && (
                 <View style={[a.pb_sm, a.pt_5xl]}>
                   <Logotype width={161} fill={t.atoms.text.color} />
                 </View>
               )}
 
-              <Text
+              {/* <Text
                 style={[
                   a.text_md,
                   a.font_semi_bold,
                   t.atoms.text_contrast_medium,
                 ]}>
                 <Trans>Skeet yo shit! 🗣️</Trans>
-              </Text>
+              </Text> */}
             </View>
 
             <View

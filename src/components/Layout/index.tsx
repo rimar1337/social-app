@@ -159,6 +159,7 @@ export const Center = memo(function LayoutCenter({
   ignoreTabletLayoutOffset,
   ...props
 }: ViewProps & {ignoreTabletLayoutOffset?: boolean}) {
+  const t = useTheme()
   const {isWithinOffsetView} = useContext(ScrollbarOffsetContext)
   const {gtMobile} = useBreakpoints()
   const {centerColumnOffset} = useLayoutBreakpoints()
@@ -167,6 +168,7 @@ export const Center = memo(function LayoutCenter({
   return (
     <View
       style={[
+        {backgroundColor: t.atoms.bg.backgroundColor},
         a.w_full,
         a.mx_auto,
         gtMobile && {

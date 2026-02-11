@@ -18,7 +18,7 @@ module.exports = function (_config) {
   const IS_DEV = !IS_TESTFLIGHT || !IS_PRODUCTION
 
   const ASSOCIATED_DOMAINS = [
-    'applinks:witchsky.app',
+    'applinks:reddwarf.app',
     // When testing local services, enter an ngrok (et al) domain here. It must use a standard HTTP/HTTPS port.
     ...(IS_DEV || IS_TESTFLIGHT ? [] : []),
   ]
@@ -36,9 +36,9 @@ module.exports = function (_config) {
   return {
     expo: {
       version: VERSION,
-      name: 'Witchsky',
-      slug: 'witchsky',
-      scheme: ['bluesky', 'witchsky'],
+      name: 'Red Dwarf',
+      slug: 'reddwarf',
+      scheme: ['bluesky', 'reddwarf', 'witchsky'],
       // owner: 'blueskysocial',
       // owner: 'neema.brown',
       runtimeVersion: {
@@ -50,7 +50,7 @@ module.exports = function (_config) {
       newArchEnabled: false,
       ios: {
         supportsTablet: false,
-        bundleIdentifier: 'app.witchsky',
+        bundleIdentifier: 'app.reddwarf',
         config: {
           usesNonExemptEncryption: false,
         },
@@ -68,7 +68,7 @@ module.exports = function (_config) {
             'Used to save images to your library.',
           NSPhotoLibraryUsageDescription:
             'Used for profile pictures, skeets, and other kinds of content',
-          CFBundleSpokenName: 'witchsky.app',
+          CFBundleSpokenName: 'reddwarf.app',
           CFBundleLocalizations: [
             'en',
             'an',
@@ -117,7 +117,7 @@ module.exports = function (_config) {
         entitlements: {
           'com.apple.developer.kernel.increased-memory-limit': true,
           'com.apple.developer.kernel.extended-virtual-addressing': true,
-          'com.apple.security.application-groups': 'group.app.witchsky',
+          'com.apple.security.application-groups': 'group.app.reddwarf',
         },
         privacyManifests: {
           NSPrivacyCollectedDataTypes: [
@@ -186,12 +186,16 @@ module.exports = function (_config) {
           backgroundColor: '#ED5345',
         },
         googleServicesFile: './google-services.json',
-        package: 'app.witchsky',
+        package: 'app.reddwarf',
         intentFilters: [
           {
             action: 'VIEW',
             autoVerify: true,
             data: [
+              {
+                scheme: 'https',
+                host: 'reddwarf.app',
+              },
               {
                 scheme: 'https',
                 host: 'witchsky.app',

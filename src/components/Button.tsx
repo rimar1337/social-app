@@ -231,6 +231,12 @@ export const Button = React.forwardRef<View, ButtonProps>(
        * deprecation of `variant` prop. This redundant `variant` check is here
        * just to make this handling easier to understand.
        */
+
+      const _textcolor = select(t.name, {
+        light: t.palette.white,
+        dim: t.atoms.text_inverted.color,
+        dark: t.atoms.text_inverted.color,
+      })
       if (variant === 'solid') {
         if (color === 'primary') {
           if (!disabled) {
@@ -317,7 +323,7 @@ export const Button = React.forwardRef<View, ButtonProps>(
 
             if (!disabled) {
               baseStyles.push(a.border, {
-                borderColor: t.palette.primary_500,
+                borderColor: t.atoms.bg_contrast_100.backgroundColor,
               })
               hoverStyles.push(a.border, {
                 backgroundColor: t.palette.primary_50,

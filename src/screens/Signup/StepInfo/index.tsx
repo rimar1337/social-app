@@ -170,7 +170,7 @@ export function StepInfo({
           <View style={[a.gap_xl]}>
             <Text style={[a.gap_md, a.leading_normal]}>
               <Trans>
-                Witchsky is part of the{' '}
+                Red Dwarf is part of the{' '}
                 {
                   <InlineLinkText
                     label={_(msg`ATmosphere`)}
@@ -222,7 +222,7 @@ export function StepInfo({
                   <Trans>bsky.app</Trans>
                 </InlineLinkText>
               }{' '}
-              first, then return to Witchsky and log in with the account you
+              first, then return to Red Dwarf and log in with the account you
               created.
             </Trans>
           </Text>
